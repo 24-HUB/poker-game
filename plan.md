@@ -388,70 +388,106 @@ Card Back      : anime-art based on equipped skin
 
 ## 📋 Feature Breakdown with Estimated Days
 
+### � Overall Progress (as of Apr 3, 2026)
+
+| Phase | Goal | Completion | Notes |
+|-------|------|-----------|-------|
+| Phase 1 | Foundation | **~60%** | Auth backend done; Auth UI + Lobby UI + routing missing |
+| Phase 2 | Core Poker | **~40%** | Engine + UI components done; Socket.io not wired, no real pages |
+| Phase 3 | Gacha | **~10%** | Schema + types only; service + routes + UI all missing |
+| Phase 4 | Polish | **0%** | Not started |
+
+### ⛔ Critical Blockers (fix before anything else)
+
+1. **Socket.io not mounted** — `apps/server/src/index.ts` only has mock HTTP endpoints. `socket/index.ts` handler exists but is never called → no real-time game works.
+2. **No page routing** — `App.tsx` is a dev mock (auto-joins `test-room`). React Router 7 + all pages must be scaffolded for any user-facing flow.
+3. **`lib/api.ts` missing** — Auth and lobby UI cannot function without a typed API client.
+
+---
+
 ### 🟢 Phase 1 — Foundation (~3-4 วัน)
 **Goal**: ตั้ง project + login + เข้า lobby
+**Status (Apr 2026)**: ~60% complete
 
-| ID | Feature | Dev | Est. |
-|----|---------|-----|------|
-| F1.1 | Monorepo setup (Turborepo + Bun + Vite) | A | 0.5 วัน |
-| F1.2 | DB schema + Drizzle setup + Docker Postgres | B | 0.5 วัน |
-| F1.3 | Auth API (register/login/logout/me) — Better-Auth | B | 1 วัน |
-| F1.4 | Auth UI (Login page, Register page) | A | 1 วัน |
-| F1.5 | Lobby page + Room list + Create room | A | 1 วัน |
-| F1.6 | Rooms API (CRUD) | B | 0.5 วัน |
-| F1.7 | Docker Compose (web + server + postgres) | B | 0.5 วัน |
+| ID | Feature | Dev | Est. | Status |
+|----|---------|-----|------|--------|
+| F1.1 | Monorepo setup (Turborepo + Bun + Vite) | A | 0.5 วัน | ✅ Done |
+| F1.2 | DB schema + Drizzle setup + Docker Postgres | B | 0.5 วัน | ✅ Done |
+| F1.3 | Auth API (register/login/logout/me) — Better-Auth | B | 1 วัน | ✅ Done |
+| F1.4 | Auth UI (Login page, Register page) | A | 1 วัน | 🔲 Not started |
+| F1.5 | Lobby page + Room list + Create room | A | 1 วัน | 🔲 Not started |
+| F1.6 | Rooms API (CRUD) | B | 0.5 วัน | ✅ Done |
+| F1.7 | Docker Compose (web + server + postgres) | B | 0.5 วัน | ✅ Done |
+| F1.8 | React Router 7 routing setup + `lib/api.ts` client | A | 0.5 วัน | 🔲 Not started |
+| F1.9 | TanStack Query provider + auth/room query hooks | A | 0.5 วัน | 🔲 Not started |
 
 ---
 
 ### 🟡 Phase 2 — Core Poker (~6-8 วัน)
 **Goal**: เล่น Texas Hold'em 2-6 คน real-time ได้จริง
+**Status (Apr 2026)**: ~40% complete
 
-| ID | Feature | Dev | Est. |
-|----|---------|-----|------|
-| F2.1 | Card + Deck + Shuffle (packages/shared) | A+B | 0.5 วัน |
-| F2.2 | Hand evaluator (packages/shared) | B | 1 วัน |
-| F2.3 | Game state machine (packages/shared) | B | 1 วัน |
-| F2.4 | Socket.io server setup + room management | B | 0.5 วัน |
-| F2.5 | Game event handlers (join/action/end) | B | 1 วัน |
-| F2.6 | Game table UI (green felt, seats) | A | 1 วัน |
-| F2.7 | Player hand display (private cards) | A | 0.5 วัน |
-| F2.8 | Community cards (flop/turn/river) | A | 0.5 วัน |
-| F2.9 | Betting controls UI (call/raise/fold/check) | A | 1 วัน |
-| F2.10 | Pot + chip display | A | 0.5 วัน |
-| F2.11 | Turn timer + active player highlight | A+B | 0.5 วัน |
-| F2.12 | End game showdown + winner screen | A+B | 1 วัน |
-| F2.13 | Chip update after game (chipService) | B | 0.5 วัน |
+| ID | Feature | Dev | Est. | Status |
+|----|---------|-----|------|--------|
+| F2.1 | Card + Deck + Shuffle (packages/shared) | A+B | 0.5 วัน | ✅ Done |
+| F2.2 | Hand evaluator (packages/shared) | B | 1 วัน | ✅ Done |
+| F2.3 | Game state machine (packages/shared) | B | 1 วัน | ✅ Done |
+| F2.4 | Socket.io server setup + room management | B | 0.5 วัน | ⚠️ Handler files exist but Socket.io **not mounted** in `index.ts` |
+| F2.5 | Game event handlers (join/action/end) | B | 1 วัน | ✅ Done (socket/handlers/game.ts + room.ts) |
+| F2.6 | Game table UI (green felt, seats) | A | 1 วัน | ✅ Done (GameTable, PlayerSeat) |
+| F2.7 | Player hand display (private cards) | A | 0.5 วัน | ✅ Done (BettingControls shows hole cards) |
+| F2.8 | Community cards (flop/turn/river) | A | 0.5 วัน | ✅ Done (CommunityCards component) |
+| F2.9 | Betting controls UI (call/raise/fold/check) | A | 1 วัน | ✅ Done |
+| F2.10 | Pot + chip display | A | 0.5 วัน | ✅ Done (in GameTable) |
+| F2.11 | Turn timer + active player highlight | A+B | 0.5 วัน | ✅ Done (30s auto-fold in GameManager) |
+| F2.12 | End game showdown + winner screen | A+B | 1 วัน | ✅ Done (showdown overlay in GameTable) |
+| F2.13 | Chip update after game (chipService) | B | 0.5 วัน | ⚠️ Inline in game handler — no dedicated `chipService.ts` |
+| F2.14 | **[NEW]** Wire Socket.io into `apps/server/src/index.ts` | B | 0.5 วัน | 🔲 Not started — **BLOCKER** |
+| F2.15 | **[NEW]** `game:yourCards` private emit per-socket | B | 0.5 วัน | 🔲 Not started |
+| F2.16 | **[NEW]** `GamePage.tsx` wired to real socket events | A | 1 วัน | 🔲 Not started |
+| F2.17 | **[NEW]** Multi-round dealer rotation after each hand | B | 0.5 วัน | 🔲 Not started |
+| F2.18 | **[NEW]** Side pot calculation for all-in scenarios | B | 1 วัน | 🔲 Not started |
+| F2.19 | **[NEW]** Socket reconnect — restore game state | B | 0.5 วัน | 🔲 Not started |
+| F2.20 | **[NEW]** Game history saved to DB on showdown | B | 0.5 วัน | 🔲 Not started |
+| F2.21 | **[NEW]** Framer Motion card deal animation | A | 1 วัน | 🔲 Not started |
+| F2.22 | **[NEW]** Chip arc animation (bet → pot) | A | 0.5 วัน | 🔲 Not started |
 
 ---
 
 ### 🟠 Phase 3 — Gacha System (~4-5 วัน)
 **Goal**: ดึง gacha ได้ + แสดง collection + ใส่ skin ในเกม
+**Status (Apr 2026)**: ~10% complete (schema + types only)
 
-| ID | Feature | Dev | Est. |
-|----|---------|-----|------|
-| F3.1 | gacha_items + user_collection schema + seed | B | 0.5 วัน |
-| F3.2 | Gacha pull API + rarity service + pity tracker | B | 1 วัน |
-| F3.3 | Gacha banner page UI | A | 0.5 วัน |
-| F3.4 | Pull animation (portal → card flip) Framer Motion | A | 1.5 วัน |
-| F3.5 | Collection page (grid + filter by rarity) | A | 1 วัน |
-| F3.6 | Equip skin API + slot in game (card back / avatar) | A+B | 1 วัน |
+| ID | Feature | Dev | Est. | Status |
+|----|---------|-----|------|--------|
+| F3.1 | gacha_items + user_collection schema + seed | B | 0.5 วัน | ✅ Done |
+| F3.2 | Gacha pull API + rarity service + pity tracker | B | 1 วัน | 🔲 Not started (`gachaService.ts` missing) |
+| F3.3 | Gacha routes (`/api/gacha/*`, `/api/collection/*`) | B | 0.5 วัน | 🔲 Not started |
+| F3.4 | Gacha banner page UI (`GachaPage.tsx`) | A | 0.5 วัน | 🔲 Not started |
+| F3.5 | Pull animation (portal → card flip) Framer Motion | A | 1.5 วัน | 🔲 Not started |
+| F3.6 | Collection page + grid + equip toggle | A | 1 วัน | 🔲 Not started |
+| F3.7 | `collectionStore.ts` Zustand store | A | 0.5 วัน | 🔲 Not started |
+| F3.8 | `useGacha.ts` hook + pity counter display | A | 0.5 วัน | 🔲 Not started |
+| F3.9 | No-duplicate SSR logic in `gachaService.ts` | B | 0.5 วัน | 🔲 Not started |
+| F3.10 | Equip skin applied to card backs in game | A+B | 1 วัน | 🔲 Not started |
 
 ---
 
 ### 🔵 Phase 4 — Polish & Social (ต่อเรื่อยๆ)
 **Priority order — ทำตามลำดับ**
+**Status (Apr 2026)**: 0% — not started
 
-| ID | Feature | Priority |
-|----|---------|----------|
-| F4.1 | Leaderboard (chip ranking top 50) | HIGH |
-| F4.2 | Player profile page + stats | HIGH |
-| F4.3 | Daily login reward (chip bonus) | MEDIUM |
-| F4.4 | In-game chat (Socket.io) | MEDIUM |
-| F4.5 | Card deal + chip move animations | MEDIUM |
-| F4.6 | Sound effects (card flip, chip clink) | LOW |
-| F4.7 | Game history page | LOW |
-| F4.8 | More poker modes (5-Card Draw) | LOW |
-| F4.9 | Tournament bracket mode | BACKLOG |
+| ID | Feature | Priority | Status |
+|----|---------|----------|--------|
+| F4.1 | Leaderboard (chip ranking top 50) | HIGH | 🔲 Not started |
+| F4.2 | Player profile page + stats | HIGH | 🔲 Not started |
+| F4.3 | Daily login reward (chip bonus) | MEDIUM | 🔲 Not started |
+| F4.4 | In-game chat (Socket.io) | MEDIUM | 🔲 Not started |
+| F4.5 | Card deal + chip move animations | MEDIUM | 🔲 Not started |
+| F4.6 | Sound effects (card flip, chip clink) | LOW | 🔲 Not started |
+| F4.7 | Game history page | LOW | 🔲 Not started |
+| F4.8 | More poker modes (5-Card Draw) | LOW | 🔲 Not started |
+| F4.9 | Tournament bracket mode | BACKLOG | 🔲 Not started |
 
 ---
 
