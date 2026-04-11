@@ -1,4 +1,4 @@
-# 🃏 Poker Gacha Anime — Full Project Plan
+gi# 🃏 Poker Gacha Anime — Full Project Plan
 
 ## Project Overview
 
@@ -392,7 +392,7 @@ Card Back      : anime-art based on equipped skin
 
 | Phase | Goal | Completion | Notes |
 |-------|------|-----------|-------|
-| Phase 1 | Foundation | **~60%** | Auth backend done; Auth UI + Lobby UI + routing missing |
+| Phase 1 | Foundation | **✅ 100%** | All done — auth, lobby, routing, API client |
 | Phase 2 | Core Poker | **~40%** | Engine + UI components done; Socket.io not wired, no real pages |
 | Phase 3 | Gacha | **~10%** | Schema + types only; service + routes + UI all missing |
 | Phase 4 | Polish | **0%** | Not started |
@@ -407,19 +407,19 @@ Card Back      : anime-art based on equipped skin
 
 ### 🟢 Phase 1 — Foundation (~3-4 วัน)
 **Goal**: ตั้ง project + login + เข้า lobby
-**Status (Apr 2026)**: ~60% complete
+**Status (Apr 2026)**: ✅ 100% complete
 
 | ID | Feature | Dev | Est. | Status |
 |----|---------|-----|------|--------|
 | F1.1 | Monorepo setup (Turborepo + Bun + Vite) | A | 0.5 วัน | ✅ Done |
 | F1.2 | DB schema + Drizzle setup + Docker Postgres | B | 0.5 วัน | ✅ Done |
 | F1.3 | Auth API (register/login/logout/me) — Better-Auth | B | 1 วัน | ✅ Done |
-| F1.4 | Auth UI (Login page, Register page) | A | 1 วัน | 🔲 Not started |
-| F1.5 | Lobby page + Room list + Create room | A | 1 วัน | 🔲 Not started |
+| F1.4 | Auth UI (Login page, Register page) | A | 1 วัน | ✅ Done — `pages/LoginPage.tsx`, `pages/RegisterPage.tsx` |
+| F1.5 | Lobby page + Room list + Create room | A | 1 วัน | ✅ Done — `pages/LobbyPage.tsx`, `components/lobby/*` |
 | F1.6 | Rooms API (CRUD) | B | 0.5 วัน | ✅ Done |
 | F1.7 | Docker Compose (web + server + postgres) | B | 0.5 วัน | ✅ Done |
-| F1.8 | React Router 7 routing setup + `lib/api.ts` client | A | 0.5 วัน | 🔲 Not started |
-| F1.9 | TanStack Query provider + auth/room query hooks | A | 0.5 วัน | 🔲 Not started |
+| F1.8 | React Router 7 routing setup + `lib/api.ts` client | A | 0.5 วัน | ✅ Done — `App.tsx` rewritten with `BrowserRouter` + routes |
+| F1.9 | TanStack Query provider + auth/room query hooks | A | 0.5 วัน | ✅ Done — `main.tsx` QueryClientProvider + `hooks/useAuth.ts`, `hooks/useRooms.ts` |
 
 ---
 
@@ -445,9 +445,9 @@ Card Back      : anime-art based on equipped skin
 | F2.14 | **[NEW]** Wire Socket.io into `apps/server/src/index.ts` | B | 0.5 วัน | 🔲 Not started — **BLOCKER** |
 | F2.15 | **[NEW]** `game:yourCards` private emit per-socket | B | 0.5 วัน | 🔲 Not started |
 | F2.16 | **[NEW]** `GamePage.tsx` wired to real socket events | A | 1 วัน | 🔲 Not started |
-| F2.17 | **[NEW]** Multi-round dealer rotation after each hand | B | 0.5 วัน | 🔲 Not started |
-| F2.18 | **[NEW]** Side pot calculation for all-in scenarios | B | 1 วัน | 🔲 Not started |
-| F2.19 | **[NEW]** Socket reconnect — restore game state | B | 0.5 วัน | 🔲 Not started |
+| F2.17 | **[NEW]** Multi-round dealer rotation after each hand | B | 0.5 วัน | ✅ Done |
+| F2.18 | **[NEW]** Side pot calculation for all-in scenarios | B | 1 วัน | ✅ Done (resolveShowdown algorithm) |
+| F2.19 | **[NEW]** Socket reconnect — restore game state | B | 0.5 วัน | ✅ Done |
 | F2.20 | **[NEW]** Game history saved to DB on showdown | B | 0.5 วัน | 🔲 Not started |
 | F2.21 | **[NEW]** Framer Motion card deal animation | A | 1 วัน | 🔲 Not started |
 | F2.22 | **[NEW]** Chip arc animation (bet → pot) | A | 0.5 วัน | 🔲 Not started |

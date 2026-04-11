@@ -1,9 +1,8 @@
-# Use official Bun image
 FROM oven/bun:1.1 AS base
-WORKDIR /usr/src/app
+WORKDIR /app
 
-# Copy root config files
-COPY package.json ./
+# Copy workspace manifest and lockfile
+COPY package.json bun.lock* ./
 
 # Copy shared package
 COPY packages/shared ./packages/shared
@@ -11,10 +10,9 @@ COPY packages/shared ./packages/shared
 # Copy web app
 COPY apps/web ./apps/web
 
-# Install dependencies from root for the whole monorepo
+# Install all workspace dependencies
 RUN bun install
 
-# Final stage for web
-WORKDIR /usr/src/app/apps/web
+WORKDIR /app/apps/web
 EXPOSE 5173
-CMD ["bun", "run", "dev", "--host"]
+CMD ["bun", "run", "dev", "--host", "0.0.0.0"]

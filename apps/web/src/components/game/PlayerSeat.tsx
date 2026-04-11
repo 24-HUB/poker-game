@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { PlayerState, Card } from '../../../../packages/shared/src/types/game';
+import { PlayerState, Card } from '@poker/shared';
 import { useGameStore } from '../../stores/gameStore';
 import { useAuthStore } from '../../stores/authStore';
 

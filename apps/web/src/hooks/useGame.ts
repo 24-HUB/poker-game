@@ -2,10 +2,10 @@ import { useEffect, useCallback } from 'react';
 import { socket } from '../lib/socket';
 import { useGameStore } from '../stores/gameStore';
 import { useAuthStore } from '../stores/authStore';
-import { GameAction } from '../../../packages/shared/src/types/socket';
+import { GameAction } from '@poker/shared';
 
 export function useGame() {
-  const { setGameState, setMyCards, setConnectionStatus, setIsMyTurn, setWinners, setHandDescriptions } = useGameStore();
+  const { setGameState, setMyCards, setConnectionStatus, setIsMyTurn, setWinners, setHandDescriptions, setChipUpdates, setAwaitingNextRound } = useGameStore();
   const { user } = useAuthStore();
 
   useEffect(() => {
@@ -26,12 +26,21 @@ export function useGame() {
       // Reset state when a new hand begins
       setWinners([]);
       setHandDescriptions({});
+      setChipUpdates({});
       setMyCards([]);
+      setAwaitingNextRound(false);
     });
 
-    socket.on('game:ended', ({ winners, handDescriptions }) => {
+    socket.on('game:ended', ({ winners, handDescriptions, chipUpdates }) => {
       setWinners(winners);
       setHandDescriptions(handDescriptions);
+      if (chipUpdates) {
+        setChipUpdates(chipUpdates);
+        const myId = useAuthStore.getState().user?.id;
+        if (myId && chipUpdates[myId] !== undefined) {
+          useAuthStore.getState().updateChips(chipUpdates[myId]);
+        }
+      }
     });
 
     socket.on('game:playerTurn', (playerId, timeout) => {
@@ -47,7 +56,7 @@ export function useGame() {
       socket.off('game:ended');
       socket.off('game:playerTurn');
     };
-  }, [setGameState, setMyCards, setConnectionStatus, setIsMyTurn, setWinners, setHandDescriptions]);
+  }, [setGameState, setMyCards, setConnectionStatus, setIsMyTurn, setWinners, setHandDescriptions, setChipUpdates, setAwaitingNextRound]);
 
   const sendAction = useCallback((action: GameAction) => {
     socket.emit('game:action', action);
@@ -63,6 +72,7 @@ export function useGame() {
 
   const ready = useCallback(() => {
     socket.emit('room:ready');
+    useGameStore.getState().setAwaitingNextRound(true);
   }, []);
 
   return { sendAction, sendChat, joinRoom, ready };

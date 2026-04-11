@@ -47,7 +47,7 @@ export interface ServerToClientEvents {
   /** Fired when community cards are dealt (flop, turn, river) */
   'game:newStreet': (cards: Card[]) => void;
   /** Fired when the hand ends and winners are determined */
-  'game:ended': (payload: { winners: { playerId: string; amount: number }[]; handDescriptions: Record<string, string> }) => void;
+  'game:ended': (payload: { winners: { playerId: string; amount: number }[]; handDescriptions: Record<string, string>; chipUpdates: Record<string, number> }) => void;
   /** Fired to notify a specific player it is their turn */
   'game:playerTurn': (playerId: string, timeoutMs: number) => void;
   /** Fired when a chat message is received from any player */

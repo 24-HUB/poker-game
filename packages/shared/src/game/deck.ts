@@ -26,7 +26,9 @@ export function shuffle(deck: Card[], seed?: number): Card[] {
   const shuffled = [...deck];
   const random = seed !== undefined 
     ? () => {
-        const x = Math.sin(seed++) * 10000;
+        let s = seed as number;
+        const x = Math.sin(s++) * 10000;
+        seed = s;
         return x - Math.floor(x);
       }
     : Math.random;

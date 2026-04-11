@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   db:
     image: postgres:16
@@ -13,6 +11,11 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d poker_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   server:
     build:
@@ -26,8 +29,11 @@ services:
       DATABASE_URL: postgres://postgres:password@db:5432/poker_db
       PORT: 3000
       BETTER_AUTH_SECRET: your_very_secret_key
+      # Allow requests from both 5173 and 5174 (Vite picks first available port)
+      CORS_ORIGIN: "http://localhost:5173,http://localhost:5174"
     depends_on:
-      - db
+      db:
+        condition: service_healthy
 
   web:
     build:
@@ -38,6 +44,7 @@ services:
     ports:
       - "5173:5173"
     environment:
+      # Browser connects to server on the HOST's localhost:3000
       VITE_API_URL: http://localhost:3000
     depends_on:
       - server

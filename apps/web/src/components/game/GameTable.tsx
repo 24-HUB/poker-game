@@ -10,7 +10,7 @@ const SUIT_SYMBOL: Record<string, string> = { hearts: '♥', diamonds: '♦', cl
 const SUIT_COLOR: Record<string, string>  = { hearts: 'text-red-400', diamonds: 'text-red-400', clubs: 'text-white', spades: 'text-white' };
 
 const GameTable: React.FC = () => {
-  const { gameState, winners, handDescriptions } = useGameStore();
+  const { gameState, winners, handDescriptions, chipUpdates, awaitingNextRound } = useGameStore();
   const { ready } = useGame();
 
   if (!gameState) return <div className="text-white" data-testid="waiting-message">Waiting for game to start...</div>;
@@ -120,20 +120,44 @@ const GameTable: React.FC = () => {
                       </span>
                     </div>
                   )}
+                  {/* Chip delta */}
+                  {chipUpdates[player.id] !== undefined && (() => {
+                    // startChips = chips remaining after bets + total contributed this hand
+                    const startChips = player.chips + player.totalContributed;
+                    const delta = chipUpdates[player.id] - startChips;
+                    const isPos = delta >= 0;
+                    return (
+                      <div className="font-jetbrains text-xs">
+                        <span className={isPos ? 'text-green-400' : 'text-red-400'}>
+                          {isPos ? '+' : ''}{delta.toLocaleString()} ◈
+                        </span>
+                      </div>
+                    );
+                  })()}
                 </motion.div>
               ))}
             </div>
 
             {/* Play Again */}
-            <motion.button
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ delay: 0.8 }}
-              onClick={ready}
-              className="mt-4 bg-[#ffd700] text-[#0f0c29] font-cinzel font-bold uppercase tracking-widest px-10 py-3 rounded-lg text-lg hover:bg-yellow-400 transition-colors shadow-[0_0_20px_rgba(255,215,0,0.4)]"
-            >
-              Play Again
-            </motion.button>
+            {awaitingNextRound ? (
+              <motion.p
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                className="mt-4 font-cinzel text-white/60 tracking-widest text-sm"
+              >
+                Waiting for others…
+              </motion.p>
+            ) : (
+              <motion.button
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                transition={{ delay: 0.8 }}
+                onClick={ready}
+                className="mt-4 bg-[#ffd700] text-[#0f0c29] font-cinzel font-bold uppercase tracking-widest px-10 py-3 rounded-lg text-lg hover:bg-yellow-400 transition-colors shadow-[0_0_20px_rgba(255,215,0,0.4)]"
+              >
+                Play Again
+              </motion.button>
+            )}
           </motion.div>
         )}
       </AnimatePresence>

@@ -1,5 +1,5 @@
 import { io, Socket } from 'socket.io-client';
-import { ClientToServerEvents, ServerToClientEvents } from '../../../packages/shared/src/types/socket';
+import { ClientToServerEvents, ServerToClientEvents } from '@poker/shared';
 
 const URL = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 

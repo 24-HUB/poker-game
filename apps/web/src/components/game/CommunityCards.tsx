@@ -1,6 +1,6 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Card } from '../../../../packages/shared/src/types/game';
+import { Card } from '@poker/shared';
 
 interface CommunityCardsProps {
   cards: Card[];
