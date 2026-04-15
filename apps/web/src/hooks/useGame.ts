@@ -6,7 +6,7 @@ import { GameAction } from '@poker/shared';
 import { playChipSound, playWinSound, playCardFlipSound } from '../lib/sounds';
 
 export function useGame() {
-  const { setGameState, setMyCards, setConnectionStatus, setIsMyTurn, setWinners, setHandDescriptions, setChipUpdates, setAwaitingNextRound, setTurnTimer, tickTurn, clearTurn, setLastBetEvent } = useGameStore();
+  const { setGameState, setMyCards, setConnectionStatus, setIsMyTurn, setWinners, setHandDescriptions, setChipUpdates, setAwaitingNextRound, setTurnTimer, tickTurn, clearTurn, setLastBetEvent, setWaitingPlayers } = useGameStore();
   const { user } = useAuthStore();
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
@@ -25,6 +25,7 @@ export function useGame() {
   useEffect(() => {
     socket.on('connect', () => setConnectionStatus('connected'));
     socket.on('disconnect', () => { setConnectionStatus('disconnected'); stopTick(); clearTurn(); });
+    socket.on('room:updated', (players) => setWaitingPlayers(players));
     
     socket.on('game:stateUpdate', (state) => {
       const prev = useGameStore.getState().gameState;
@@ -91,6 +92,7 @@ export function useGame() {
     return () => {
       socket.off('connect');
       socket.off('disconnect');
+      socket.off('room:updated');
       socket.off('game:stateUpdate');
       socket.off('game:yourCards');
       socket.off('game:started');
@@ -98,7 +100,7 @@ export function useGame() {
       socket.off('game:playerTurn');
       stopTick();
     };
-  }, [setGameState, setMyCards, setConnectionStatus, setIsMyTurn, setWinners, setHandDescriptions, setChipUpdates, setAwaitingNextRound, setTurnTimer, tickTurn, clearTurn, setLastBetEvent, startTick, stopTick]);
+  }, [setGameState, setMyCards, setConnectionStatus, setIsMyTurn, setWinners, setHandDescriptions, setChipUpdates, setAwaitingNextRound, setTurnTimer, tickTurn, clearTurn, setLastBetEvent, setWaitingPlayers, startTick, stopTick]);
 
   const sendAction = useCallback((action: GameAction) => {
     socket.emit('game:action', action);

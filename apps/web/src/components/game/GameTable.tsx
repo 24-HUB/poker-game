@@ -96,7 +96,7 @@ const GameTable: React.FC = () => {
   }
 
 
-  if (!gameState) return <div className="text-white" data-testid="waiting-message">Waiting for game to start...</div>;
+  if (!gameState) return null;
 
   const isShowdown = gameState.phase === 'showdown';
 

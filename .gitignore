@@ -32,8 +32,10 @@ tsconfig.tsbuildinfo
 .env.development
 .env.production
 .env.staging
-# keep the example template
+.env.prod
+# keep the example templates
 !.env.example
+!.env.prod.example
 
 # ── Database / Drizzle ────────────────────────────────────────────────────────
 drizzle/

@@ -32,8 +32,8 @@ export interface ClientToServerEvents {
  * Events sent from the server to the client.
  */
 export interface ServerToClientEvents {
-  /** Fired when the room state changes (e.g., player list) */
-  'room:updated': (players: PlayerState[]) => void;
+  /** Fired when the waiting room player list changes (join / leave) */
+  'room:updated': (players: { id: string; username: string; chips: number }[]) => void;
   /** Fired when a new player joins the room */
   'room:playerJoined': (player: PlayerState) => void;
   /** Fired when a player leaves the room */

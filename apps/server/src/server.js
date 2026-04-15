@@ -244,7 +244,7 @@ io.on('connection', async (socket) => {
   socket.data.user = user;
   console.log('Connected:', user.username, '(' + socket.id + ')');
 
-  socket.on('room:join', (roomId) => {
+  socket.on('room:join', async (roomId) => {
     socket.join(roomId);
     socket.data.roomId = roomId;
     if (!gameRooms.has(roomId)) {
@@ -257,6 +257,12 @@ io.on('connection', async (socket) => {
       const privateCards = room.state.players.find(p => p.id === user.id)?.cards ?? [];
       if (privateCards.length) socket.emit('game:yourCards', privateCards);
     }
+    // Broadcast updated waiting room player list to everyone in the room
+    const socketsInRoom = await io.in(roomId).fetchSockets();
+    const waitingPlayers = socketsInRoom
+      .map(s => ({ id: s.data.user?.id, username: s.data.user?.username, chips: s.data.user?.chips ?? 1000 }))
+      .filter(p => p.id);
+    io.to(roomId).emit('room:updated', waitingPlayers);
     console.log(user.username, 'joined room', roomId);
   });
 
@@ -387,6 +393,13 @@ io.on('connection', async (socket) => {
     const room = gameRooms.get(roomId);
     if (room) room.socketMap.delete(user.id);
     socket.data.roomId = null;
+    // Broadcast updated player list
+    io.in(roomId).fetchSockets().then(sockets => {
+      const waitingPlayers = sockets
+        .map(s => ({ id: s.data.user?.id, username: s.data.user?.username, chips: s.data.user?.chips ?? 1000 }))
+        .filter(p => p.id);
+      io.to(roomId).emit('room:updated', waitingPlayers);
+    });
   });
 
   socket.on('disconnect', () => {
@@ -395,6 +408,13 @@ io.on('connection', async (socket) => {
     if (roomId) {
       const room = gameRooms.get(roomId);
       if (room) room.socketMap.delete(user.id);
+      // Broadcast updated player list after disconnect
+      io.in(roomId).fetchSockets().then(sockets => {
+        const waitingPlayers = sockets
+          .map(s => ({ id: s.data.user?.id, username: s.data.user?.username, chips: s.data.user?.chips ?? 1000 }))
+          .filter(p => p.id);
+        io.to(roomId).emit('room:updated', waitingPlayers);
+      });
     }
   });
 });

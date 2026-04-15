@@ -25,6 +25,7 @@
     "types": ["vite/client"],
 
     /* Path aliases for workspace package */
+    "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {
       "@poker/shared": ["../../packages/shared/src/index.ts"],

@@ -17,6 +17,9 @@ interface GameStore {
   setTurnTimer: (playerId: string, ms: number) => void;
   tickTurn: () => void;
   clearTurn: () => void;
+  // Waiting room — players currently connected before a game starts
+  waitingPlayers: { id: string; username: string; chips: number }[];
+  setWaitingPlayers: (players: { id: string; username: string; chips: number }[]) => void;
   // Chip animation trigger: playerId → amount just bet
   lastBetEvent: { playerId: string; amount: number } | null;
   setLastBetEvent: (ev: { playerId: string; amount: number } | null) => void;
@@ -43,6 +46,8 @@ export const useGameStore = create<GameStore>((set) => ({
   turnPlayerId: null,
   turnSecondsLeft: 0,
   turnTotalSeconds: 30,
+  waitingPlayers: [],
+  setWaitingPlayers: (waitingPlayers) => set({ waitingPlayers }),
   lastBetEvent: null,
   setTurnTimer: (playerId, ms) => set({ turnPlayerId: playerId, turnSecondsLeft: Math.ceil(ms / 1000), turnTotalSeconds: Math.ceil(ms / 1000) }),
   tickTurn: () => set((s) => ({ turnSecondsLeft: Math.max(0, s.turnSecondsLeft - 1) })),
@@ -56,5 +61,5 @@ export const useGameStore = create<GameStore>((set) => ({
   setHandDescriptions: (handDescriptions) => set({ handDescriptions }),
   setChipUpdates: (chipUpdates) => set({ chipUpdates }),
   setAwaitingNextRound: (awaitingNextRound) => set({ awaitingNextRound }),
-  reset: () => set({ gameState: null, myCards: [], isMyTurn: false, winners: [], handDescriptions: {}, chipUpdates: {}, awaitingNextRound: false, turnPlayerId: null, turnSecondsLeft: 0, lastBetEvent: null }),
+  reset: () => set({ gameState: null, myCards: [], isMyTurn: false, winners: [], handDescriptions: {}, chipUpdates: {}, awaitingNextRound: false, turnPlayerId: null, turnSecondsLeft: 0, lastBetEvent: null, waitingPlayers: [] }),
 }));
