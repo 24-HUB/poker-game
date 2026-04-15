@@ -8,6 +8,8 @@ import { authMiddleware, type AuthContext } from "../middleware/auth";
 
 const roomsRouter = new Hono<AuthContext>();
 
+const roomIdParamSchema = z.object({ id: z.string().uuid() });
+
 // GET /api/rooms: list rooms with status='waiting', include player count
 roomsRouter.get("/", async (c) => {
   const waitingRooms = await db.query.rooms.findMany({
@@ -49,10 +51,10 @@ roomsRouter.post("/", authMiddleware, zValidator("json", createRoomSchema), asyn
 });
 
 // GET /api/rooms/:id: room details
-roomsRouter.get("/:id", async (c) => {
-  const id = c.req.param("id");
+roomsRouter.get("/:id", zValidator("param", roomIdParamSchema), async (c) => {
+  const { id } = c.req.valid("param");
   const room = await db.query.rooms.findFirst({
-    where: eq(rooms.id, id as any),
+    where: eq(rooms.id, id),
   });
 
   if (!room) {
@@ -63,12 +65,12 @@ roomsRouter.get("/:id", async (c) => {
 });
 
 // DELETE /api/rooms/:id: only host can delete, requires auth
-roomsRouter.delete("/:id", authMiddleware, async (c) => {
-  const id = c.req.param("id");
+roomsRouter.delete("/:id", authMiddleware, zValidator("param", roomIdParamSchema), async (c) => {
+  const { id } = c.req.valid("param");
   const user = c.get("user");
 
   const room = await db.query.rooms.findFirst({
-    where: eq(rooms.id, id as any),
+    where: eq(rooms.id, id),
   });
 
   if (!room) {
@@ -79,7 +81,7 @@ roomsRouter.delete("/:id", authMiddleware, async (c) => {
     return c.json({ error: "Only the host can delete this room", code: "FORBIDDEN" }, 403);
   }
 
-  await db.delete(rooms).where(eq(rooms.id, id as any));
+  await db.delete(rooms).where(eq(rooms.id, id));
 
   return c.json({ success: true });
 });

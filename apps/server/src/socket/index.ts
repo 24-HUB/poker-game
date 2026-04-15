@@ -4,11 +4,12 @@ import { ClientToServerEvents, ServerToClientEvents } from "../../../packages/sh
 import { registerRoomHandlers } from "./handlers/room";
 import { registerGameHandlers } from "./handlers/game";
 import { gameManager } from "./gameManager";
+import { type AuthSocket } from "./types";
 
 export function setupSocketIO(server: any) {
   const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
     cors: {
-      origin: "http://localhost:5173",
+      origin: process.env.CORS_ORIGIN ?? "http://localhost:5173",
       credentials: true,
     },
   });
@@ -35,11 +36,12 @@ export function setupSocketIO(server: any) {
   });
 
   io.on("connection", (socket) => {
-    const user = (socket as any).user;
+    const authSocket = socket as unknown as AuthSocket;
+    const user = authSocket.user;
     console.log(`User connected: ${user.username} (${socket.id})`);
 
-    registerRoomHandlers(io, socket);
-    registerGameHandlers(io, socket);
+    registerRoomHandlers(io, authSocket);
+    registerGameHandlers(io, authSocket);
 
     socket.on("disconnect", () => {
       console.log(`User disconnected: ${user.username}`);

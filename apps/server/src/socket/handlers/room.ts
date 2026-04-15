@@ -1,20 +1,21 @@
-import { Server, Socket } from "socket.io";
+import { Server } from "socket.io";
 import { ClientToServerEvents, ServerToClientEvents } from "../../../../../packages/shared/src/types/socket";
 import { gameManager } from "../gameManager";
 import { PlayerState } from "../../../../../packages/shared/src/types/game";
+import { type AuthSocket } from "../types";
 
 // In-memory room management for ready states
 const readyPlayers: Map<string, Set<string>> = new Map(); // roomId -> Set of userIds
 
 export function registerRoomHandlers(
   io: Server<ClientToServerEvents, ServerToClientEvents>,
-  socket: Socket<ClientToServerEvents, ServerToClientEvents>
+  socket: AuthSocket
 ) {
-  const user = (socket as any).user;
+  const user = socket.user;
 
   socket.on("room:join", (roomId: string) => {
     socket.join(roomId);
-    (socket as any).roomId = roomId;
+    socket.roomId = roomId;
 
     // Notify others in the room
     const player: PlayerState = {
@@ -35,17 +36,17 @@ export function registerRoomHandlers(
   });
 
   socket.on("room:leave", () => {
-    const roomId = (socket as any).roomId;
+    const roomId = socket.roomId;
     if (roomId) {
       socket.leave(roomId);
       readyPlayers.get(roomId)?.delete(user.id);
       io.to(roomId).emit("room:playerLeft", user.id);
-      delete (socket as any).roomId;
+      socket.roomId = undefined;
     }
   });
 
   socket.on("room:ready", async () => {
-    const roomId = (socket as any).roomId;
+    const roomId = socket.roomId;
     if (!roomId) return;
 
     if (!readyPlayers.has(roomId)) {

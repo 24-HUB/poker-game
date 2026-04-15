@@ -1,5 +1,6 @@
-import { Server, Socket } from "socket.io";
+import { Server } from "socket.io";
 import { ClientToServerEvents, ServerToClientEvents, GameAction } from "../../../../../packages/shared/src/types/socket";
+import { type AuthSocket } from "../types";
 import { gameManager } from "../gameManager";
 import { db } from "../../db";
 import { users } from "../../db/schema";
@@ -7,12 +8,12 @@ import { eq, sql } from "drizzle-orm";
 
 export function registerGameHandlers(
   io: Server<ClientToServerEvents, ServerToClientEvents>,
-  socket: Socket<ClientToServerEvents, ServerToClientEvents>
+  socket: AuthSocket
 ) {
-  const user = (socket as any).user;
+  const user = socket.user;
 
   socket.on("game:action", async (action: GameAction) => {
-    const roomId = (socket as any).roomId;
+    const roomId = socket.roomId;
     if (!roomId) return;
 
     try {
@@ -69,7 +70,7 @@ export function registerGameHandlers(
   });
 
   socket.on("game:chat", (message: string) => {
-    const roomId = (socket as any).roomId;
+    const roomId = socket.roomId;
     if (!roomId) return;
     io.to(roomId).emit("game:chatMessage", user.id, user.username, message);
   });
