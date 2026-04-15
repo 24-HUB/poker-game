@@ -83,3 +83,10 @@ desktop.ini
 .cache/
 tmp/
 temp/
+*.bak
+
+# ── Build / CI log artifacts ──────────────────────────────────────────────────
+build_log.txt
+build_server.txt
+build_web_log.txt
+up_log.txt
