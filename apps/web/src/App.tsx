@@ -7,6 +7,9 @@ import LobbyPage from './pages/LobbyPage';
 import GamePage from './pages/GamePage';
 import GachaPage from './pages/GachaPage';
 import CollectionPage from './pages/CollectionPage';
+import LeaderboardPage from './pages/LeaderboardPage';
+import ProfilePage from './pages/ProfilePage';
+import GameHistoryPage from './pages/GameHistoryPage';
 
 function RequireAuth({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((s) => s.user);
@@ -48,6 +51,38 @@ function App() {
           element={
             <RequireAuth>
               <CollectionPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/leaderboard"
+          element={
+            <RequireAuth>
+              <LeaderboardPage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/profile/:id"
+          element={
+            <RequireAuth>
+              <ProfilePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/profile"
+          element={
+            <RequireAuth>
+              <ProfilePage />
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/history"
+          element={
+            <RequireAuth>
+              <GameHistoryPage />
             </RequireAuth>
           }
         />

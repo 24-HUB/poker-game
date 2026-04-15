@@ -101,7 +101,7 @@ describe("Auth API Integration Tests", () => {
 
       expect(response.status).not.toBe(200);
       const data = await response.json();
-      expect(data.code).toBe("USER_EXISTS");
+      expect(data.error.code).toBe("USER_EXISTS");
     });
   });
 
@@ -152,7 +152,7 @@ describe("Auth API Integration Tests", () => {
 
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.code).toBe("INVALID_CREDENTIALS");
+      expect(data.error.code).toBe("INVALID_CREDENTIALS");
     });
 
     test("should reject login with invalid password", async () => {
@@ -167,7 +167,7 @@ describe("Auth API Integration Tests", () => {
 
       expect(response.status).toBe(401);
       const data = await response.json();
-      expect(data.code).toBe("INVALID_CREDENTIALS");
+      expect(data.error.code).toBe("INVALID_CREDENTIALS");
     });
 
     test("should return user with starting chips (1000)", async () => {

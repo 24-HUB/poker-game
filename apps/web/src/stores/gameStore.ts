@@ -10,6 +10,16 @@ interface GameStore {
   handDescriptions: Record<string, string>;
   chipUpdates: Record<string, number>;
   awaitingNextRound: boolean;
+  // Turn timer
+  turnPlayerId: string | null;
+  turnSecondsLeft: number;
+  turnTotalSeconds: number;
+  setTurnTimer: (playerId: string, ms: number) => void;
+  tickTurn: () => void;
+  clearTurn: () => void;
+  // Chip animation trigger: playerId → amount just bet
+  lastBetEvent: { playerId: string; amount: number } | null;
+  setLastBetEvent: (ev: { playerId: string; amount: number } | null) => void;
   setGameState: (state: GameState | null) => void;
   setMyCards: (cards: Card[]) => void;
   setIsMyTurn: (isMyTurn: boolean) => void;
@@ -30,6 +40,14 @@ export const useGameStore = create<GameStore>((set) => ({
   handDescriptions: {},
   chipUpdates: {},
   awaitingNextRound: false,
+  turnPlayerId: null,
+  turnSecondsLeft: 0,
+  turnTotalSeconds: 30,
+  lastBetEvent: null,
+  setTurnTimer: (playerId, ms) => set({ turnPlayerId: playerId, turnSecondsLeft: Math.ceil(ms / 1000), turnTotalSeconds: Math.ceil(ms / 1000) }),
+  tickTurn: () => set((s) => ({ turnSecondsLeft: Math.max(0, s.turnSecondsLeft - 1) })),
+  clearTurn: () => set({ turnPlayerId: null, turnSecondsLeft: 0 }),
+  setLastBetEvent: (lastBetEvent) => set({ lastBetEvent }),
   setGameState: (gameState) => set({ gameState }),
   setMyCards: (myCards) => set({ myCards }),
   setIsMyTurn: (isMyTurn) => set({ isMyTurn }),
@@ -38,5 +56,5 @@ export const useGameStore = create<GameStore>((set) => ({
   setHandDescriptions: (handDescriptions) => set({ handDescriptions }),
   setChipUpdates: (chipUpdates) => set({ chipUpdates }),
   setAwaitingNextRound: (awaitingNextRound) => set({ awaitingNextRound }),
-  reset: () => set({ gameState: null, myCards: [], isMyTurn: false, winners: [], handDescriptions: {}, chipUpdates: {}, awaitingNextRound: false }),
+  reset: () => set({ gameState: null, myCards: [], isMyTurn: false, winners: [], handDescriptions: {}, chipUpdates: {}, awaitingNextRound: false, turnPlayerId: null, turnSecondsLeft: 0, lastBetEvent: null }),
 }));

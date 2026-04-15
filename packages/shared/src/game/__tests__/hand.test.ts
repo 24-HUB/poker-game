@@ -10,7 +10,7 @@ describe("Hand Evaluator - All Hands", () => {
         { suit: "diamonds", rank: "K" },
         { suit: "spades", rank: "Q" },
         { suit: "clubs", rank: "J" },
-        { suit: "hearts", rank: 10 },
+        { suit: "hearts", rank: 9 },
         { suit: "spades", rank: 2 },
         { suit: "clubs", rank: 3 },
       ];
@@ -28,7 +28,7 @@ describe("Hand Evaluator - All Hands", () => {
         { suit: "spades", rank: "K" },
         { suit: "clubs", rank: "Q" },
         { suit: "hearts", rank: "J" },
-        { suit: "spades", rank: 10 },
+        { suit: "spades", rank: 7 },
         { suit: "clubs", rank: 2 },
       ];
       const result = evaluateHand(cards);
@@ -198,9 +198,9 @@ describe("Hand Evaluator - All Hands", () => {
         { suit: "hearts", rank: "A" },
         { suit: "hearts", rank: "K" },
         { suit: "hearts", rank: "Q" },
-        { suit: "hearts", rank: "J" },
-        { suit: "hearts", rank: 10 },
         { suit: "hearts", rank: 9 },
+        { suit: "hearts", rank: 7 },
+        { suit: "hearts", rank: 3 },
         { suit: "spades", rank: 2 },
       ];
       const result = evaluateHand(cards);
@@ -372,6 +372,7 @@ describe("Hand Evaluator - All Hands", () => {
       const result = evaluateHand(cards);
       expect(result.rank).toBe(HandRank.royal_flush);
     });
+  });
 
   describe("Winner Determination", () => {
     test("Two players with same pair, different kicker", () => {
@@ -474,3 +475,4 @@ describe("Hand Evaluator - All Hands", () => {
     });
   });
 });
+

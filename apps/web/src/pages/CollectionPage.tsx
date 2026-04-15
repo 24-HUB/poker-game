@@ -1,9 +1,10 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { useQuery } from '@tanstack/react-query';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { collectionApi, type GachaItem } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
+import { useCollectionStore } from '../stores/collectionStore';
 
 const RARITY_STYLE: Record<string, { border: string; glow: string; label: string; bg: string }> = {
   R:   { border: 'border-blue-400/40',   glow: '',                                         label: 'text-blue-300',  bg: 'bg-blue-900/20' },
@@ -21,20 +22,52 @@ type FilterRarity = 'all' | 'R' | 'SR' | 'SSR';
 type FilterType   = 'all' | 'card_skin' | 'avatar' | 'table_theme';
 
 function CollectionCard({ item, index }: { item: GachaItem; index: number }) {
+  const qc = useQueryClient();
+  const { setEquippedCardSkinId } = useCollectionStore();
   const s = RARITY_STYLE[item.rarity];
+
+  const { mutate: toggleEquip, isPending } = useMutation({
+    mutationFn: () => collectionApi.equip(item.id),
+    onSuccess: (data) => {
+      setEquippedCardSkinId(data.equippedCardSkin);
+      qc.invalidateQueries({ queryKey: ['collection'] });
+    },
+  });
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
       animate={{ opacity: 1, scale: 1 }}
       transition={{ delay: index * 0.04 }}
-      className={`relative flex flex-col items-center justify-center rounded-xl border-2 ${s.border} ${s.glow} ${s.bg} p-4 w-28 h-40`}
+      className={`relative flex flex-col items-center justify-center rounded-xl border-2 ${s.border} ${s.glow} ${s.bg} p-3 w-28 h-44`}
     >
+      {/* Equipped badge */}
+      {item.isEquipped && (
+        <span className="absolute top-1 left-2 text-[9px] font-cinzel font-bold text-[#ffd700] uppercase tracking-wider">
+          ✦ On
+        </span>
+      )}
       <span className={`absolute top-1.5 right-2 font-cinzel text-xs font-bold ${s.label}`}>
         {item.rarity}
       </span>
       <span className="text-4xl mb-2">{ITEM_TYPE_ICON[item.type] ?? '✨'}</span>
       <p className="font-cinzel text-white text-xs text-center leading-tight">{item.name}</p>
       <p className="text-white/40 text-[10px] text-center mt-1 capitalize">{item.type.replace('_', ' ')}</p>
+
+      {/* Equip button — only for card_skin */}
+      {item.type === 'card_skin' && (
+        <button
+          onClick={() => toggleEquip()}
+          disabled={isPending}
+          className={`mt-2 text-[9px] font-cinzel uppercase tracking-wider px-3 py-1 rounded-full border transition-colors w-full text-center
+            ${item.isEquipped
+              ? 'border-[#ffd700]/60 text-[#ffd700]/80 hover:bg-red-900/30 hover:border-red-400/50 hover:text-red-300'
+              : 'border-white/20 text-white/50 hover:border-[#ffd700]/50 hover:text-[#ffd700]'
+            } disabled:opacity-40`}
+        >
+          {item.isEquipped ? 'Unequip' : 'Equip'}
+        </button>
+      )}
     </motion.div>
   );
 }
@@ -42,6 +75,7 @@ function CollectionCard({ item, index }: { item: GachaItem; index: number }) {
 export default function CollectionPage() {
   const navigate = useNavigate();
   const { user } = useAuthStore();
+  const { setEquippedCardSkinId } = useCollectionStore();
   const [rarityFilter, setRarityFilter] = useState<FilterRarity>('all');
   const [typeFilter,   setTypeFilter]   = useState<FilterType>('all');
 
@@ -49,6 +83,11 @@ export default function CollectionPage() {
     queryKey: ['collection'],
     queryFn: collectionApi.list,
   });
+
+  // Sync equipped skin id into store after data loads (not inside select — that runs during render)
+  useEffect(() => {
+    if (data) setEquippedCardSkinId(data.equippedCardSkin);
+  }, [data, setEquippedCardSkinId]);
 
   const items = (data?.items ?? []).filter(
     (i) =>

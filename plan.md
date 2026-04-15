@@ -394,8 +394,8 @@ Card Back      : anime-art based on equipped skin
 |-------|------|-----------|-------|
 | Phase 1 | Foundation | **✅ 100%** | All done — auth, lobby, routing, API client |
 | Phase 2 | Core Poker | **~40%** | Engine + UI components done; Socket.io not wired, no real pages |
-| Phase 3 | Gacha | **~10%** | Schema + types only; service + routes + UI all missing |
-| Phase 4 | Polish | **0%** | Not started |
+| Phase 3 | Gacha | **~85%** | UI + hooks + store done; equip-skin-to-game-cards still pending |
+| Phase 4 | Polish | **~40%** | Leaderboard, Profile, Chat done; animations, daily reward, sound still pending |
 
 ### ⛔ Critical Blockers (fix before anything else)
 
@@ -466,8 +466,8 @@ Card Back      : anime-art based on equipped skin
 | F3.4 | Gacha banner page UI (`GachaPage.tsx`) | A | 0.5 วัน | 🔲 Not started |
 | F3.5 | Pull animation (portal → card flip) Framer Motion | A | 1.5 วัน | 🔲 Not started |
 | F3.6 | Collection page + grid + equip toggle | A | 1 วัน | 🔲 Not started |
-| F3.7 | `collectionStore.ts` Zustand store | A | 0.5 วัน | 🔲 Not started |
-| F3.8 | `useGacha.ts` hook + pity counter display | A | 0.5 วัน | 🔲 Not started |
+| F3.7 | `collectionStore.ts` Zustand store | A | 0.5 วัน | ✅ Done — `stores/collectionStore.ts` |
+| F3.8 | `useGacha.ts` hook + pity counter display | A | 0.5 วัน | ✅ Done — `hooks/useGacha.ts` |
 | F3.9 | No-duplicate SSR logic in `gachaService.ts` | B | 0.5 วัน | 🔲 Not started |
 | F3.10 | Equip skin applied to card backs in game | A+B | 1 วัน | 🔲 Not started |
 
@@ -479,10 +479,10 @@ Card Back      : anime-art based on equipped skin
 
 | ID | Feature | Priority | Status |
 |----|---------|----------|--------|
-| F4.1 | Leaderboard (chip ranking top 50) | HIGH | 🔲 Not started |
-| F4.2 | Player profile page + stats | HIGH | 🔲 Not started |
+| F4.1 | Leaderboard (chip ranking top 50) | HIGH | ✅ Done — `pages/LeaderboardPage.tsx` + `/api/leaderboard` |
+| F4.2 | Player profile page + stats | HIGH | ✅ Done — `pages/ProfilePage.tsx` + `/api/users/:id` |
 | F4.3 | Daily login reward (chip bonus) | MEDIUM | 🔲 Not started |
-| F4.4 | In-game chat (Socket.io) | MEDIUM | 🔲 Not started |
+| F4.4 | In-game chat (Socket.io) | MEDIUM | ✅ Done — chat widget in `GameTable.tsx` |
 | F4.5 | Card deal + chip move animations | MEDIUM | 🔲 Not started |
 | F4.6 | Sound effects (card flip, chip clink) | LOW | 🔲 Not started |
 | F4.7 | Game history page | LOW | 🔲 Not started |

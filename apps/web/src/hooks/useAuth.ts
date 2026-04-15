@@ -1,15 +1,18 @@
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { authApi } from '../lib/api';
 import { useAuthStore } from '../stores/authStore';
+import { useCollectionStore } from '../stores/collectionStore';
 
 export function useMe() {
   const { setUser } = useAuthStore();
+  const { setDailyReward } = useCollectionStore.getState();
 
   return useQuery({
     queryKey: ['auth', 'me'],
     queryFn: async () => {
-      const { user } = await authApi.me();
+      const { user, dailyReward } = await authApi.me();
       setUser(user);
+      if (dailyReward) setDailyReward(dailyReward);
       return user;
     },
     retry: false,

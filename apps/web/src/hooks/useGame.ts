@@ -1,18 +1,53 @@
-import { useEffect, useCallback } from 'react';
+import { useEffect, useCallback, useRef } from 'react';
 import { socket } from '../lib/socket';
 import { useGameStore } from '../stores/gameStore';
 import { useAuthStore } from '../stores/authStore';
 import { GameAction } from '@poker/shared';
+import { playChipSound, playWinSound, playCardFlipSound } from '../lib/sounds';
 
 export function useGame() {
-  const { setGameState, setMyCards, setConnectionStatus, setIsMyTurn, setWinners, setHandDescriptions, setChipUpdates, setAwaitingNextRound } = useGameStore();
+  const { setGameState, setMyCards, setConnectionStatus, setIsMyTurn, setWinners, setHandDescriptions, setChipUpdates, setAwaitingNextRound, setTurnTimer, tickTurn, clearTurn, setLastBetEvent } = useGameStore();
   const { user } = useAuthStore();
+  const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Tick the turn countdown every second
+  const startTick = useCallback(() => {
+    if (tickRef.current) clearInterval(tickRef.current);
+    tickRef.current = setInterval(() => {
+      tickTurn();
+    }, 1000);
+  }, [tickTurn]);
+
+  const stopTick = useCallback(() => {
+    if (tickRef.current) { clearInterval(tickRef.current); tickRef.current = null; }
+  }, []);
 
   useEffect(() => {
     socket.on('connect', () => setConnectionStatus('connected'));
-    socket.on('disconnect', () => setConnectionStatus('disconnected'));
+    socket.on('disconnect', () => { setConnectionStatus('disconnected'); stopTick(); clearTurn(); });
     
     socket.on('game:stateUpdate', (state) => {
+      const prev = useGameStore.getState().gameState;
+
+      // Detect bet events: find player whose totalContributed increased
+      if (prev) {
+        for (const player of state.players) {
+          const prevPlayer = prev.players.find((p: { id: string }) => p.id === player.id);
+          if (prevPlayer && player.totalContributed > prevPlayer.totalContributed) {
+            const diff = player.totalContributed - prevPlayer.totalContributed;
+            setLastBetEvent({ playerId: player.id, amount: diff });
+            playChipSound();
+            // Clear after animation (800ms)
+            setTimeout(() => useGameStore.getState().setLastBetEvent(null), 800);
+            break;
+          }
+        }
+        // New community cards → card flip sound
+        if (state.communityCards.length > prev.communityCards.length) {
+          playCardFlipSound();
+        }
+      }
+
       setGameState(state);
       const myId = useAuthStore.getState().user?.id;
       setIsMyTurn(state.phase !== 'showdown' && !!myId && state.activePlayerId === myId);
@@ -20,20 +55,25 @@ export function useGame() {
 
     socket.on('game:yourCards', (cards) => {
       setMyCards(cards);
+      playCardFlipSound();
     });
 
     socket.on('game:started', () => {
-      // Reset state when a new hand begins
       setWinners([]);
       setHandDescriptions({});
       setChipUpdates({});
       setMyCards([]);
       setAwaitingNextRound(false);
+      clearTurn();
+      stopTick();
     });
 
     socket.on('game:ended', ({ winners, handDescriptions, chipUpdates }) => {
       setWinners(winners);
       setHandDescriptions(handDescriptions);
+      clearTurn();
+      stopTick();
+      if (winners && winners.length > 0) playWinSound();
       if (chipUpdates) {
         setChipUpdates(chipUpdates);
         const myId = useAuthStore.getState().user?.id;
@@ -43,8 +83,9 @@ export function useGame() {
       }
     });
 
-    socket.on('game:playerTurn', (playerId, timeout) => {
-      console.log(`Player turn: ${playerId}, timeout: ${timeout}`);
+    socket.on('game:playerTurn', (playerId: string, timeoutMs: number) => {
+      setTurnTimer(playerId, timeoutMs);
+      startTick();
     });
 
     return () => {
@@ -55,12 +96,15 @@ export function useGame() {
       socket.off('game:started');
       socket.off('game:ended');
       socket.off('game:playerTurn');
+      stopTick();
     };
-  }, [setGameState, setMyCards, setConnectionStatus, setIsMyTurn, setWinners, setHandDescriptions, setChipUpdates, setAwaitingNextRound]);
+  }, [setGameState, setMyCards, setConnectionStatus, setIsMyTurn, setWinners, setHandDescriptions, setChipUpdates, setAwaitingNextRound, setTurnTimer, tickTurn, clearTurn, setLastBetEvent, startTick, stopTick]);
 
   const sendAction = useCallback((action: GameAction) => {
     socket.emit('game:action', action);
-  }, []);
+    clearTurn();
+    stopTick();
+  }, [clearTurn, stopTick]);
 
   const sendChat = useCallback((msg: string) => {
     socket.emit('game:chat', msg);

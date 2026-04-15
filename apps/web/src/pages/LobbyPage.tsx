@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { motion, AnimatePresence } from 'framer-motion';
 import { RoomList } from '../components/lobby/RoomList';
 import { CreateRoomModal } from '../components/lobby/CreateRoomModal';
 import { Button } from '../components/ui/Button';
 import { useRooms } from '../hooks/useRooms';
 import { useLogout } from '../hooks/useAuth';
 import { useAuthStore } from '../stores/authStore';
+import { useCollectionStore } from '../stores/collectionStore';
 
 export default function LobbyPage() {
   const navigate = useNavigate();
@@ -13,6 +15,7 @@ export default function LobbyPage() {
   const { data: rooms = [], isLoading, refetch } = useRooms();
   const { mutate: logout, isPending: loggingOut } = useLogout();
   const [showCreate, setShowCreate] = useState(false);
+  const { dailyReward, setDailyReward } = useCollectionStore();
 
   const handleLogout = () => {
     logout(undefined, { onSuccess: () => navigate('/login') });
@@ -41,6 +44,28 @@ export default function LobbyPage() {
 
       {/* Main */}
       <main className="max-w-3xl mx-auto px-6 py-8">
+        {/* Daily reward banner */}
+        <AnimatePresence>
+          {dailyReward && (
+            <motion.div
+              key="daily-reward"
+              initial={{ opacity: 0, y: -32 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -32 }}
+              className="bg-[#ffd700]/15 border border-[#ffd700]/40 rounded-xl px-5 py-3 flex items-center justify-between mb-6"
+            >
+              <span className="font-cinzel text-[#ffd700] text-sm">
+                🎁 Daily Login Bonus: +◈ {dailyReward.chips.toLocaleString()} chips!
+              </span>
+              <button
+                onClick={() => setDailyReward(null)}
+                className="text-white/40 hover:text-white text-xl leading-none ml-4"
+              >
+                ×
+              </button>
+            </motion.div>
+          )}
+        </AnimatePresence>
         {/* Section header */}
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -59,8 +84,8 @@ export default function LobbyPage() {
 
         <RoomList rooms={rooms} isLoading={isLoading} />
 
-        {/* Quick-nav to Gacha / Collection */}
-        <div className="mt-8 flex gap-4 justify-center">
+        {/* Quick-nav to Gacha / Collection / Leaderboard / Profile */}
+        <div className="mt-8 flex gap-4 justify-center flex-wrap">
           <button
             onClick={() => navigate('/gacha')}
             className="flex flex-col items-center gap-1 border border-[#ffd700]/30 rounded-xl px-6 py-3 text-[#ffd700] hover:bg-[#ffd700]/10 transition-colors"
@@ -74,6 +99,27 @@ export default function LobbyPage() {
           >
             <span className="text-2xl">📦</span>
             <span className="font-cinzel text-xs uppercase tracking-widest">Collection</span>
+          </button>
+          <button
+            onClick={() => navigate('/leaderboard')}
+            className="flex flex-col items-center gap-1 border border-white/20 rounded-xl px-6 py-3 text-white/60 hover:bg-white/5 hover:text-white transition-colors"
+          >
+            <span className="text-2xl">🏆</span>
+            <span className="font-cinzel text-xs uppercase tracking-widest">Leaderboard</span>
+          </button>
+          <button
+            onClick={() => navigate('/profile')}
+            className="flex flex-col items-center gap-1 border border-white/20 rounded-xl px-6 py-3 text-white/60 hover:bg-white/5 hover:text-white transition-colors"
+          >
+            <span className="text-2xl">👤</span>
+            <span className="font-cinzel text-xs uppercase tracking-widest">Profile</span>
+          </button>
+          <button
+            onClick={() => navigate('/history')}
+            className="flex flex-col items-center gap-1 border border-white/20 rounded-xl px-6 py-3 text-white/60 hover:bg-white/5 hover:text-white transition-colors"
+          >
+            <span className="text-2xl">📜</span>
+            <span className="font-cinzel text-xs uppercase tracking-widest">History</span>
           </button>
         </div>
       </main>

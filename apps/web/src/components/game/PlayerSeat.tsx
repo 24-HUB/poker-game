@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { PlayerState, Card } from '@poker/shared';
 import { useGameStore } from '../../stores/gameStore';
 import { useAuthStore } from '../../stores/authStore';
+import { useCollectionStore } from '../../stores/collectionStore';
 
 interface PlayerSeatProps {
   player: PlayerState;
@@ -13,6 +14,15 @@ interface PlayerSeatProps {
 const SUIT_SYMBOL: Record<string, string> = { hearts: '♥', diamonds: '♦', clubs: '♣', spades: '♠' };
 const SUIT_COLOR: Record<string, string> = { hearts: 'text-red-500', diamonds: 'text-red-500', clubs: 'text-gray-900', spades: 'text-gray-900' };
 
+// Card skin gradients keyed by item id
+const SKIN_GRADIENT: Record<string, string> = {
+  r001: 'linear-gradient(135deg,#6b0000 0%,#c0392b 100%)',
+  r002: 'linear-gradient(135deg,#0a1e5a 0%,#2574b0 100%)',
+  r003: 'linear-gradient(135deg,#0b2e13 0%,#1a5c2a 100%)',
+  r004: 'linear-gradient(135deg,#050514 0%,#1a1a4a 50%,#050514 100%)',
+  r005: 'linear-gradient(135deg,#3b2a0a 0%,#b8860b 100%)',
+};
+
 const CardFace: React.FC<{ card: Card }> = ({ card }) => (
   <div className="w-9 h-14 bg-white rounded border border-black/20 shadow-md flex flex-col items-start justify-between p-0.5 select-none">
     <span className={`text-xs font-bold leading-none ${SUIT_COLOR[card.suit]}`}>{card.rank}</span>
@@ -21,12 +31,20 @@ const CardFace: React.FC<{ card: Card }> = ({ card }) => (
   </div>
 );
 
-const CardBack: React.FC = () => (
-  <div className="w-9 h-14 rounded border border-[#ffd700]/30 shadow-md flex items-center justify-center"
-       style={{ background: 'repeating-linear-gradient(45deg,#0f0c29,#0f0c29 4px,#1a1540 4px,#1a1540 8px)' }}>
-    <span className="text-[#ffd700] text-base opacity-50">◈</span>
-  </div>
-);
+const CardBack: React.FC = () => {
+  const equippedId = useCollectionStore((s) => s.equippedCardSkinId);
+  const bg = equippedId && SKIN_GRADIENT[equippedId]
+    ? SKIN_GRADIENT[equippedId]
+    : 'repeating-linear-gradient(45deg,#0f0c29,#0f0c29 4px,#1a1540 4px,#1a1540 8px)';
+  return (
+    <div
+      className="w-9 h-14 rounded border border-[#ffd700]/30 shadow-md flex items-center justify-center"
+      style={{ background: bg }}
+    >
+      <span className="text-[#ffd700] text-base opacity-60">◈</span>
+    </div>
+  );
+};
 
 const PlayerSeat: React.FC<PlayerSeatProps> = ({ player, index, totalSeats }) => {
   const { myCards, gameState } = useGameStore();
@@ -89,15 +107,16 @@ const PlayerSeat: React.FC<PlayerSeatProps> = ({ player, index, totalSeats }) =>
           {isMe ? `${player.username} (You)` : player.username}
         </div>
 
-        {/* Cards */}
+        {/* Cards — deal animation: flip from back-face + slide from above */}
         {player.status !== 'folded' && (
-          <div className="flex gap-1 mt-1">
+          <div className="flex gap-1 mt-1" style={{ perspective: '600px' }}>
             {displayCards.map((card, i) => (
               <motion.div
-                key={i}
-                initial={{ y: -30, opacity: 0 }}
-                animate={{ y: 0, opacity: 1 }}
-                transition={{ delay: i * 0.1 }}
+                key={card ? `${card.suit}-${card.rank}` : `back-${i}`}
+                initial={{ y: -60, rotateY: 180, opacity: 0 }}
+                animate={{ y: 0, rotateY: 0, opacity: 1 }}
+                transition={{ delay: i * 0.15, duration: 0.55, type: 'spring', stiffness: 120, damping: 14 }}
+                style={{ transformStyle: 'preserve-3d' }}
               >
                 {card ? <CardFace card={card} /> : <CardBack />}
               </motion.div>

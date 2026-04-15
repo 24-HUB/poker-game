@@ -47,7 +47,7 @@ export const authApi = {
   logout: () =>
     request<{ success: boolean }>('/api/auth/logout', { method: 'POST' }),
 
-  me: () => request<{ user: AuthUser }>('/api/auth/me'),
+  me: () => request<{ user: AuthUser; dailyReward: { chips: number } | null }>('/api/auth/me'),
 };
 
 // ── Rooms ─────────────────────────────────────────────────────────────────────
@@ -97,6 +97,7 @@ export type GachaItem = {
   imageUrl: string;
   description: string;
   isNew?: boolean;
+  isEquipped?: boolean;
 };
 
 export type GachaBanner = {
@@ -124,8 +125,68 @@ export const gachaApi = {
 
 // ── Collection ────────────────────────────────────────────────────────────────
 
-export type CollectionResponse = { items: GachaItem[] };
+export type CollectionResponse = { items: GachaItem[]; equippedCardSkin: string | null };
 
 export const collectionApi = {
   list: () => request<CollectionResponse>('/api/collection'),
+
+  equip: (itemId: string) =>
+    request<{ equipped: boolean; itemId: string; equippedCardSkin: string | null }>(
+      `/api/collection/${itemId}/equip`,
+      { method: 'PATCH' },
+    ),
+};
+
+// ── Leaderboard ───────────────────────────────────────────────────────────────
+
+export type LeaderboardEntry = {
+  id: string;
+  username: string;
+  chips: number;
+  wins: number;
+  handsPlayed: number;
+};
+
+export type LeaderboardResponse = { leaderboard: LeaderboardEntry[] };
+
+export const leaderboardApi = {
+  top50: () => request<LeaderboardResponse>('/api/leaderboard'),
+};
+
+// ── Users / Profile ───────────────────────────────────────────────────────────
+
+export type UserProfile = {
+  user: {
+    id: string;
+    username: string;
+    chips: number;
+    avatarUrl: string | null;
+  };
+  stats: {
+    wins: number;
+    handsPlayed: number;
+    collectionCount: number;
+  };
+};
+
+export const usersApi = {
+  getProfile: (id: string) => request<UserProfile>(`/api/users/${id}`),
+};
+
+// ── Game History ──────────────────────────────────────────────────────────────
+
+export type GameHistoryEntry = {
+  id: string;
+  roomId: string;
+  roundNumber: number;
+  winners: { playerId: string; amount: number }[];
+  pot: number;
+  playerSummary: { id: string; username: string; finalChips: number; status: string }[];
+  handDescriptions: Record<string, string>;
+  playedAt: string;
+};
+
+export const historyApi = {
+  list: () => request<{ history: GameHistoryEntry[] }>('/api/history'),
+  get: (id: string) => request<GameHistoryEntry>(`/api/history/${id}`),
 };

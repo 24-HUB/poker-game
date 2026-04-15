@@ -98,32 +98,49 @@ export class GameEngine {
           player.chips -= callAmount;
         }
         break;
-      case 'raise':
+      case 'raise': {
         const minRaise = newState.currentBet * 2;
         if (action.amount < minRaise && action.amount < player.chips + player.bet) {
           throw new Error(`Minimum raise is ${minRaise}`);
         }
         const raiseAmount = action.amount - player.bet;
-        if (player.chips < raiseAmount) {
-          throw new Error("Insufficient chips for raise");
+        if (player.chips <= raiseAmount) {
+          // All-in raise: bet all remaining chips
+          player.bet += player.chips;
+          newState.pot += player.chips;
+          player.totalContributed += player.chips;
+          player.chips = 0;
+          newState.currentBet = Math.max(newState.currentBet, player.bet);
+        } else {
+          player.bet += raiseAmount;
+          newState.pot += raiseAmount;
+          player.totalContributed += raiseAmount;
+          player.chips -= raiseAmount;
+          newState.currentBet = action.amount;
         }
-        player.bet += raiseAmount;
-        newState.pot += raiseAmount;
-        player.totalContributed += raiseAmount;
-        player.chips -= raiseAmount;
-        newState.currentBet = action.amount;
-        
-        // When someone raises, others must act again
+
+        // Set all_in status if chips exhausted
+        if (player.chips === 0) {
+          player.status = 'all_in';
+        }
+
+        // After a raise everyone (including the raiser) must act again;
+        // the raiser's turn will come back around and they'll check.
         newState.players.forEach(p => {
-          if (p.id !== player.id && p.status === 'active') {
+          if (p.status === 'active' || p.status === 'all_in') {
             p.hasActed = false;
           }
         });
         break;
+      }
     }
 
     player.isTurn = false;
-    player.hasActed = true;
+    // For raises, hasActed was reset to false for everyone (including raiser)
+    // so the raiser comes back around to close action. For all other actions, mark as acted.
+    if (action.type !== 'raise') {
+      player.hasActed = true;
+    }
 
     // Check if betting round is over
     if (this.isBettingRoundOver(newState)) {

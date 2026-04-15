@@ -1,16 +1,22 @@
-# GitHub Copilot — Project Instructions
+# Project Coding Standards
 
-See **[AGENTS.md](../AGENTS.md)** for full project context, tech stack, coding standards, and rules.
+## Testing
+- Write tests before code (TDD)
+- For bugs: write a failing test first, then fix (Prove-It pattern)
+- Test hierarchy: unit > integration > e2e (use the lowest level that captures the behavior)
+- Run `npm test` after every change
 
----
+## Code Quality
+- Review across five axes: correctness, readability, architecture, security, performance
+- Every PR must pass: lint, type check, tests, build
+- No secrets in code or version control
 
-## Copilot-Specific Behaviour
+## Implementation
+- Build in small, verifiable increments
+- Each increment: implement → test → verify → commit
+- Never mix formatting changes with behavior changes
 
-- When suggesting completions in `apps/server`, prefer Bun + Hono patterns over Express
-- When completing Socket.io handlers, always infer types from `packages/shared/src/types/socket.ts`
-- Use `pnpm` — never suggest `npm` or `yarn` commands
-- Suggest Drizzle query builder syntax, never raw SQL strings
-- For new React components, scaffold with Tailwind v4 utility classes matching the project color palette:
-  - Background: `bg-[#0f0c29]`
-  - Gold accent: `text-[#ffd700]`
-  - Table felt: `bg-[#1a6b3c]`
+## Boundaries
+- Always: Run tests before commits, validate user input
+- Ask first: Database schema changes, new dependencies
+- Never: Commit secrets, remove failing tests, skip verification
