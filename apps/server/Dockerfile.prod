@@ -1,0 +1,12 @@
+FROM oven/bun:1.2 AS base
+WORKDIR /app
+
+COPY package.json bun.lock* ./
+COPY packages/shared ./packages/shared
+COPY apps/server ./apps/server
+
+RUN bun install
+
+WORKDIR /app/apps/server
+EXPOSE 3000
+CMD ["bun", "run", "src/server.js"]

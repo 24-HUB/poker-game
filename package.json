@@ -1,0 +1,17 @@
+{
+  "name": "poker-monorepo",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:server": "bun --filter server dev",
+    "dev:web": "bun --filter web dev",
+    "db:migrate": "bun --filter server migrate",
+    "db:push": "bun --filter server push"
+  },
+  "devDependencies": {
+    "typescript": "^5.7.0"
+  }
+}

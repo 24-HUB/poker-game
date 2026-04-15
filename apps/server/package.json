@@ -1,0 +1,28 @@
+{
+  "name": "@poker/server",
+  "version": "1.0.0",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "dev": "bun --hot src/server.js",
+    "migrate": "bun src/db/migrate.ts",
+    "push": "drizzle-kit push"
+  },
+  "dependencies": {
+    "@hono/zod-validator": "^0.2.0",
+    "@poker/shared": "workspace:*",
+    "better-auth": "^1.0.0",
+    "body-parser": "^2.2.2",
+    "cors": "^2.8.5",
+    "drizzle-orm": "^0.30.0",
+    "drizzle-zod": "^0.5.1",
+    "express": "^4",
+    "hono": "^4.0.0",
+    "postgres": "^3.4.0",
+    "socket.io": "^4.7.0",
+    "zod": "^3.22.0"
+  },
+  "devDependencies": {
+    "drizzle-kit": "^0.20.0"
+  }
+}

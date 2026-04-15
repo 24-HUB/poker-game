@@ -1,0 +1,56 @@
+## Production Docker Compose
+## Usage:
+##   1. cp .env.prod.example .env.prod
+##   2. Fill in real values in .env.prod (NEVER commit it)
+##   3. docker compose -f docker-compose.prod.yml up -d --build
+
+services:
+  db:
+    image: postgres:16
+    container_name: poker-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: poker_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d poker_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  server:
+    build:
+      context: .
+      dockerfile: apps/server/Dockerfile.prod
+    container_name: poker-server
+    restart: always
+    ports:
+      - "3000:3000"
+    environment:
+      DATABASE_URL: ${DATABASE_URL}
+      PORT: 3000
+      BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
+      CORS_ORIGIN: ${CORS_ORIGIN}
+      NODE_ENV: production
+    depends_on:
+      db:
+        condition: service_healthy
+
+  web:
+    build:
+      context: .
+      dockerfile: apps/web/Dockerfile.prod
+      args:
+        VITE_API_URL: ${VITE_API_URL}
+    container_name: poker-web
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+
+volumes:
+  postgres_data:

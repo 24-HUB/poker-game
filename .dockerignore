@@ -1,0 +1,15 @@
+node_modules
+apps/*/node_modules
+packages/*/node_modules
+dist
+**/dist
+**/.turbo
+**/.vite
+**/test-results
+**/playwright-report
+**/*.log
+.bun
+.git
+.env
+.env.*
+!.env.example
