@@ -16,9 +16,11 @@ describe("Auth API Integration Tests", () => {
 
   describe("POST /api/auth/register", () => {
     test("should register a new user successfully", async () => {
+      const ts = Date.now();
       const userData = {
         ...validUserData,
-        email: `test_${Date.now()}@example.com`,
+        username: `testuser_${ts}`,
+        email: `test_${ts}@example.com`,
       };
 
       const response = await fetch(`${API_BASE}/register`, {
@@ -80,9 +82,11 @@ describe("Auth API Integration Tests", () => {
     });
 
     test("should prevent duplicate email registration", async () => {
+      const ts = Date.now();
       const userData = {
         ...validUserData,
-        email: `duplicate_${Date.now()}@example.com`,
+        username: `dupuser_${ts}`,
+        email: `duplicate_${ts}@example.com`,
       };
 
       // First registration
@@ -110,13 +114,14 @@ describe("Auth API Integration Tests", () => {
     let testPassword = "TestPassword123";
 
     beforeEach(async () => {
-      // Create a test user
-      testEmail = `login_test_${Date.now()}@example.com`;
+      // Create a test user with a unique username to avoid DB unique constraint conflicts
+      const ts = Date.now();
+      testEmail = `login_test_${ts}@example.com`;
       await fetch(`${API_BASE}/register`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          username: "logintest",
+          username: `logintest_${ts}`,
           email: testEmail,
           password: testPassword,
         }),

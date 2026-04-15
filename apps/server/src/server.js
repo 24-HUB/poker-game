@@ -108,6 +108,9 @@ app.post('/api/auth/register', async (req, res) => {
     const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
     if (existing.length > 0)
       return res.status(409).json({ error: { code: 'USER_EXISTS', message: 'User already exists' } });
+    const existingUsername = await db.select({ id: users.id }).from(users).where(eq(users.username, username)).limit(1);
+    if (existingUsername.length > 0)
+      return res.status(409).json({ error: { code: 'USER_EXISTS', message: 'Username already taken' } });
     const [user] = await db.insert(users)
       .values({ username, email, passwordHash: hashPassword(password) })
       .returning();
