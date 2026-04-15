@@ -22,17 +22,19 @@ export function registerGameHandlers(
       if (state.phase === 'showdown') {
          const result = gameManager.resolveShowdown(roomId);
          if (result) {
-            // Update DB chips with accurate net change
-            for (const p of state.players) {
-               const winAmount = result.payouts.get(p.id) || 0;
-               const netChange = winAmount - p.totalContributed;
-               
-               if (netChange !== 0) {
-                 await db.update(users)
-                   .set({ chips: sql`${users.chips} + ${netChange}` })
-                   .where(eq(users.id, p.id));
+            // Update DB chips atomically — all players in one transaction
+            await db.transaction(async (tx) => {
+               for (const p of state.players) {
+                  const winAmount = result.payouts.get(p.id) || 0;
+                  const netChange = winAmount - p.totalContributed;
+
+                  if (netChange !== 0) {
+                     await tx.update(users)
+                        .set({ chips: sql`${users.chips} + ${netChange}` })
+                        .where(eq(users.id, p.id));
+                  }
                }
-            }
+            });
 
             // Emit game end
             const winners = Array.from(result.payouts.entries()).map(([playerId, amount]: [any, any]) => ({

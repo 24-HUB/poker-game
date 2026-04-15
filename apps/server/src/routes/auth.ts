@@ -45,7 +45,8 @@ authRouter.post("/register", zValidator("json", registerSchema), async (c) => {
       headers: c.req.raw.headers,
     });
 
-    return c.json({ user: newUser, session });
+    const { passwordHash: _, ...safeUser } = newUser;
+    return c.json({ user: safeUser, session });
   } catch (error) {
     return c.json({ error: "Registration failed", code: "REGISTRATION_ERROR" }, 500);
   }
@@ -75,7 +76,8 @@ authRouter.post("/login", zValidator("json", loginSchema), async (c) => {
     headers: c.req.raw.headers,
   });
 
-  return c.json({ user, session: sessionResponse });
+  const { passwordHash: _, ...safeUser } = user;
+  return c.json({ user: safeUser, session: sessionResponse });
 });
 
 // POST /api/auth/logout

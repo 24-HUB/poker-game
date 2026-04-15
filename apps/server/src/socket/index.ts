@@ -17,12 +17,6 @@ export function setupSocketIO(server: any) {
 
   // Auth Middleware
   io.use(async (socket, next) => {
-    // Check if we passed a mock user from the frontend
-    if (socket.handshake.auth && socket.handshake.auth.mockUser) {
-      (socket as any).user = socket.handshake.auth.mockUser;
-      return next();
-    }
-
     try {
       const session = await auth.api.getSession({
         headers: socket.handshake.headers as any,
