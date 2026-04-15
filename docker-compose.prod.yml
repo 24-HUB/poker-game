@@ -5,22 +5,6 @@
 ##   3. docker compose -f docker-compose.prod.yml up -d --build
 
 services:
-  db:
-    image: postgres:16
-    container_name: poker-db
-    restart: always
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: poker_db
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d poker_db"]
-      interval: 5s
-      timeout: 5s
-      retries: 10
-
   server:
     build:
       context: .
@@ -35,9 +19,6 @@ services:
       BETTER_AUTH_SECRET: ${BETTER_AUTH_SECRET}
       CORS_ORIGIN: ${CORS_ORIGIN}
       NODE_ENV: production
-    depends_on:
-      db:
-        condition: service_healthy
 
   web:
     build:
@@ -51,6 +32,3 @@ services:
       - "80:80"
     depends_on:
       - server
-
-volumes:
-  postgres_data:

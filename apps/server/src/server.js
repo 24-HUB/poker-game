@@ -4,7 +4,6 @@ import { Server as SocketIOServer } from 'socket.io';
 import cors from 'cors';
 import { createHash } from 'crypto';
 import { GameEngine } from '../../../packages/shared/src/game/engine.ts';
-import { initDb } from './db/init.ts';
 import { db } from './db/index.ts';
 import {
   users,
@@ -90,7 +89,18 @@ function getPublicState(state) {
 
 async function seedGachaItems() {
   for (const item of GACHA_ITEMS) {
-    await db.insert(gachaItemsTable).values(item).onConflictDoNothing();
+    await db.insert(gachaItemsTable)
+      .values(item)
+      .onConflictDoUpdate({
+        target: gachaItemsTable.id,
+        set: {
+          name: item.name,
+          type: item.type,
+          rarity: item.rarity,
+          imageUrl: item.imageUrl,
+          description: item.description,
+        },
+      });
   }
 }
 
@@ -593,7 +603,6 @@ app.get('/api/users/:id', async (req, res) => {
 // ─── Start ────────────────────────────────────────────────────────────────────
 
 async function startServer() {
-  await initDb();
   await seedGachaItems();
   const PORT = process.env.PORT || 3000;
   httpServer.listen(PORT, () => {

@@ -12,6 +12,7 @@
     "db:push": "bun --filter server push"
   },
   "devDependencies": {
+    "drizzle-orm": "^0.30.0",
     "typescript": "^5.7.0"
   }
 }

@@ -8,7 +8,21 @@ if (!databaseUrl) {
   throw new Error('DATABASE_URL environment variable is not set');
 }
 
-const migrationClient = postgres(databaseUrl, { max: 1 });
+const isRemote = databaseUrl.includes('supabase.co') ||
+  databaseUrl.includes('sslmode=require');
+
+// Parse URL components individually to avoid URL parsing issues with
+// special characters (e.g. $ in password) across different postgres.js versions
+const dbUrl = new URL(databaseUrl);
+const migrationClient = postgres({
+  host: dbUrl.hostname,
+  port: Number(dbUrl.port) || 5432,
+  database: dbUrl.pathname.slice(1),
+  username: dbUrl.username,
+  password: dbUrl.password,
+  ssl: isRemote ? 'require' : false,
+  max: 1,
+});
 const db = drizzle(migrationClient);
 
 async function runMigrations() {

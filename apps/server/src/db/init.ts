@@ -10,7 +10,10 @@ const DATABASE_URL = process.env.DATABASE_URL;
 export async function initDb(): Promise<void> {
   if (!DATABASE_URL) throw new Error('DATABASE_URL is not set');
 
-  const sql = postgres(DATABASE_URL, { max: 1 });
+  const isRemote = DATABASE_URL.includes('supabase.co') ||
+    DATABASE_URL.includes('sslmode=require');
+
+  const sql = postgres(DATABASE_URL, { max: 1, ssl: isRemote ? 'require' : false });
 
   try {
     // Enums — safe to call multiple times
