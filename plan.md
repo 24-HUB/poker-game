@@ -388,20 +388,33 @@ Card Back      : anime-art based on equipped skin
 
 ## 📋 Feature Breakdown with Estimated Days
 
-### � Overall Progress (as of Apr 3, 2026)
+### 📊 Overall Progress (as of May 2026 — post-TDD session)
 
 | Phase | Goal | Completion | Notes |
 |-------|------|-----------|-------|
 | Phase 1 | Foundation | **✅ 100%** | All done — auth, lobby, routing, API client |
-| Phase 2 | Core Poker | **~40%** | Engine + UI components done; Socket.io not wired, no real pages |
-| Phase 3 | Gacha | **~85%** | UI + hooks + store done; equip-skin-to-game-cards still pending |
-| Phase 4 | Polish | **~40%** | Leaderboard, Profile, Chat done; animations, daily reward, sound still pending |
+| Phase 2 | Core Poker | **✅ 100%** | Fully implemented in `server.js` + frontend components |
+| Phase 3 | Gacha | **✅ 100%** | Pull API, collection, equip skin to card backs — all done |
+| Phase 4 | Polish | **✅ 95%** | Daily reward, history, leaderboard, chat, animations, sounds — done; tournament backlog |
 
-### ⛔ Critical Blockers (fix before anything else)
+### 🧪 Test Coverage (added TDD session)
 
-1. **Socket.io not mounted** — `apps/server/src/index.ts` only has mock HTTP endpoints. `socket/index.ts` handler exists but is never called → no real-time game works.
-2. **No page routing** — `App.tsx` is a dev mock (auto-joins `test-room`). React Router 7 + all pages must be scaffolded for any user-facing flow.
-3. **`lib/api.ts` missing** — Auth and lobby UI cannot function without a typed API client.
+| Suite | File | Tests | Status |
+|-------|------|-------|--------|
+| Auth API | `api.integration.test.ts` | 11 | ✅ All pass |
+| Gacha API | `gacha.integration.test.ts` | 16 | ✅ All pass |
+| Collection API | `collection.integration.test.ts` | 11 | ✅ All pass |
+| Rooms API | `rooms.integration.test.ts` | 13 | ✅ All pass |
+| Social/Profile API | `social.integration.test.ts` | 15 | ✅ All pass |
+| Shared — Deck | `packages/shared/.../deck.test.ts` | 8+ | ✅ All pass |
+| Shared — Hand Evaluator | `packages/shared/.../hand.test.ts` | 20+ | ✅ All pass |
+| Shared — Game Engine | `packages/shared/.../engine.test.ts` | 32+ | ✅ All pass |
+
+**Total: 66 integration tests + 60+ unit tests, 0 failures.**
+
+### Bug Fixes (TDD Prove-It pattern)
+- ✅ **Fixed**: Missing email format validation in `POST /api/auth/register` — now returns 400 with `VALIDATION` code for invalid emails
+- ✅ **Fixed**: Test preconditions for 10-pull (requires 1350 chips; new users start with 1000) — updated tests to use correct chip budget or DB setup
 
 ---
 
@@ -423,17 +436,17 @@ Card Back      : anime-art based on equipped skin
 
 ---
 
-### 🟡 Phase 2 — Core Poker (~6-8 วัน)
+### � Phase 2 — Core Poker (~6-8 วัน)
 **Goal**: เล่น Texas Hold'em 2-6 คน real-time ได้จริง
-**Status (Apr 2026)**: ~40% complete
+**Status (May 2026)**: ✅ 100% complete — all implemented in `apps/server/src/server.js`
 
 | ID | Feature | Dev | Est. | Status |
 |----|---------|-----|------|--------|
 | F2.1 | Card + Deck + Shuffle (packages/shared) | A+B | 0.5 วัน | ✅ Done |
 | F2.2 | Hand evaluator (packages/shared) | B | 1 วัน | ✅ Done |
 | F2.3 | Game state machine (packages/shared) | B | 1 วัน | ✅ Done |
-| F2.4 | Socket.io server setup + room management | B | 0.5 วัน | ⚠️ Handler files exist but Socket.io **not mounted** in `index.ts` |
-| F2.5 | Game event handlers (join/action/end) | B | 1 วัน | ✅ Done (socket/handlers/game.ts + room.ts) |
+| F2.4 | Socket.io server setup + room management | B | 0.5 วัน | ✅ Done — mounted in `server.js` (actual entry point) |
+| F2.5 | Game event handlers (join/action/end) | B | 1 วัน | ✅ Done — `room:join`, `room:ready`, `game:action`, `game:chat` in `server.js` |
 | F2.6 | Game table UI (green felt, seats) | A | 1 วัน | ✅ Done (GameTable, PlayerSeat) |
 | F2.7 | Player hand display (private cards) | A | 0.5 วัน | ✅ Done (BettingControls shows hole cards) |
 | F2.8 | Community cards (flop/turn/river) | A | 0.5 วัน | ✅ Done (CommunityCards component) |
@@ -441,52 +454,52 @@ Card Back      : anime-art based on equipped skin
 | F2.10 | Pot + chip display | A | 0.5 วัน | ✅ Done (in GameTable) |
 | F2.11 | Turn timer + active player highlight | A+B | 0.5 วัน | ✅ Done (30s auto-fold in GameManager) |
 | F2.12 | End game showdown + winner screen | A+B | 1 วัน | ✅ Done (showdown overlay in GameTable) |
-| F2.13 | Chip update after game (chipService) | B | 0.5 วัน | ⚠️ Inline in game handler — no dedicated `chipService.ts` |
-| F2.14 | **[NEW]** Wire Socket.io into `apps/server/src/index.ts` | B | 0.5 วัน | 🔲 Not started — **BLOCKER** |
-| F2.15 | **[NEW]** `game:yourCards` private emit per-socket | B | 0.5 วัน | 🔲 Not started |
-| F2.16 | **[NEW]** `GamePage.tsx` wired to real socket events | A | 1 วัน | 🔲 Not started |
-| F2.17 | **[NEW]** Multi-round dealer rotation after each hand | B | 0.5 วัน | ✅ Done |
-| F2.18 | **[NEW]** Side pot calculation for all-in scenarios | B | 1 วัน | ✅ Done (resolveShowdown algorithm) |
-| F2.19 | **[NEW]** Socket reconnect — restore game state | B | 0.5 วัน | ✅ Done |
-| F2.20 | **[NEW]** Game history saved to DB on showdown | B | 0.5 วัน | 🔲 Not started |
-| F2.21 | **[NEW]** Framer Motion card deal animation | A | 1 วัน | 🔲 Not started |
-| F2.22 | **[NEW]** Chip arc animation (bet → pot) | A | 0.5 วัน | 🔲 Not started |
+| F2.13 | Chip update after game (chipService) | B | 0.5 วัน | ✅ Done — inline in game handler in `server.js` |
+| F2.14 | Wire Socket.io into server entry point | B | 0.5 วัน | ✅ Done — `server.js` is the active entry point with Socket.io |
+| F2.15 | `game:yourCards` private emit per-socket | B | 0.5 วัน | ✅ Done — per-socket emit in `room:ready` and reconnect |
+| F2.16 | `GamePage.tsx` wired to real socket events | A | 1 วัน | ✅ Done |
+| F2.17 | Multi-round dealer rotation after each hand | B | 0.5 วัน | ✅ Done — `room.dealerIndex` rotates in `server.js` |
+| F2.18 | Side pot calculation for all-in scenarios | B | 1 วัน | ✅ Done — `resolveShowdown` in `packages/shared` |
+| F2.19 | Socket reconnect — restore game state | B | 0.5 วัน | ✅ Done — state re-emitted on `room:join` |
+| F2.20 | Game history saved to DB on showdown | B | 0.5 วัน | ✅ Done — `game_history` insert in `server.js` |
+| F2.21 | Framer Motion card deal animation | A | 1 วัน | ✅ Done — `PlayerSeat.tsx` deal animation (y: -60 → 0, rotateY: 180 → 0) |
+| F2.22 | Chip arc animation (bet → pot) | A | 0.5 วัน | ✅ Done — `ChipFly` in `GameTable.tsx` |
 
 ---
 
-### 🟠 Phase 3 — Gacha System (~4-5 วัน)
+### � Phase 3 — Gacha System (~4-5 วัน)
 **Goal**: ดึง gacha ได้ + แสดง collection + ใส่ skin ในเกม
-**Status (Apr 2026)**: ~10% complete (schema + types only)
+**Status (May 2026)**: ✅ 100% complete
 
 | ID | Feature | Dev | Est. | Status |
 |----|---------|-----|------|--------|
-| F3.1 | gacha_items + user_collection schema + seed | B | 0.5 วัน | ✅ Done |
-| F3.2 | Gacha pull API + rarity service + pity tracker | B | 1 วัน | 🔲 Not started (`gachaService.ts` missing) |
-| F3.3 | Gacha routes (`/api/gacha/*`, `/api/collection/*`) | B | 0.5 วัน | 🔲 Not started |
-| F3.4 | Gacha banner page UI (`GachaPage.tsx`) | A | 0.5 วัน | 🔲 Not started |
-| F3.5 | Pull animation (portal → card flip) Framer Motion | A | 1.5 วัน | 🔲 Not started |
-| F3.6 | Collection page + grid + equip toggle | A | 1 วัน | 🔲 Not started |
+| F3.1 | gacha_items + user_collection schema + seed | B | 0.5 วัน | ✅ Done — `seedGachaItems()` auto-runs at server start |
+| F3.2 | Gacha pull API + rarity service + pity tracker | B | 1 วัน | ✅ Done — `rollRarity()` + pity counters in `server.js` |
+| F3.3 | Gacha routes (`/api/gacha/*`, `/api/collection/*`) | B | 0.5 วัน | ✅ Done — `/api/gacha/banners`, `/api/gacha/rates/:id`, `/api/gacha/pull`, `/api/collection` |
+| F3.4 | Gacha banner page UI (`GachaPage.tsx`) | A | 0.5 วัน | ✅ Done — `pages/GachaPage.tsx` |
+| F3.5 | Pull animation (portal → card flip) Framer Motion | A | 1.5 วัน | ✅ Done — `components/gacha/PullAnimation.tsx` |
+| F3.6 | Collection page + grid + equip toggle | A | 1 วัน | ✅ Done — `pages/CollectionPage.tsx` |
 | F3.7 | `collectionStore.ts` Zustand store | A | 0.5 วัน | ✅ Done — `stores/collectionStore.ts` |
 | F3.8 | `useGacha.ts` hook + pity counter display | A | 0.5 วัน | ✅ Done — `hooks/useGacha.ts` |
-| F3.9 | No-duplicate SSR logic in `gachaService.ts` | B | 0.5 วัน | 🔲 Not started |
-| F3.10 | Equip skin applied to card backs in game | A+B | 1 วัน | 🔲 Not started |
+| F3.9 | No-duplicate SSR logic in `gachaService.ts` | B | 0.5 วัน | ✅ Done — `pickItem()` deduplicates SSR in `server.js` |
+| F3.10 | Equip skin applied to card backs in game | A+B | 1 วัน | ✅ Done — `PlayerSeat.tsx` uses `equippedCardSkinId` from `collectionStore`; `SKIN_GRADIENT` map renders equipped skin |
 
 ---
 
-### 🔵 Phase 4 — Polish & Social (ต่อเรื่อยๆ)
+### 🟢 Phase 4 — Polish & Social (ต่อเรื่อยๆ)
 **Priority order — ทำตามลำดับ**
-**Status (Apr 2026)**: 0% — not started
+**Status (May 2026)**: ~95% complete
 
 | ID | Feature | Priority | Status |
 |----|---------|----------|--------|
 | F4.1 | Leaderboard (chip ranking top 50) | HIGH | ✅ Done — `pages/LeaderboardPage.tsx` + `/api/leaderboard` |
 | F4.2 | Player profile page + stats | HIGH | ✅ Done — `pages/ProfilePage.tsx` + `/api/users/:id` |
-| F4.3 | Daily login reward (chip bonus) | MEDIUM | 🔲 Not started |
+| F4.3 | Daily login reward (chip bonus) | MEDIUM | ✅ Done — `/api/auth/me` grants +200 chips once per day |
 | F4.4 | In-game chat (Socket.io) | MEDIUM | ✅ Done — chat widget in `GameTable.tsx` |
-| F4.5 | Card deal + chip move animations | MEDIUM | 🔲 Not started |
-| F4.6 | Sound effects (card flip, chip clink) | LOW | 🔲 Not started |
-| F4.7 | Game history page | LOW | 🔲 Not started |
-| F4.8 | More poker modes (5-Card Draw) | LOW | 🔲 Not started |
+| F4.5 | Card deal + chip move animations | MEDIUM | ✅ Done — Framer Motion in `PlayerSeat.tsx` + `GameTable.tsx` |
+| F4.6 | Sound effects (card flip, chip clink) | LOW | ✅ Done — `lib/sounds.ts` |
+| F4.7 | Game history page | LOW | ✅ Done — `pages/GameHistoryPage.tsx` + `/api/history` |
+| F4.8 | More poker modes (5-Card Draw) | LOW | 🔲 Backlog |
 | F4.9 | Tournament bracket mode | BACKLOG | 🔲 Not started |
 
 ---

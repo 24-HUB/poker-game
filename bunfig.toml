@@ -1,0 +1,3 @@
+[test]
+# Exclude Playwright e2e specs — those are run via `npx playwright test`
+ignore = ["**/tests/e2e/**", "**/*.spec.ts"]

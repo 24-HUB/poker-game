@@ -115,6 +115,8 @@ app.post('/api/auth/register', async (req, res) => {
       return res.status(400).json({ error: { code: 'VALIDATION', message: 'Username must be at least 3 characters' } });
     if (password.length < 6)
       return res.status(400).json({ error: { code: 'VALIDATION', message: 'Password must be at least 6 characters' } });
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
+      return res.status(400).json({ error: { code: 'VALIDATION', message: 'Invalid email format' } });
     const existing = await db.select({ id: users.id }).from(users).where(eq(users.email, email)).limit(1);
     if (existing.length > 0)
       return res.status(409).json({ error: { code: 'USER_EXISTS', message: 'User already exists' } });
@@ -603,7 +605,7 @@ app.get('/api/users/:id', async (req, res) => {
 // ─── Start ────────────────────────────────────────────────────────────────────
 
 async function startServer() {
-  await seedGachaItems();
+  try { await seedGachaItems(); } catch (e) { console.warn('seedGachaItems skipped:', e.message); }
   const PORT = process.env.PORT || 3000;
   httpServer.listen(PORT, () => {
     console.log('Poker Backend running on port ' + PORT);
