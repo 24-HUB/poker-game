@@ -1,10 +1,22 @@
-# Checkpoint — interactive lobby prototype
+# Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-26. Status: prototype reviewed; design-to-production implementation plan written for user review.
+Updated: 2026-09-26. Status: Task 1 complete on `codex/m0-m1-foundation`; paused at the mandatory usage checkpoint before Task 2.
 
 ## User intent and usage rule
 
-The user approved the visual direction and interactive lobby prototype, then requested the next design step or an implementation plan if the design was ready. The plan has now been written; production implementation has not begun. Save a checkpoint whenever remaining usage drops below 6%. A previous turn stopped at 3% and later resumed after reset. Latest reading at the start of the planning turn: five-hour remaining 58%, weekly remaining 93%. Never purchase or consume reset credits automatically.
+The user approved the M0/M1 implementation plan and requested inline execution. Work is limited to local implementation and deployment preparation; no cloud provisioning, live secrets, or production database operations are authorized. Save this checkpoint at every task boundary and whenever either remaining usage window drops below 6%. Latest execution-start reading: five-hour remaining 39%, weekly remaining 91%. Never purchase or consume reset credits automatically.
+
+## Active execution
+
+- Branch: `codex/m0-m1-foundation`, created from fetched `origin/dev` at `01f033d0`.
+- Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
+- Completed tasks: Task 1, bootable workspace and shared contracts.
+- Current task: paused before Task 2, approved responsive application shell.
+- Next action: after usage resets, verify branch/status and fetch `origin --prune`; load the Task 2 brief, then add the first failing lobby/dialog tests before UI implementation.
+- Verification: `pnpm check` passed all workspace typechecks, 7 tests, and Nest/contract/Next production builds. `pnpm --filter @poker/server check:auth-import` passed against compiled output. `git diff --check` passed with line-ending warnings only.
+- Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
+- Usage at checkpoint: five-hour remaining 1%, weekly remaining 85%. No reset credit was used.
+- Blockers: none for Task 2; Linux CI is required for final OpenNext bundle evidence.
 
 ## Approved direction
 
@@ -42,7 +54,7 @@ Node syntax checks and local asset-reference checks passed. Original plan.md rem
 
 No real backend, authentication, multiplayer, poker engine, economic transactions, or pulls. Sample balances and rooms are local demo data. Collection and Invitations are descriptive preview screens. This prototype does not replace the planned Next.js/NestJS production architecture.
 
-## Resume guidance
+## Previous prototype and resume guidance
 
 The prototype is complete within its demo scope and the user said it looks good. The visual direction is sufficient for implementation planning; the remaining screens receive milestone-specific reviews as they are built.
 
@@ -50,6 +62,4 @@ Read docs/superpowers/plans/2026-09-26-design-to-production.md next. It integrat
 
 Important production differences: 24-character room titles (prototype allows 40); secure fragment invitation tokens (prototype six-character codes/query-string links are demo only); no fake ticket balance or unfinished production navigation before its milestone. Tasks B–E expand existing frontend task 9, not a second competing implementation.
 
-Next after plan review and user instruction to implement: resolve existing M1 proposals for Google-only sign-in, participant-only access, and one controlling tab; prepare/reuse a managed implementation worktree and the planned codex/m0-m1-foundation branch; explicitly copy the uncommitted design/plan/reference artifacts into it; execute original foundation task 1. Inline execution is recommended. Preserve the dev checkout and codex/system-design plan-only branch. No new application code was added in this planning turn.
-
-Current checkout: dev. No commits, pushes, deployments, or worktree changes were performed. Design, prototype and checkpoint files remain untracked/uncommitted; preserve them. Check usage when resuming and at work milestones, saving this checkpoint below 6%.
+Confirmed M1 decisions replace the older proposals: invite-only email/password with no outbound email, participant-only room access, and explicit tab/device takeover. The repository is no longer an untracked planning checkout; the reviewed design and prototype are committed on `dev`. Resume from the first incomplete task recorded above and trust the execution ledger plus Git history over conversational memory.

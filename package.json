@@ -1,0 +1,23 @@
+{
+  "name": "poker-anime-gacha",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22.16.0 <23"
+  },
+  "scripts": {
+    "build": "pnpm -r --if-present build",
+    "check": "pnpm typecheck && pnpm test && pnpm build",
+    "test": "pnpm -r --if-present test",
+    "typecheck": "pnpm -r --if-present typecheck"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "workerd"
+    ]
+  }
+}
