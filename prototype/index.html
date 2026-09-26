@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f7fbff"><title>Looking Glass Club · Lobby</title>
+  <link rel="stylesheet" href="styles.css"><script src="app.js" defer></script>
+</head>
+<body>
+<svg class="svg-library" xmlns="http://www.w3.org/2000/svg" aria-hidden="true"><defs>
+  <symbol id="i-home" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10H3Z M9 20v-7h6v7"/></symbol>
+  <symbol id="i-cards" viewBox="0 0 24 24"><rect x="8" y="3" width="13" height="17" rx="2"/><path d="m5 6-3 1 3 15 12-2 M14.5 7l3 4-3 4-3-4Z"/></symbol>
+  <symbol id="i-mail" viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="m3 6 9 7 9-7"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h15m-6-6 6 6-6 6"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="7" r="3"/><path d="M3 21v-3a6 6 0 0 1 12 0v3 M17 5a3 3 0 0 1 0 6m1 4a5 5 0 0 1 3 5"/></symbol>
+  <symbol id="i-ticket" viewBox="0 0 24 24"><path d="M3 5h18v5a2 2 0 0 0 0 4v5H3v-5a2 2 0 0 0 0-4Z M15 5v3m0 3v2m0 3v3"/></symbol>
+  <symbol id="i-clock" viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M9 2h6M12 2v3m0 3v5l3 2"/></symbol>
+  <symbol id="i-star" viewBox="0 0 24 24"><path d="m12 2 2.5 7.5L22 12l-7.5 2.5L12 22l-2.5-7.5L2 12l7.5-2.5Z"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="m6 6 12 12M6 18 18 6"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="13" rx="2"/><path d="M16 8V3H3v13h5"/></symbol>
+  <symbol id="i-rabbit" viewBox="0 0 24 24"><path d="M9 12C3 3 5-2 9 3l3 8c2-11 7-12 5-4l-2 5c7 4 3 10-3 10S2 16 9 12Z"/><path d="M9 16h.01M15 16h.01m-4 3h2"/></symbol>
+  <symbol id="i-club" viewBox="0 0 24 24"><path d="M10 20h4l-1-5c7 5 12-5 5-7 1-9-13-9-12 0-7 2-2 12 5 7Z"/></symbol>
+</defs></svg>
+<a class="skip-link" href="#main">Skip to content</a>
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" href="#lobby" aria-label="Looking Glass Club lobby"><span class="brand-mark"><svg><use href="#i-club"/></svg></span><span>Looking Glass<span class="brand-sub">CLUB</span></span></a>
+    <div class="header-right"><span class="prototype-label">Design preview</span><button class="ticket-balance" id="tickets" aria-label="25 demo tickets. Learn how tickets work"><svg><use href="#i-ticket"/></svg><span><small>Demo tickets</small><strong>25</strong></span></button><div class="profile" aria-label="Demo player: You"><img src="assets/hostess.png" alt=""></div></div>
+  </header>
+  <aside class="sidebar"><nav aria-label="Main navigation">
+    <button class="nav-item active" data-view="lobby" aria-current="page"><svg><use href="#i-home"/></svg><span>Lobby</span></button>
+    <button class="nav-item" data-view="collection"><svg><use href="#i-cards"/></svg><span>Collection</span></button>
+    <button class="nav-item" data-view="invitations"><svg><use href="#i-mail"/></svg><span>Invitations</span></button>
+  </nav><div class="sidebar-bottom"><svg class="side-rabbit"><use href="#i-rabbit"/></svg><span>Your private<br>poker club.</span><div class="small-checker" aria-hidden="true"></div></div></aside>
+  <main id="main" tabindex="-1">
+    <section id="lobby-view" class="view" aria-labelledby="lobby-heading">
+      <div class="page-title"><div><h1 id="lobby-heading">Lobby</h1><p>Your next hand starts here.</p></div><span class="room-kind"><svg><use href="#i-people"/></svg>Private tables · 2–6 friends</span></div>
+      <div class="lobby-composition">
+        <div class="lobby-content">
+          <div class="welcome"><h2>Play with friends.<br><span>Your table is waiting.</span></h2><p>Set the table, invite your friends, and make<br class="desktop-break"> yourself at home.</p></div>
+          <div class="room-actions"><button class="room-action create" id="create-room"><span class="action-icon"><svg><use href="#i-plus"/></svg></span><span><strong>Create Room</strong><small>Start a private table for 2–6 players.</small></span><svg class="arrow"><use href="#i-arrow"/></svg></button><button class="room-action join" id="join-room"><span class="action-icon"><svg><use href="#i-people"/></svg></span><span><strong>Join Room</strong><small>Use a room code or invitation link.</small></span><svg class="arrow"><use href="#i-arrow"/></svg></button></div>
+          <div class="quiet-note"><svg><use href="#i-clock"/></svg><span>Your host decides when the session ends.</span></div>
+          <div class="gold-divider" aria-hidden="true"><svg><use href="#i-star"/></svg></div>
+          <div class="explore-links"><button data-view="collection"><span class="mini-art card-art" aria-hidden="true"><svg><use href="#i-cards"/></svg></span><span><strong>Your collection</strong><small>Choose your avatar and card back.</small></span><svg class="arrow"><use href="#i-arrow"/></svg></button><button data-view="invitations"><span class="mini-art envelope-art" aria-hidden="true"><svg><use href="#i-mail"/></svg></span><span><strong>Tea-party invitations</strong><small>Discover cosmetic rewards.</small></span><svg class="arrow"><use href="#i-arrow"/></svg></button></div>
+        </div>
+        <aside class="character-panel" aria-label="Equipped character preview"><div class="arch"><svg class="arch-star" aria-hidden="true"><use href="#i-star"/></svg><span class="orbit" aria-hidden="true"></span><svg class="hanging-clock" aria-hidden="true"><use href="#i-clock"/></svg><img class="hostess" src="assets/hostess.png" alt="Blue-haired anime hostess with a teacup and pocket watch"><div class="character-caption"><small>YOUR TABLE COMPANION</small><strong>Alice</strong><span>Default avatar · Demo</span></div></div><div class="arch-foot"><span></span><svg aria-hidden="true"><use href="#i-star"/></svg><span></span></div></aside>
+      </div>
+      <footer class="lobby-footer"><span>Private Texas Hold’em · Cosmetic collections.</span><button id="how-it-works">How to play <svg><use href="#i-arrow"/></svg></button></footer>
+    </section>
+    <section id="waiting-view" class="view" hidden aria-labelledby="waiting-heading"><button class="text-button" id="leave-room">← Back to lobby</button><div class="page-title"><div><h1 id="waiting-heading">Your tea table</h1><p>Local waiting-room preview. No friends are connected.</p></div></div><div class="waiting-layout"><div class="waiting-table"><svg class="table-emblem" aria-hidden="true"><use href="#i-club"/></svg><h2 id="room-name"></h2><p><span id="room-code"></span> · Private room</p><div class="seat-grid"><div class="seat occupied"><img src="assets/hostess.png" alt=""><strong>You</strong><span id="host-label">Host</span></div><div class="seat"><svg><use href="#i-plus"/></svg><span>Open seat</span></div><div class="seat"><svg><use href="#i-plus"/></svg><span>Open seat</span></div><div class="seat"><svg><use href="#i-plus"/></svg><span>Open seat</span></div><div class="seat"><svg><use href="#i-plus"/></svg><span>Open seat</span></div><div class="seat"><svg><use href="#i-plus"/></svg><span>Open seat</span></div></div></div><div class="room-details"><h2>Save a seat.</h2><p>Share this demo link to preview the join flow. It does not connect players.</p><label for="room-link">Preview invitation link</label><input id="room-link" readonly><button class="primary-button" id="copy-link"><svg><use href="#i-copy"/></svg>Copy preview link</button><p id="copy-feedback" role="status"></p><hr><h3>Texas Hold’em</h3><p>2–6 players · Cosmetic rewards<br>Equal starting stacks each session</p><button class="primary-button" disabled>Start session</button><small>Live play arrives with the multiplayer build.</small></div></div></section>
+    <section id="collection-view" class="view preview-page" hidden aria-labelledby="collection-heading"><h1 id="collection-heading">Your collection</h1><p>A preview of how your cosmetics will feel.</p><div class="collection-demo"><div class="avatar-card"><img src="assets/hostess.png" alt="Alice default avatar"><span>Default avatar</span><h2>Alice</h2><span class="equipped-label">Equipped in this preview</span></div><div><h2>Make the table yours.</h2><p>Avatars and card backs change your look,<br>never your luck.</p><p class="preview-disclaimer">Collection browsing and equipment will be connected in a later build. This is one sample avatar.</p><button class="secondary-button" data-view="lobby">Back to lobby</button></div></div></section>
+    <section id="invitations-view" class="view preview-page" hidden aria-labelledby="invitation-heading"><h1 id="invitation-heading">Tea-party invitations</h1><p>A little surprise, sealed just for you.</p><div class="invitation-demo"><div class="big-envelope" aria-hidden="true"><svg><use href="#i-rabbit"/></svg></div><div><h2>You’re invited.</h2><p>Play poker with friends to earn tickets.<br>Use them to discover cosmetic companions and card backs.</p><p class="preview-disclaimer">This prototype does not spend tickets or generate rewards. The invitation reveal is a later screen.</p><button class="secondary-button" data-view="lobby">Back to lobby</button></div></div></section>
+    <div class="demo-footnote">Local interaction prototype · Sample data · No real multiplayer</div>
+  </main>
+</div>
+<dialog id="room-dialog" aria-labelledby="dialog-title"><form id="room-form" novalidate><div class="dialog-heading"><svg><use href="#i-club"/></svg><button type="button" class="icon-button close-dialog" aria-label="Close dialog"><svg><use href="#i-close"/></svg></button></div><h2 id="dialog-title">Set your table.</h2><p id="dialog-description"></p><label for="room-input" id="input-label">Room name</label><input id="room-input" autocomplete="off" aria-describedby="input-hint input-error"><small id="input-hint"></small><p class="error" id="input-error" role="alert"></p><button id="submit-room" class="primary-button" type="submit">Create preview room</button><button id="sample-room" class="text-button" type="button">Try the sample invitation</button><p class="dialog-note">Local preview only. No server or account required.</p></form></dialog>
+<dialog id="info-dialog" aria-labelledby="info-title"><button class="icon-button close-dialog" aria-label="Close dialog"><svg><use href="#i-close"/></svg></button><h2 id="info-title"></h2><div id="info-body"></div><button class="primary-button close-dialog">Got it</button></dialog>
+</body></html>
