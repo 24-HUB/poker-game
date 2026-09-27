@@ -1,6 +1,6 @@
 # Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-27. Status: Tasks 1–2 complete on `codex/m0-m1-foundation`; ready for Task 3 persistence work.
+Updated: 2026-09-27. Status: Tasks 1–2 complete on `codex/m0-m1-foundation`; Task 3 persistence is implemented but not green because Docker Desktop cannot start.
 
 ## User intent and usage rule
 
@@ -11,12 +11,19 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 - Branch: `codex/m0-m1-foundation`, created from fetched `origin/dev` at `01f033d0`.
 - Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
 - Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell.
-- Current task: ready to begin Task 3, persistence and transaction foundations.
-- Next action: begin Task 3 with the first failing disposable replica-set and transaction tests, then add MongoDB configuration, migrations, validators, indexes, and a single-session transaction runner.
+- Current task: Task 3 in progress, blocked at real replica-set verification.
+- Next action: repair or restart Docker Desktop, then run `docker compose up -d --wait`, `pnpm db:init`, and `pnpm --filter @poker/server test --runInBand database.e2e-spec`. Fix any behavioral failures before declaring Task 3 complete.
 - Verification: `pnpm check` passed all workspace typechecks, 8 tests, and Nest/contract/Next production builds. `pnpm --filter @poker/web test:e2e` passed 4 Chromium tests covering 360×800, 900×900, 1440×1000, Escape closure, and focus restoration. The Impeccable detector returned no findings after remediation. `git diff --check` passed with line-ending warnings only.
 - Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
-- Usage at checkpoint: five-hour remaining 74%, weekly remaining 80%. No reset credit was used.
-- Blockers: none for Task 3; Linux CI is required for final OpenNext bundle evidence.
+- Usage at checkpoint: five-hour remaining 58%, weekly remaining 78%. No reset credit was used.
+- Blockers: Docker Desktop 4.45 exits while initializing its inference manager because `C:\Users\Neary\AppData\Local\Docker\run\dockerInference` is an inaccessible stale reparse point (Windows error 1920). Moving it and clearing only its reparse metadata both failed; no Docker files were removed. A host restart or manual Docker repair is required. Linux CI is still required for final OpenNext bundle evidence.
+
+## Task 3 in-progress evidence
+
+- RED captured: `database.e2e-spec.ts` initially failed because the transaction runner and migrations did not exist.
+- Added pinned MongoDB driver 7.6.0, disposable replica-set and standalone services, replica-set initialization, unique per-test databases, the singleton Nest database module, shared provider tokens, bounded connection pools, single-session transaction execution, additive migration tracking, validators, and M0/M1 indexes.
+- Added real tests for rollback, occupied-seat uniqueness, idempotent migrations, and standalone rejection. These currently time out at connection because Docker never reaches its engine; they have not been weakened or skipped.
+- `pnpm --filter @poker/server typecheck`, the six existing non-database server tests, the Nest production build, init-script syntax check, and `git diff --check` pass. The real database suite is not yet verified.
 
 ## Task 2 implementation evidence
 

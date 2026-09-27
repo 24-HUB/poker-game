@@ -8,10 +8,13 @@
   "scripts": {
     "build": "pnpm -r --if-present build",
     "check": "pnpm typecheck && pnpm test && pnpm build",
+    "db:init": "node scripts/init-replica-set.mjs",
+    "db:migrate": "pnpm --filter @poker/server db:migrate",
     "test": "pnpm -r --if-present test",
     "typecheck": "pnpm -r --if-present typecheck"
   },
   "devDependencies": {
+    "mongodb": "7.6.0",
     "typescript": "5.9.3"
   },
   "pnpm": {
