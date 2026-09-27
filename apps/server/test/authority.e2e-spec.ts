@@ -70,8 +70,12 @@ describe('backend authority', () => {
   it('standbyCanPassDeployHealth', async () => {
     const previousUri = process.env.MONGODB_URI;
     const previousDatabase = process.env.MONGODB_DATABASE;
+    const previousSecret = process.env.PROXY_SECRET;
+    const previousPublicOrigin = process.env.PUBLIC_ORIGIN;
     process.env.MONGODB_URI = mongoUri;
     process.env.MONGODB_DATABASE = database.db.databaseName;
+    process.env.PROXY_SECRET = 'test-proxy-secret';
+    process.env.PUBLIC_ORIGIN = 'https://play.example';
 
     const owner = await createApplication();
     const standby = await createApplication();
@@ -80,7 +84,9 @@ describe('backend authority', () => {
 
     try {
       const deploy = await request(standby.getHttpServer()).get('/health/deploy');
-      const ready = await request(standby.getHttpServer()).get('/api/health/ready');
+      const ready = await request(standby.getHttpServer())
+        .get('/api/health/ready')
+        .set('x-poker-proxy-secret', 'test-proxy-secret');
 
       expect(deploy.status).toBe(200);
       expect(ready.status).toBe(503);
@@ -91,6 +97,10 @@ describe('backend authority', () => {
       else process.env.MONGODB_URI = previousUri;
       if (previousDatabase === undefined) delete process.env.MONGODB_DATABASE;
       else process.env.MONGODB_DATABASE = previousDatabase;
+      if (previousSecret === undefined) delete process.env.PROXY_SECRET;
+      else process.env.PROXY_SECRET = previousSecret;
+      if (previousPublicOrigin === undefined) delete process.env.PUBLIC_ORIGIN;
+      else process.env.PUBLIC_ORIGIN = previousPublicOrigin;
     }
   });
 
@@ -114,13 +124,17 @@ describe('backend authority', () => {
       await standby.init();
 
       try {
-        expect((await request(standby.getHttpServer()).get('/api/health/ready')).status).toBe(503);
+        expect((await request(standby.getHttpServer())
+          .get('/api/health/ready')
+          .set('x-poker-proxy-secret', 'test-proxy-secret')).status).toBe(503);
         await owner.close();
 
         let status = 503;
         for (let attempt = 0; attempt < 20 && status !== 200; attempt += 1) {
           await new Promise((resolve) => setTimeout(resolve, 50));
-          status = (await request(standby.getHttpServer()).get('/api/health/ready')).status;
+          status = (await request(standby.getHttpServer())
+            .get('/api/health/ready')
+            .set('x-poker-proxy-secret', 'test-proxy-secret')).status;
         }
         expect(status).toBe(200);
       } finally {
@@ -221,8 +235,12 @@ describe('backend authority', () => {
   async function withDatabaseEnvironment(work: () => Promise<void>): Promise<void> {
     const previousUri = process.env.MONGODB_URI;
     const previousDatabase = process.env.MONGODB_DATABASE;
+    const previousSecret = process.env.PROXY_SECRET;
+    const previousPublicOrigin = process.env.PUBLIC_ORIGIN;
     process.env.MONGODB_URI = mongoUri;
     process.env.MONGODB_DATABASE = database.db.databaseName;
+    process.env.PROXY_SECRET = 'test-proxy-secret';
+    process.env.PUBLIC_ORIGIN = 'https://play.example';
     try {
       await work();
     } finally {
@@ -230,6 +248,10 @@ describe('backend authority', () => {
       else process.env.MONGODB_URI = previousUri;
       if (previousDatabase === undefined) delete process.env.MONGODB_DATABASE;
       else process.env.MONGODB_DATABASE = previousDatabase;
+      if (previousSecret === undefined) delete process.env.PROXY_SECRET;
+      else process.env.PROXY_SECRET = previousSecret;
+      if (previousPublicOrigin === undefined) delete process.env.PUBLIC_ORIGIN;
+      else process.env.PUBLIC_ORIGIN = previousPublicOrigin;
     }
   }
 });

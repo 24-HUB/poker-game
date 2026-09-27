@@ -1,6 +1,6 @@
 # Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-27. Status: Tasks 1–4 complete on `codex/m0-m1-foundation`; Task 5 fixed-upstream proxy is next.
+Updated: 2026-09-27. Status: Tasks 1–4 complete on `codex/m0-m1-foundation`; Task 5 fixed-upstream proxy is in progress at an emergency usage checkpoint.
 
 ## User intent and usage rule
 
@@ -11,11 +11,11 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 - Branch: `codex/m0-m1-foundation`, created from fetched `origin/dev` at `01f033d0`.
 - Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
 - Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes; Task 4, fenced backend authority, startup cleanup, health separation, renewal, takeover, and safe shutdown ordering.
-- Current task: Task 4 complete pending its boundary commit and push.
-- Next action: commit and push the verified Task 4 boundary, then start Task 5 fixed-upstream Worker proxy with hostile-upstream, direct-backend, cookie/redirect, origin, and real-upgrade tests in RED.
-- Verification: `pnpm check` passed all workspace typechecks, 21 tests (19 server, 1 contracts, 1 web), and Nest/contract/Next production builds. The 8-case real authority suite passed concurrent ownership across two separately spawned Nest processes, stale fencing, standby deployment health, graceful release/retry, expired-owner takeover, failed stale renewal, owner-only cleanup, membership invalidation, and preservation of closed records. Task 3 migration/database and Task 2 Playwright evidence remain green. `git diff --check` passed with line-ending warnings only.
+- Current task: Task 5 in progress; fixed-upstream HTTP proxy and direct-backend guard slices are green, but real Socket.IO upgrade acceptance is not implemented.
+- Next failing test/action: add Socket.IO server/client dependencies and a real upgrade test that expects HTTP 101 through the proxy path, then implement backend Socket.IO attachment and Worker upgrade preservation without consuming the body. Continue Task 5 origin, timeout, and exact-routing edge cases before marking it complete.
+- Verification: fresh `pnpm check` passed all workspace typechecks, 26 tests (20 server, 5 web, 1 contracts), and Nest/contract/Next production builds. Worker proxy tests pass 4/4 for exact prefixes, hostile upstream/header replacement, two-cookie redirect preservation, and invalid mutation/socket origins. The direct-backend suite passes secret enforcement, forged-forwarding rejection, origin rejection, and health exceptions. Task 4 authority remains 8/8 green. `git diff --check` is the final pre-commit action.
 - Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
-- Usage at checkpoint: five-hour remaining 16%, weekly remaining 71%. No reset credit was used.
+- Usage at checkpoint: five-hour remaining 5%, weekly remaining 69%. Emergency checkpoint rule is active. No reset credit was used.
 - Blockers: Linux CI is still required for final OpenNext bundle evidence. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally.
 
 ## Task 3 implementation evidence
@@ -34,6 +34,14 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 - Startup cleanup runs only after ownership and fences its transaction before closing older open rooms and clearing active seats. Already-closed records are untouched.
 - `/health/deploy` verifies database/schema health without requiring authority. `/api/health/ready` returns 503 for standby or expired authority and 200 only after owner cleanup. Shutdown marks readiness false and stops authority timers before releasing the lease; database closure remains in the later application-shutdown phase.
 - The authority acceptance suite passes 8/8 against the disposable replica set, including two independently spawned Nest backend processes. Fresh `pnpm check` passes 21 tests and all production builds.
+
+## Task 5 in-progress evidence
+
+- RED captured: Worker proxy tests initially failed because `worker/proxy.ts` did not exist; the backend proxy suite initially failed because `common/proxyGuard.ts` did not exist.
+- Added exact `/api` and `/socket.io` path matching, HTTPS-only configured origins, fixed upstream construction, hostile forwarding/secret header replacement, public-origin checks for mutations and socket handshakes, manual redirects, 15-second non-upgrade timeout, uncached streaming responses, and multi-cookie preservation.
+- Added a custom Worker entry that sends backend paths through the proxy and delegates all other requests to the generated OpenNext worker. Wrangler now points at that entry.
+- Added a timing-safe backend proxy-secret guard before application routes. Only `/health/live` and `/health/deploy` are direct-host exceptions; readiness remains protected.
+- Fresh `pnpm check` passes. Missing acceptance: real Socket.IO HTTP 101 upgrade, backend Socket.IO lifecycle, and final Task 5 edge-case/full review. Task 5 is not complete.
 
 ## Task 2 implementation evidence
 

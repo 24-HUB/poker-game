@@ -5,9 +5,11 @@ import type { INestApplication } from '@nestjs/common';
 import { z } from 'zod';
 
 import { AppModule } from './app.module';
+import { proxyGuard } from './common/proxyGuard';
 
 export async function createApplication(): Promise<INestApplication> {
   const application = await NestFactory.create(AppModule, { logger: false });
+  application.use(proxyGuard);
   application.enableShutdownHooks();
   return application;
 }
