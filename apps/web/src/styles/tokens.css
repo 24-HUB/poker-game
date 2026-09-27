@@ -1,0 +1,16 @@
+:root {
+  --canvas: #f7fbff;
+  --surface: #ffffff;
+  --surface-soft: #eaf4ff;
+  --brand: #1765d1;
+  --brand-hover: #104fa9;
+  --ink: #102a56;
+  --muted: #526480;
+  --line: #cbdcef;
+  --accent: #b99452;
+  --danger: #b42336;
+  --focus: #0b6de8;
+  --radius-sm: 7px;
+  --radius-md: 10px;
+  --shadow-dialog: 0 18px 70px rgb(16 42 86 / 15%);
+}

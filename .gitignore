@@ -6,6 +6,7 @@ coverage/
 .wrangler/
 playwright-report/
 test-results/
+.artifacts/
 .superpowers/
 .env
 .env.*

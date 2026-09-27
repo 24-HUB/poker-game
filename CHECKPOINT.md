@@ -1,6 +1,6 @@
 # Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-26. Status: Task 1 complete on `codex/m0-m1-foundation`; paused at the mandatory usage checkpoint before Task 2.
+Updated: 2026-09-27. Status: Tasks 1–2 complete on `codex/m0-m1-foundation`; ready for Task 3 persistence work.
 
 ## User intent and usage rule
 
@@ -10,13 +10,20 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 
 - Branch: `codex/m0-m1-foundation`, created from fetched `origin/dev` at `01f033d0`.
 - Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
-- Completed tasks: Task 1, bootable workspace and shared contracts.
-- Current task: paused before Task 2, approved responsive application shell.
-- Next action: after usage resets, verify branch/status and fetch `origin --prune`; load the Task 2 brief, then add the first failing lobby/dialog tests before UI implementation.
-- Verification: `pnpm check` passed all workspace typechecks, 7 tests, and Nest/contract/Next production builds. `pnpm --filter @poker/server check:auth-import` passed against compiled output. `git diff --check` passed with line-ending warnings only.
+- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell.
+- Current task: ready to begin Task 3, persistence and transaction foundations.
+- Next action: begin Task 3 with the first failing disposable replica-set and transaction tests, then add MongoDB configuration, migrations, validators, indexes, and a single-session transaction runner.
+- Verification: `pnpm check` passed all workspace typechecks, 8 tests, and Nest/contract/Next production builds. `pnpm --filter @poker/web test:e2e` passed 4 Chromium tests covering 360×800, 900×900, 1440×1000, Escape closure, and focus restoration. The Impeccable detector returned no findings after remediation. `git diff --check` passed with line-ending warnings only.
 - Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
-- Usage at checkpoint: five-hour remaining 1%, weekly remaining 85%. No reset credit was used.
-- Blockers: none for Task 2; Linux CI is required for final OpenNext bundle evidence.
+- Usage at checkpoint: five-hour remaining 74%, weekly remaining 80%. No reset credit was used.
+- Blockers: none for Task 3; Linux CI is required for final OpenNext bundle evidence.
+
+## Task 2 implementation evidence
+
+- Ported the approved blue/white lobby into the Next.js App Router application with real semantic actions, a compact responsive companion treatment, design tokens, Lucide icons, and documented provisional artwork provenance.
+- Removed prototype-only balances, unfinished navigation, demo invitation codes, query-string invitations, and functional poker claims from the production shell.
+- Added accessible modal messaging for the intentionally not-yet-connected room actions. Native Escape handling closes the dialog and restores focus to the initiating action.
+- Added colocated Vitest behavior coverage and isolated Playwright browser coverage. Visual screenshots at all three required viewports showed no horizontal clipping and retained action-first hierarchy.
 
 ## Approved direction
 
