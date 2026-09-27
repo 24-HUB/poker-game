@@ -13,6 +13,25 @@ export function verifyProxyRequest(headers: IncomingHttpHeaders): boolean {
   return expectedBytes.length === providedBytes.length && timingSafeEqual(expectedBytes, providedBytes);
 }
 
+export function verifyPublicOrigin(headers: IncomingHttpHeaders): boolean {
+  const configured = process.env.PUBLIC_ORIGIN;
+  if (!configured || typeof headers.origin !== 'string') return false;
+  try {
+    const origin = new URL(configured);
+    if (
+      origin.protocol !== 'https:'
+      || origin.username
+      || origin.password
+      || origin.pathname !== '/'
+      || origin.search
+      || origin.hash
+    ) return false;
+    return headers.origin === origin.origin;
+  } catch {
+    return false;
+  }
+}
+
 export function proxyGuard(request: IncomingMessage, response: ServerResponse, next: () => void): void {
   const pathname = new URL(request.url ?? '/', 'http://backend.invalid').pathname;
   if (pathname === '/health/live' || pathname === '/health/deploy') {
@@ -35,11 +54,5 @@ function hasTrustedOrigin(request: IncomingMessage, pathname: string): boolean {
   const isMutation = request.method !== 'GET' && request.method !== 'HEAD';
   if (!isSocket && !isMutation) return true;
 
-  const configured = process.env.PUBLIC_ORIGIN;
-  if (!configured) return false;
-  try {
-    return request.headers.origin === new URL(configured).origin;
-  } catch {
-    return false;
-  }
+  return verifyPublicOrigin(request.headers);
 }

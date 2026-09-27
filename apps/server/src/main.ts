@@ -6,10 +6,12 @@ import { z } from 'zod';
 
 import { AppModule } from './app.module';
 import { proxyGuard } from './common/proxyGuard';
+import { SecureSocketIoAdapter } from './realtime/secureSocketIoAdapter';
 
 export async function createApplication(): Promise<INestApplication> {
   const application = await NestFactory.create(AppModule, { logger: false });
   application.use(proxyGuard);
+  application.useWebSocketAdapter(new SecureSocketIoAdapter(application));
   application.enableShutdownHooks();
   return application;
 }

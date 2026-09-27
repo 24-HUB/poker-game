@@ -11,6 +11,15 @@ export function isBackendPath(pathname: string): boolean {
   return pathname === '/api' || pathname.startsWith('/api/') || pathname === '/socket.io' || pathname.startsWith('/socket.io/');
 }
 
+export function routeWorkerRequest(
+  request: Request,
+  env: BackendEnv,
+  frontend: (request: Request) => Promise<Response>,
+): Promise<Response> {
+  if (isBackendPath(new URL(request.url).pathname)) return proxyBackend(request, env);
+  return frontend(request);
+}
+
 export async function proxyBackend(request: Request, env: BackendEnv): Promise<Response> {
   const requestUrl = new URL(request.url);
   if (!isBackendPath(requestUrl.pathname)) return new Response('Not found', { status: 404 });
@@ -39,7 +48,18 @@ export async function proxyBackend(request: Request, env: BackendEnv): Promise<R
       ? request.signal
       : AbortSignal.any([request.signal, AbortSignal.timeout(requestTimeoutMs)]),
   });
-  const response = await fetch(forwarded);
+  let response: Response;
+  try {
+    response = await fetch(forwarded);
+  } catch (error) {
+    if (error instanceof Error && error.name === 'TimeoutError') {
+      return new Response('Backend timeout', {
+        status: 504,
+        headers: { 'cache-control': 'no-store' },
+      });
+    }
+    throw error;
+  }
   if (isUpgrade) return response;
 
   const responseHeaders = new Headers(response.headers);

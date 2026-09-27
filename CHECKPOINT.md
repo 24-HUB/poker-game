@@ -1,6 +1,6 @@
 # Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-27. Status: Tasks 1–4 complete on `codex/m0-m1-foundation`; Task 5 fixed-upstream proxy is in progress at an emergency usage checkpoint.
+Updated: 2026-09-27. Status: Tasks 1–5 complete on `codex/m0-m1-foundation`; Task 6 invite-only email authentication is next.
 
 ## User intent and usage rule
 
@@ -10,12 +10,12 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 
 - Branch: `codex/m0-m1-foundation`, created from fetched `origin/dev` at `01f033d0`.
 - Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
-- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes; Task 4, fenced backend authority, startup cleanup, health separation, renewal, takeover, and safe shutdown ordering.
-- Current task: Task 5 in progress; fixed-upstream HTTP proxy and direct-backend guard slices are green, but real Socket.IO upgrade acceptance is not implemented.
-- Next failing test/action: add Socket.IO server/client dependencies and a real upgrade test that expects HTTP 101 through the proxy path, then implement backend Socket.IO attachment and Worker upgrade preservation without consuming the body. Continue Task 5 origin, timeout, and exact-routing edge cases before marking it complete.
-- Verification: fresh `pnpm check` passed all workspace typechecks, 26 tests (20 server, 5 web, 1 contracts), and Nest/contract/Next production builds. Worker proxy tests pass 4/4 for exact prefixes, hostile upstream/header replacement, two-cookie redirect preservation, and invalid mutation/socket origins. The direct-backend suite passes secret enforcement, forged-forwarding rejection, origin rejection, and health exceptions. Task 4 authority remains 8/8 green. `git diff --check` is the final pre-commit action.
+- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes; Task 4, fenced backend authority, startup cleanup, health separation, renewal, takeover, and safe shutdown ordering; Task 5, fixed-upstream Worker proxy and protected Socket.IO transport.
+- Current task: Task 5 complete pending its boundary commit and push.
+- Next action: commit and push Task 5, then start Task 6 invite-only Better Auth email/password and shared HTTP/Socket.IO session resolution with registration-code rejection in RED.
+- Verification: `pnpm install --frozen-lockfile` passed. Fresh `pnpm check` passed all workspace typechecks, 34 tests (23 server, 10 web, 1 contracts), and Nest/contract/Next production builds. Worker proxy tests pass 9/9; backend proxy/upgrade tests pass 4/4; Task 4 authority remains 8/8 green. `git diff --check` is the final pre-commit action.
 - Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
-- Usage at checkpoint: five-hour remaining 5%, weekly remaining 69%. Emergency checkpoint rule is active. No reset credit was used.
+- Usage at checkpoint: five-hour remaining 69%, weekly remaining 64%. No reset credit was used.
 - Blockers: Linux CI is still required for final OpenNext bundle evidence. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally.
 
 ## Task 3 implementation evidence
@@ -35,13 +35,17 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 - `/health/deploy` verifies database/schema health without requiring authority. `/api/health/ready` returns 503 for standby or expired authority and 200 only after owner cleanup. Shutdown marks readiness false and stops authority timers before releasing the lease; database closure remains in the later application-shutdown phase.
 - The authority acceptance suite passes 8/8 against the disposable replica set, including two independently spawned Nest backend processes. Fresh `pnpm check` passes 21 tests and all production builds.
 
-## Task 5 in-progress evidence
+## Task 5 implementation evidence
 
 - RED captured: Worker proxy tests initially failed because `worker/proxy.ts` did not exist; the backend proxy suite initially failed because `common/proxyGuard.ts` did not exist.
 - Added exact `/api` and `/socket.io` path matching, HTTPS-only configured origins, fixed upstream construction, hostile forwarding/secret header replacement, public-origin checks for mutations and socket handshakes, manual redirects, 15-second non-upgrade timeout, uncached streaming responses, and multi-cookie preservation.
 - Added a custom Worker entry that sends backend paths through the proxy and delegates all other requests to the generated OpenNext worker. Wrangler now points at that entry.
 - Added a timing-safe backend proxy-secret guard before application routes. Only `/health/live` and `/health/deploy` are direct-host exceptions; readiness remains protected.
-- Fresh `pnpm check` passes. Missing acceptance: real Socket.IO HTTP 101 upgrade, backend Socket.IO lifecycle, and final Task 5 edge-case/full review. Task 5 is not complete.
+- Added NestJS/Socket.IO transport attachment with a secure adapter that enforces the proxy secret and exact public origin at the Engine.IO handshake boundary, including requests that bypass Express middleware.
+- A raw Engine.IO WebSocket handshake proves valid proxied traffic receives HTTP 101. Forged secrets and hostile origins are rejected. Worker coverage proves upgrades retain their headers and unwrapped switching-protocol response.
+- Added backend timeout handling as an uncached 504, request-body/cookie streaming coverage, invalid backend-origin coverage, and explicit frontend delegation for non-backend lookalike paths.
+- Shutdown now follows the full lifecycle requirement: Nest disposes Socket.IO before authority release, while MongoDB stays available until conditional release completes. A live-upgrade regression test observed the original wrong order in RED and the corrected order in GREEN.
+- Frozen installation and fresh `pnpm check` pass. The Linux-only OpenNext bundle remains deferred to Task 10 as already recorded; Task 5 local acceptance is complete.
 
 ## Task 2 implementation evidence
 

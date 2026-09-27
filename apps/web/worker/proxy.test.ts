@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-import { isBackendPath, proxyBackend, type BackendEnv } from './proxy';
+import { isBackendPath, proxyBackend, routeWorkerRequest, type BackendEnv } from './proxy';
 
 const env: BackendEnv = {
   BACKEND_ORIGIN: 'https://backend.example',
@@ -18,6 +18,18 @@ describe('backend Worker proxy', () => {
     expect(isBackendPath('/apiary')).toBe(false);
     expect(isBackendPath('/socket.io.evil')).toBe(false);
     expect(isBackendPath('/')).toBe(false);
+  });
+
+  it('delegatesNonBackendPathsToTheFrontendWorker', async () => {
+    const frontendResponse = new Response('frontend shell');
+
+    const response = await routeWorkerRequest(
+      new Request('https://play.example/apiary'),
+      env,
+      async () => frontendResponse,
+    );
+
+    expect(response).toBe(frontendResponse);
   });
 
   it('ignoresClientChosenUpstream', async () => {
@@ -80,5 +92,73 @@ describe('backend Worker proxy', () => {
     expect(mutation.status).toBe(403);
     expect(socket.status).toBe(403);
     expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it('preservesSocketUpgradeWithoutWrappingTheResponse', async () => {
+    const switchingProtocols = { status: 101 } as Response;
+    let forwarded: Request | undefined;
+    vi.stubGlobal('fetch', vi.fn(async (request: Request) => {
+      forwarded = request;
+      return switchingProtocols;
+    }));
+
+    const response = await proxyBackend(new Request('https://play.example/socket.io/?EIO=4&transport=websocket', {
+      headers: {
+        origin: 'https://play.example',
+        connection: 'Upgrade',
+        upgrade: 'websocket',
+      },
+    }), env);
+
+    expect(response.status).toBe(101);
+    expect(response).toBe(switchingProtocols);
+    expect(forwarded!.headers.get('upgrade')).toBe('websocket');
+    expect(forwarded!.headers.get('connection')).toBe('Upgrade');
+  });
+
+  it('rejectsNonHttpsOrPathBearingBackendOrigins', async () => {
+    await expect(proxyBackend(new Request('https://play.example/api/me'), {
+      ...env,
+      BACKEND_ORIGIN: 'http://backend.example',
+    })).rejects.toThrow('BACKEND_ORIGIN must be a valid HTTPS origin');
+    await expect(proxyBackend(new Request('https://play.example/api/me'), {
+      ...env,
+      BACKEND_ORIGIN: 'https://backend.example/chosen/by/client',
+    })).rejects.toThrow('BACKEND_ORIGIN must be a valid HTTPS origin');
+  });
+
+  it('streamsMutationBodyAndCookiesToTheFixedBackend', async () => {
+    let forwardedBody = '';
+    let forwardedCookie: string | null = null;
+    vi.stubGlobal('fetch', vi.fn(async (request: Request) => {
+      forwardedBody = await request.text();
+      forwardedCookie = request.headers.get('cookie');
+      return new Response(null, { status: 204 });
+    }));
+
+    const response = await proxyBackend(new Request('https://play.example/api/rooms', {
+      method: 'POST',
+      headers: {
+        origin: 'https://play.example',
+        cookie: 'session=opaque',
+        'content-type': 'application/json',
+      },
+      body: '{"title":"Tea Room"}',
+    }), env);
+
+    expect(response.status).toBe(204);
+    expect(forwardedBody).toBe('{"title":"Tea Room"}');
+    expect(forwardedCookie).toBe('session=opaque');
+  });
+
+  it('returns504WhenBackendTimesOut', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => {
+      throw new DOMException('The operation timed out', 'TimeoutError');
+    }));
+
+    const response = await proxyBackend(new Request('https://play.example/api/me'), env);
+
+    expect(response.status).toBe(504);
+    expect(await response.text()).toBe('Backend timeout');
   });
 });

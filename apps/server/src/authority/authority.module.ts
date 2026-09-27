@@ -1,6 +1,6 @@
 import { randomUUID } from 'node:crypto';
 
-import { BeforeApplicationShutdown, Inject, Injectable, Module, OnApplicationBootstrap } from '@nestjs/common';
+import { Inject, Injectable, Module, OnApplicationBootstrap, OnApplicationShutdown } from '@nestjs/common';
 import type { Db } from 'mongodb';
 
 import { DatabaseModule } from '../database/database.module';
@@ -12,7 +12,7 @@ import { abortPreviousRooms } from './startupCleanup';
 const AUTHORITY_BOOT_ID = Symbol('AUTHORITY_BOOT_ID');
 
 @Injectable()
-class AuthorityLifecycle implements OnApplicationBootstrap, BeforeApplicationShutdown {
+class AuthorityLifecycle implements OnApplicationBootstrap, OnApplicationShutdown {
   private token: AuthorityToken | null = null;
   private renewTimer: NodeJS.Timeout | null = null;
   private retryTimer: NodeJS.Timeout | null = null;
@@ -29,7 +29,7 @@ class AuthorityLifecycle implements OnApplicationBootstrap, BeforeApplicationShu
     await this.tryAcquire();
   }
 
-  public async beforeApplicationShutdown(): Promise<void> {
+  public async onApplicationShutdown(): Promise<void> {
     this.stopping = true;
     if (this.renewTimer) clearTimeout(this.renewTimer);
     if (this.retryTimer) clearTimeout(this.retryTimer);
