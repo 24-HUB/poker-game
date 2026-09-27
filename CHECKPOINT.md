@@ -1,6 +1,6 @@
 # Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-27. Status: Tasks 1–3 complete on `codex/m0-m1-foundation`; Task 4 backend ownership is next.
+Updated: 2026-09-27. Status: Tasks 1–4 complete on `codex/m0-m1-foundation`; Task 5 fixed-upstream proxy is next.
 
 ## User intent and usage rule
 
@@ -10,12 +10,12 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 
 - Branch: `codex/m0-m1-foundation`, created from fetched `origin/dev` at `01f033d0`.
 - Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
-- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes.
-- Current task: Task 3 complete pending its boundary commit and push.
-- Next action: commit and push the verified Task 3 boundary, then start Task 4 fenced backend ownership, readiness, cleanup, and shutdown with a failing behavioral test.
-- Verification: `pnpm check` passed all workspace typechecks, 13 tests (11 server, 1 contracts, 1 web), and Nest/contract/Next production builds. `pnpm db:migrate` passed twice against the disposable replica set. The four-test real database suite passed rollback, unique-seat, migration-idempotency, and standalone-rejection checks. `pnpm --filter @poker/server check:auth-import` passed. Task 2 Playwright evidence remains 4/4 Chromium tests covering 360×800, 900×900, 1440×1000, Escape closure, and focus restoration. `git diff --check` passed with line-ending warnings only.
+- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes; Task 4, fenced backend authority, startup cleanup, health separation, renewal, takeover, and safe shutdown ordering.
+- Current task: Task 4 complete pending its boundary commit and push.
+- Next action: commit and push the verified Task 4 boundary, then start Task 5 fixed-upstream Worker proxy with hostile-upstream, direct-backend, cookie/redirect, origin, and real-upgrade tests in RED.
+- Verification: `pnpm check` passed all workspace typechecks, 21 tests (19 server, 1 contracts, 1 web), and Nest/contract/Next production builds. The 8-case real authority suite passed concurrent ownership across two separately spawned Nest processes, stale fencing, standby deployment health, graceful release/retry, expired-owner takeover, failed stale renewal, owner-only cleanup, membership invalidation, and preservation of closed records. Task 3 migration/database and Task 2 Playwright evidence remain green. `git diff --check` passed with line-ending warnings only.
 - Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
-- Usage at checkpoint: five-hour remaining 30%, weekly remaining 73%. No reset credit was used.
+- Usage at checkpoint: five-hour remaining 16%, weekly remaining 71%. No reset credit was used.
 - Blockers: Linux CI is still required for final OpenNext bundle evidence. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally.
 
 ## Task 3 implementation evidence
@@ -26,6 +26,14 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 - The first real run exposed a MongoDB 7 driver/Jest VM incompatibility: dynamically resolved runtime metadata became empty and the server rejected the handshake. Added a narrow RED compatibility test and centralized `MongoClient` construction with the driver's explicit Node OS runtime adapter; the compatibility test then passed.
 - Added real tests for rollback, occupied-seat uniqueness, idempotent migrations, and standalone rejection. All four pass against the disposable services.
 - `pnpm db:migrate` passed twice against an isolated database. `pnpm check`, the compiled Better Auth import check, and `git diff --check` pass.
+
+## Task 4 implementation evidence
+
+- RED captured: `authority.e2e-spec.ts` initially failed because the authority lease module did not exist. The stricter process-boundary acceptance test separately failed until its real-process harness was added; its sandboxed run also demonstrated the expected Windows `spawn EPERM` boundary before the approved full-permission run passed.
+- Added MongoDB-server-time conditional acquisition, monotonic epochs and lease revisions, 30-second leases, 5-second renewal, conservative local validity deadlines, transactional fencing with stable `AUTHORITY_LOST`, conditional release, and bounded standby retry.
+- Startup cleanup runs only after ownership and fences its transaction before closing older open rooms and clearing active seats. Already-closed records are untouched.
+- `/health/deploy` verifies database/schema health without requiring authority. `/api/health/ready` returns 503 for standby or expired authority and 200 only after owner cleanup. Shutdown marks readiness false and stops authority timers before releasing the lease; database closure remains in the later application-shutdown phase.
+- The authority acceptance suite passes 8/8 against the disposable replica set, including two independently spawned Nest backend processes. Fresh `pnpm check` passes 21 tests and all production builds.
 
 ## Task 2 implementation evidence
 

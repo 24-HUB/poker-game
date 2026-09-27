@@ -7,7 +7,9 @@ import { z } from 'zod';
 import { AppModule } from './app.module';
 
 export async function createApplication(): Promise<INestApplication> {
-  return NestFactory.create(AppModule, { logger: false });
+  const application = await NestFactory.create(AppModule, { logger: false });
+  application.enableShutdownHooks();
+  return application;
 }
 
 export function parseServerPort(value: string | undefined): number {
