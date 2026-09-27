@@ -176,6 +176,10 @@ export class RoomService implements OnApplicationShutdown {
     })));
   }
 
+  public closedReason(roomId: string): Promise<'LEFT' | 'EMPTY' | 'RESTARTED' | null> {
+    return this.repository.closedReason(roomId);
+  }
+
   public dispose(): void {
     this.disposed = true;
     for (const timer of this.emptyTimers.values()) clearTimeout(timer);

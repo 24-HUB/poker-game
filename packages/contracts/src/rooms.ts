@@ -1,5 +1,7 @@
 import { z } from 'zod';
 
+import type { Result } from './common.js';
+
 const identifierSchema = z.string().min(1).max(128);
 const mutationMetadata = {
   commandId: z.uuid(),
@@ -98,3 +100,21 @@ export const roomReplySchema = z.object({
 }).strict();
 
 export type RoomReply = z.infer<typeof roomReplySchema>;
+
+export interface ClientToServerEvents {
+  'room:create': (command: Extract<RoomCommand, { type: 'room:create' }>, ack: RoomAck) => void;
+  'room:join': (command: Extract<RoomCommand, { type: 'room:join' }>, ack: RoomAck) => void;
+  'room:sync': (command: Extract<RoomCommand, { type: 'room:sync' }>, ack: RoomAck) => void;
+  'room:takeSeat': (command: Extract<RoomCommand, { type: 'room:takeSeat' }>, ack: RoomAck) => void;
+  'room:leave': (command: Extract<RoomCommand, { type: 'room:leave' }>, ack: RoomAck) => void;
+  'room:rotateInvite': (command: Extract<RoomCommand, { type: 'room:rotateInvite' }>, ack: RoomAck) => void;
+  'room:claimControl': (command: Extract<RoomCommand, { type: 'room:claimControl' }>, ack: RoomAck) => void;
+}
+
+export interface ServerToClientEvents {
+  'connection:ready': (payload: { authorityBootId: string }) => void;
+  'room:snapshot': (view: RoomView) => void;
+  'room:closed': (payload: { roomId: string; reason: 'LEFT' | 'EMPTY' | 'RESTARTED' }) => void;
+}
+
+export type RoomAck = (result: Result<RoomReply>) => void;

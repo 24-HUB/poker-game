@@ -34,6 +34,7 @@ type RoomDocument = {
   authorityEpoch: number;
   createdAt: Date;
   expiresAt: Date;
+  closedReason?: 'LEFT' | 'EMPTY' | 'RESTARTED';
 };
 
 type MembershipDocument = {
@@ -103,6 +104,14 @@ export class RoomRepository {
       .find({ roomId, leftAt: null })
       .toArray();
     return toInternalRoom(room, memberships);
+  }
+
+  public async closedReason(roomId: string): Promise<'LEFT' | 'EMPTY' | 'RESTARTED' | null> {
+    const room = await this.db.collection<RoomDocument>('rooms').findOne(
+      { _id: roomId, status: 'CLOSED' },
+      { projection: { closedReason: 1 } },
+    );
+    return room?.closedReason ?? null;
   }
 
   public async create(input: CommandInput & {

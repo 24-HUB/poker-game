@@ -33,6 +33,7 @@ export class SecureSocketIoAdapter extends IoAdapter {
     return super.createIOServer(port, {
       ...options,
       serveClient: false,
+      maxHttpBufferSize: 16 * 1_024,
       allowRequest,
     }) as Server;
   }
