@@ -1,9 +1,13 @@
 import { Db } from 'mongodb';
 
 import { applyFoundationMigration } from './migrations/001-foundation';
+import { applyRoomCommandsMigration } from './migrations/002-room-commands';
 import { createMongoClient } from './mongoClientFactory';
 
-const migrations = [{ version: 1, apply: applyFoundationMigration }] as const;
+const migrations = [
+  { version: 1, apply: applyFoundationMigration },
+  { version: 2, apply: applyRoomCommandsMigration },
+] as const;
 
 export async function applyMigrations(db: Db): Promise<void> {
   const collection = db.collection<{ _id: number; appliedAt: Date }>('schemaMigrations');

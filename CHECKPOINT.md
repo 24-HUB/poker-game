@@ -1,6 +1,6 @@
 # Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-27. Status: Tasks 1–6 complete on `codex/m0-m1-foundation`; Task 7 authoritative private rooms is next.
+Updated: 2026-09-27. Status: Tasks 1–7 complete on `codex/m0-m1-foundation`; Task 8 realtime room delivery and abuse bounds is next.
 
 ## User intent and usage rule
 
@@ -10,12 +10,12 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 
 - Branch: `codex/m0-m1-foundation`, created from fetched `origin/dev` at `01f033d0`.
 - Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
-- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes; Task 4, fenced backend authority, startup cleanup, health separation, renewal, takeover, and safe shutdown ordering; Task 5, fixed-upstream Worker proxy and protected Socket.IO transport; Task 6, invite-only email authentication and shared HTTP/Socket.IO session UI.
-- Current task: Task 6 is complete at this recoverable boundary.
-- Next action: start Task 7 with room contracts and the first failing secure-room domain tests.
-- Verification: frozen installation passed. Fresh `pnpm check` passed all workspace typechecks, 61 tests (40 server, 20 web, 1 contracts), and Nest/contract/Next production builds. The focused real-adapter identity suite passes 16/16; focused proxy/auth transport coverage passes 21/21. Browser session and existing responsive lobby suites pass 6/6. `git diff --check` and the complete Task 6 diff review passed before the boundary commit.
+- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes; Task 4, fenced backend authority, startup cleanup, health separation, renewal, takeover, and safe shutdown ordering; Task 5, fixed-upstream Worker proxy and protected Socket.IO transport; Task 6, invite-only email authentication and shared HTTP/Socket.IO session UI; Task 7, authoritative private rooms, invitations, seats, and explicit tab control.
+- Current task: Task 7 is complete at this recoverable boundary.
+- Next action: start Task 8 with failing real-client room gateway acknowledgement, reconnect, revocation, overflow, and token-nondisclosure tests.
+- Verification: frozen installation passed. Additive migrations ran twice against the disposable replica set. Fresh final `pnpm check` passed all workspace typechecks, 83 tests (59 server, 20 web, 4 contracts), and Nest/contract/Next production builds. Browser session and responsive lobby suites remain 6/6 from Task 6. The complete Task 7 diff review and staged diff check passed before the boundary commit.
 - Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
-- Usage at checkpoint: five-hour remaining 100%, weekly remaining 53%. No reset credit was used.
+- Usage at checkpoint: five-hour remaining 54%, weekly remaining 46%. No reset credit was used.
 - Blockers: Linux CI is still required for final OpenNext bundle evidence. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally.
 
 ## Task 3 implementation evidence
@@ -55,6 +55,14 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 - `GET /api/me` and the temporary `connection:check` event share `IdentityService`. HTTP and socket guards re-read persisted sessions for every protected operation. Revoked or expired sockets receive one `UNAUTHENTICATED` acknowledgement and disconnect; storage outages return `SERVICE_UNAVAILABLE` without fabricating logout or disconnecting a potentially valid caller.
 - The responsive lobby header now renders distinct loading, unavailable/retry, unauthenticated/sign-in, and authenticated/sign-out states. Sign-up requests display name, email, password, and registration code; errors preserve inputs, pending submission is disabled, focus is contained and restored, and recovery copy tells M1 testers to contact the host because password reset is deferred.
 - Bounded desktop/mobile inspection at 1440×1000 and 360×800 found no horizontal overflow. The complete Task 6 verification is recorded in Active execution above; deployed acceptance remains not run because deployment is not authorized.
+
+## Task 7 implementation evidence
+
+- Shared strict Zod contracts now define every M1 room command, recipient `RoomView`, and private `RoomReply`; schema tests cover mutation metadata, metadata-free sync, title/seat bounds, extra-field rejection, and private-field exclusion.
+- A fenced transactional room repository, one global create queue, one bounded queue per room, and additive migration 002 provide active-membership uniqueness, persisted command outcomes, canonical-payload deduplication, invitation hashes/expiry, six-seat allocation, seat moves, leave/host transfer, and replacement cleanup.
+- Invitation tokens use 32 random bytes, are returned only for create/rotate, remain only in the private retry cache, and are never stored in room or command documents. Concurrent duplicate creates coalesce to the same room and token; cache saturation rejects before mutation.
+- Explicit `room:claimControl` increments the controller epoch. Observer and superseded tabs cannot mutate; a stale disconnect cannot clear newer control. Participant-only sync, monotonic connection revisions, reconnect without implicit takeover, and two-minute empty-room closure are enforced.
+- Real replica-set coverage includes last-seat and cross-room membership races, lost/concurrent acknowledgements, full/expired/rotated invitations, outsider access, forged host action, payload conflict, stale boot, timestamp expiry, cache saturation, host disconnect/leave, transaction rollback before publication, and additive upgrade from migration version 1.
 
 ## Task 2 implementation evidence
 

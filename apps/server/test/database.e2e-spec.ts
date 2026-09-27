@@ -1,6 +1,7 @@
 import { MongoServerError } from 'mongodb';
 
 import { applyMigrations } from '../src/database/migrate';
+import { applyFoundationMigration } from '../src/database/migrations/001-foundation';
 import { TransactionRunner } from '../src/database/transactionRunner';
 import { createTestDatabase } from './support/testDatabase';
 
@@ -47,7 +48,26 @@ describe('database persistence', () => {
     try {
       await applyMigrations(testDatabase.db);
       await applyMigrations(testDatabase.db);
-      await expect(testDatabase.db.collection('schemaMigrations').countDocuments()).resolves.toBe(1);
+      await expect(testDatabase.db.collection('schemaMigrations').countDocuments()).resolves.toBe(2);
+      await expect(testDatabase.db.listCollections({ name: 'roomCommands' }).hasNext()).resolves.toBe(true);
+      await expect(testDatabase.db.listCollections({ name: 'activeRoomMemberships' }).hasNext()).resolves.toBe(true);
+    } finally {
+      await testDatabase.dispose();
+    }
+  });
+
+  it('adds room command persistence to a database that already applied foundation version 1', async () => {
+    const testDatabase = await createTestDatabase();
+
+    try {
+      await applyFoundationMigration(testDatabase.db);
+      await testDatabase.db.collection<{ _id: number; appliedAt: Date }>('schemaMigrations')
+        .insertOne({ _id: 1, appliedAt: new Date() });
+
+      await applyMigrations(testDatabase.db);
+
+      await expect(testDatabase.db.collection('schemaMigrations').countDocuments()).resolves.toBe(2);
+      await expect(testDatabase.db.listCollections({ name: 'roomCommands' }).hasNext()).resolves.toBe(true);
     } finally {
       await testDatabase.dispose();
     }

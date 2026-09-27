@@ -165,6 +165,9 @@ describe('backend authority', () => {
     expect(ownerToken).not.toBeNull();
     await insertRoom('stale-room', 'OPEN', 'dead-owner');
     await insertMembership('stale-room', 'account-a', 0);
+    await database.db.collection<{ _id: string; roomId: string; accountId: string; joinedAt: Date }>(
+      'activeRoomMemberships',
+    ).insertOne({ _id: 'account-a', roomId: 'stale-room', accountId: 'account-a', joinedAt: new Date() });
 
     await withDatabaseEnvironment(async () => {
       const standby = await createApplication();
@@ -172,6 +175,7 @@ describe('backend authority', () => {
       try {
         expect(await database.db.collection<RoomFixture>('rooms').findOne({ _id: 'stale-room' })).toMatchObject({ status: 'OPEN' });
         expect(await database.db.collection<MembershipFixture>('roomMemberships').findOne({ roomId: 'stale-room' })).toMatchObject({ seat: 0 });
+        expect(await database.db.collection('activeRoomMemberships').findOne({ accountId: 'account-a' })).not.toBeNull();
       } finally {
         await standby.close();
       }
@@ -184,6 +188,9 @@ describe('backend authority', () => {
     await insertRoom('completed-room', 'CLOSED', 'dead-owner');
     await insertMembership('stale-room', 'account-a', 0);
     await insertMembership('completed-room', 'account-b', 1);
+    await database.db.collection<{ _id: string; roomId: string; accountId: string; joinedAt: Date }>(
+      'activeRoomMemberships',
+    ).insertOne({ _id: 'account-a', roomId: 'stale-room', accountId: 'account-a', joinedAt: new Date() });
 
     await withDatabaseEnvironment(async () => {
       const replacement = await createApplication();
@@ -197,6 +204,7 @@ describe('backend authority', () => {
           seat: null,
           leftAt: expect.any(Date),
         });
+        expect(await database.db.collection('activeRoomMemberships').findOne({ accountId: 'account-a' })).toBeNull();
         expect(await database.db.collection<RoomFixture>('rooms').findOne({ _id: 'completed-room' })).toMatchObject({
           status: 'CLOSED',
           revision: 0,

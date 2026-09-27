@@ -31,4 +31,8 @@ export async function abortPreviousRooms(
     { $set: { seat: null, leftAt: closedAt } },
     { session },
   );
+  await db.collection('activeRoomMemberships').deleteMany(
+    { roomId: { $in: roomIds } },
+    { session },
+  );
 }

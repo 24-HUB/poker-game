@@ -161,4 +161,9 @@ export class AuthorityLease {
   public isReady(): boolean {
     return this.ready && this.token !== null && performance.now() < this.validUntil;
   }
+
+  public currentToken(): AuthorityToken | null {
+    if (!this.isReady() || !this.token) return null;
+    return { ...this.token };
+  }
 }
