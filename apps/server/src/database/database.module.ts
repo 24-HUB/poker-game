@@ -2,6 +2,7 @@ import { Global, Inject, Injectable, Module, OnApplicationShutdown } from '@nest
 import { Db, MongoClient } from 'mongodb';
 
 import { MONGO_CLIENT, MONGO_DB, TRANSACTION_RUNNER } from './database.tokens';
+import { createMongoClient } from './mongoClientFactory';
 import { TransactionRunner } from './transactionRunner';
 
 @Injectable()
@@ -21,11 +22,7 @@ class DatabaseLifecycle implements OnApplicationShutdown {
       useFactory: async (): Promise<MongoClient> => {
         const uri = process.env.MONGODB_URI;
         if (!uri) throw new Error('MONGODB_URI is required');
-        const client = new MongoClient(uri, {
-          maxPoolSize: 10,
-          minPoolSize: 0,
-          serverSelectionTimeoutMS: 5_000,
-        });
+        const client = createMongoClient(uri);
         await client.connect();
         return client;
       },

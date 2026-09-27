@@ -1,6 +1,6 @@
 # Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-27. Status: Tasks 1–2 complete on `codex/m0-m1-foundation`; Task 3 persistence is implemented but not green because Docker Desktop cannot start.
+Updated: 2026-09-27. Status: Tasks 1–3 complete on `codex/m0-m1-foundation`; Task 4 backend ownership is next.
 
 ## User intent and usage rule
 
@@ -10,20 +10,22 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 
 - Branch: `codex/m0-m1-foundation`, created from fetched `origin/dev` at `01f033d0`.
 - Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
-- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell.
-- Current task: Task 3 in progress, blocked at real replica-set verification.
-- Next action: repair or restart Docker Desktop, then run `docker compose up -d --wait`, `pnpm db:init`, and `pnpm --filter @poker/server test --runInBand database.e2e-spec`. Fix any behavioral failures before declaring Task 3 complete.
-- Verification: `pnpm check` passed all workspace typechecks, 8 tests, and Nest/contract/Next production builds. `pnpm --filter @poker/web test:e2e` passed 4 Chromium tests covering 360×800, 900×900, 1440×1000, Escape closure, and focus restoration. The Impeccable detector returned no findings after remediation. `git diff --check` passed with line-ending warnings only.
+- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes.
+- Current task: Task 3 complete pending its boundary commit and push.
+- Next action: commit and push the verified Task 3 boundary, then start Task 4 fenced backend ownership, readiness, cleanup, and shutdown with a failing behavioral test.
+- Verification: `pnpm check` passed all workspace typechecks, 13 tests (11 server, 1 contracts, 1 web), and Nest/contract/Next production builds. `pnpm db:migrate` passed twice against the disposable replica set. The four-test real database suite passed rollback, unique-seat, migration-idempotency, and standalone-rejection checks. `pnpm --filter @poker/server check:auth-import` passed. Task 2 Playwright evidence remains 4/4 Chromium tests covering 360×800, 900×900, 1440×1000, Escape closure, and focus restoration. `git diff --check` passed with line-ending warnings only.
 - Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
-- Usage at checkpoint: five-hour remaining 58%, weekly remaining 78%. No reset credit was used.
-- Blockers: Docker Desktop 4.45 exits while initializing its inference manager because `C:\Users\Neary\AppData\Local\Docker\run\dockerInference` is an inaccessible stale reparse point (Windows error 1920). Moving it and clearing only its reparse metadata both failed; no Docker files were removed. A host restart or manual Docker repair is required. Linux CI is still required for final OpenNext bundle evidence.
+- Usage at checkpoint: five-hour remaining 30%, weekly remaining 73%. No reset credit was used.
+- Blockers: Linux CI is still required for final OpenNext bundle evidence. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally.
 
-## Task 3 in-progress evidence
+## Task 3 implementation evidence
 
 - RED captured: `database.e2e-spec.ts` initially failed because the transaction runner and migrations did not exist.
 - Added pinned MongoDB driver 7.6.0, disposable replica-set and standalone services, replica-set initialization, unique per-test databases, the singleton Nest database module, shared provider tokens, bounded connection pools, single-session transaction execution, additive migration tracking, validators, and M0/M1 indexes.
-- Added real tests for rollback, occupied-seat uniqueness, idempotent migrations, and standalone rejection. These currently time out at connection because Docker never reaches its engine; they have not been weakened or skipped.
-- `pnpm --filter @poker/server typecheck`, the six existing non-database server tests, the Nest production build, init-script syntax check, and `git diff --check` pass. The real database suite is not yet verified.
+- Docker Desktop recovered and both disposable MongoDB services reached healthy state. Replica-set initialization selected a PRIMARY at `host.docker.internal:27018`.
+- The first real run exposed a MongoDB 7 driver/Jest VM incompatibility: dynamically resolved runtime metadata became empty and the server rejected the handshake. Added a narrow RED compatibility test and centralized `MongoClient` construction with the driver's explicit Node OS runtime adapter; the compatibility test then passed.
+- Added real tests for rollback, occupied-seat uniqueness, idempotent migrations, and standalone rejection. All four pass against the disposable services.
+- `pnpm db:migrate` passed twice against an isolated database. `pnpm check`, the compiled Better Auth import check, and `git diff --check` pass.
 
 ## Task 2 implementation evidence
 

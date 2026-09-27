@@ -2,6 +2,8 @@ import { randomUUID } from 'node:crypto';
 
 import { Db, MongoClient } from 'mongodb';
 
+import { createMongoClient } from '../../src/database/mongoClientFactory';
+
 export type TestDatabase = {
   client: MongoClient;
   db: Db;
@@ -9,7 +11,7 @@ export type TestDatabase = {
 };
 
 export async function createTestDatabase(uri = process.env.TEST_MONGODB_URI ?? 'mongodb://127.0.0.1:27018/?replicaSet=rs0&directConnection=true'): Promise<TestDatabase> {
-  const client = new MongoClient(uri, { serverSelectionTimeoutMS: 5_000 });
+  const client = createMongoClient(uri);
   try {
     await client.connect();
   } catch (error) {

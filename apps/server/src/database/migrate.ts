@@ -1,6 +1,7 @@
-import { Db, MongoClient } from 'mongodb';
+import { Db } from 'mongodb';
 
 import { applyFoundationMigration } from './migrations/001-foundation';
+import { createMongoClient } from './mongoClientFactory';
 
 const migrations = [{ version: 1, apply: applyFoundationMigration }] as const;
 
@@ -24,7 +25,7 @@ async function run(): Promise<void> {
   const uri = process.env.MONGODB_URI;
   if (!uri) throw new Error('MONGODB_URI is required');
 
-  const client = new MongoClient(uri, { maxPoolSize: 10, minPoolSize: 0, serverSelectionTimeoutMS: 5_000 });
+  const client = createMongoClient(uri);
   try {
     await client.connect();
     await applyMigrations(client.db(process.env.MONGODB_DATABASE ?? 'poker'));
