@@ -1,6 +1,6 @@
 # Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-27. Status: Tasks 1–5 complete on `codex/m0-m1-foundation`; Task 6 invite-only email authentication is next.
+Updated: 2026-09-27. Status: Tasks 1–6 complete on `codex/m0-m1-foundation`; Task 7 authoritative private rooms is next.
 
 ## User intent and usage rule
 
@@ -10,12 +10,12 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 
 - Branch: `codex/m0-m1-foundation`, created from fetched `origin/dev` at `01f033d0`.
 - Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
-- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes; Task 4, fenced backend authority, startup cleanup, health separation, renewal, takeover, and safe shutdown ordering; Task 5, fixed-upstream Worker proxy and protected Socket.IO transport.
-- Current task: Task 5 complete pending its boundary commit and push.
-- Next action: commit and push Task 5, then start Task 6 invite-only Better Auth email/password and shared HTTP/Socket.IO session resolution with registration-code rejection in RED.
-- Verification: `pnpm install --frozen-lockfile` passed. Fresh `pnpm check` passed all workspace typechecks, 34 tests (23 server, 10 web, 1 contracts), and Nest/contract/Next production builds. Worker proxy tests pass 9/9; backend proxy/upgrade tests pass 4/4; Task 4 authority remains 8/8 green. `git diff --check` is the final pre-commit action.
+- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes; Task 4, fenced backend authority, startup cleanup, health separation, renewal, takeover, and safe shutdown ordering; Task 5, fixed-upstream Worker proxy and protected Socket.IO transport; Task 6, invite-only email authentication and shared HTTP/Socket.IO session UI.
+- Current task: Task 6 is complete at this recoverable boundary.
+- Next action: start Task 7 with room contracts and the first failing secure-room domain tests.
+- Verification: frozen installation passed. Fresh `pnpm check` passed all workspace typechecks, 61 tests (40 server, 20 web, 1 contracts), and Nest/contract/Next production builds. The focused real-adapter identity suite passes 16/16; focused proxy/auth transport coverage passes 21/21. Browser session and existing responsive lobby suites pass 6/6. `git diff --check` and the complete Task 6 diff review passed before the boundary commit.
 - Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
-- Usage at checkpoint: five-hour remaining 69%, weekly remaining 64%. No reset credit was used.
+- Usage at checkpoint: five-hour remaining 100%, weekly remaining 53%. No reset credit was used.
 - Blockers: Linux CI is still required for final OpenNext bundle evidence. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally.
 
 ## Task 3 implementation evidence
@@ -46,6 +46,15 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 - Added backend timeout handling as an uncached 504, request-body/cookie streaming coverage, invalid backend-origin coverage, and explicit frontend delegation for non-backend lookalike paths.
 - Shutdown now follows the full lifecycle requirement: Nest disposes Socket.IO before authority release, while MongoDB stays available until conditional release completes. A live-upgrade regression test observed the original wrong order in RED and the corrected order in GREEN.
 - Frozen installation and fresh `pnpm check` pass. The Linux-only OpenNext bundle remains deferred to Task 10 as already recorded; Task 5 local acceptance is complete.
+
+## Task 6 implementation evidence
+
+- RED captured for the missing native auth mount, `/api/me`, application error envelope, socket acknowledgement, revocation ordering, database-outage classification, malformed payload rejection, modal focus containment, session-state distinction, and successful sign-out account clearing.
+- Better Auth 1.7.6 is mounted on Express before bounded body parsing and uses its MongoDB adapter with the shared client and transactions. The exact `/sign-up/email` before-hook compares a SHA-256 registration-code digest in constant time and deletes the submitted code before account creation. Provider logging is disabled so credentials and registration codes are not emitted.
+- Email/password registration enforces 8–128 characters, duplicate email behavior, native auth responses, database-backed uncached sessions, stable trusted origin, and host-only HttpOnly cookies. HTTPS cookies are mandatory for production; loopback HTTP is allowed only outside production so the committed local `.env.example` remains runnable.
+- `GET /api/me` and the temporary `connection:check` event share `IdentityService`. HTTP and socket guards re-read persisted sessions for every protected operation. Revoked or expired sockets receive one `UNAUTHENTICATED` acknowledgement and disconnect; storage outages return `SERVICE_UNAVAILABLE` without fabricating logout or disconnecting a potentially valid caller.
+- The responsive lobby header now renders distinct loading, unavailable/retry, unauthenticated/sign-in, and authenticated/sign-out states. Sign-up requests display name, email, password, and registration code; errors preserve inputs, pending submission is disabled, focus is contained and restored, and recovery copy tells M1 testers to contact the host because password reset is deferred.
+- Bounded desktop/mobile inspection at 1440×1000 and 360×800 found no horizontal overflow. The complete Task 6 verification is recorded in Active execution above; deployed acceptance remains not run because deployment is not authorized.
 
 ## Task 2 implementation evidence
 

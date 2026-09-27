@@ -4,12 +4,32 @@ import { connect, type Socket } from 'node:net';
 import request from 'supertest';
 
 import { AuthorityLease } from '../src/authority/authorityLease';
-import { verifyProxyRequest } from '../src/common/proxyGuard';
+import { verifyProxyRequest, verifyPublicOrigin } from '../src/common/proxyGuard';
 import { applyMigrations } from '../src/database/migrate';
 import { createApplication } from '../src/main';
 import { createTestDatabase } from './support/testDatabase';
 
 describe('direct backend protection', () => {
+  it('allows loopback HTTP only outside production', () => {
+    const previousOrigin = process.env.PUBLIC_ORIGIN;
+    const previousNodeEnvironment = process.env.NODE_ENV;
+    try {
+      process.env.PUBLIC_ORIGIN = 'http://localhost:3000';
+      process.env.NODE_ENV = 'development';
+      expect(verifyPublicOrigin({ origin: 'http://localhost:3000' })).toBe(true);
+
+      process.env.NODE_ENV = 'production';
+      expect(verifyPublicOrigin({ origin: 'http://localhost:3000' })).toBe(false);
+
+      process.env.NODE_ENV = 'development';
+      process.env.PUBLIC_ORIGIN = 'http://play.example';
+      expect(verifyPublicOrigin({ origin: 'http://play.example' })).toBe(false);
+    } finally {
+      restoreEnvironment('PUBLIC_ORIGIN', previousOrigin);
+      restoreEnvironment('NODE_ENV', previousNodeEnvironment);
+    }
+  });
+
   it('rejectsDirectBackendSpoof', async () => {
     const database = await createTestDatabase();
     await applyMigrations(database.db);

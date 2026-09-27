@@ -16,19 +16,29 @@ export function verifyProxyRequest(headers: IncomingHttpHeaders): boolean {
 export function verifyPublicOrigin(headers: IncomingHttpHeaders): boolean {
   const configured = process.env.PUBLIC_ORIGIN;
   if (!configured || typeof headers.origin !== 'string') return false;
+  const origin = parsePublicOrigin(configured);
+  return origin !== null && headers.origin === origin.origin;
+}
+
+export function parsePublicOrigin(value: string): URL | null {
   try {
-    const origin = new URL(configured);
+    const origin = new URL(value);
+    const isLoopback = origin.hostname === 'localhost'
+      || origin.hostname === '127.0.0.1'
+      || origin.hostname === '[::1]';
+    const allowedProtocol = origin.protocol === 'https:'
+      || (process.env.NODE_ENV !== 'production' && origin.protocol === 'http:' && isLoopback);
     if (
-      origin.protocol !== 'https:'
+      !allowedProtocol
       || origin.username
       || origin.password
       || origin.pathname !== '/'
       || origin.search
       || origin.hash
-    ) return false;
-    return headers.origin === origin.origin;
+    ) return null;
+    return origin;
   } catch {
-    return false;
+    return null;
   }
 }
 

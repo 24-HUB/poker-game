@@ -1,6 +1,7 @@
 import { Club, Home } from 'lucide-react';
 import type { ReactNode } from 'react';
 
+import { AccountAccess } from '../../features/auth/AccountAccess';
 import { Icon } from '../ui/Icon';
 
 export function GameShell({ children }: { children: ReactNode }) {
@@ -13,7 +14,7 @@ export function GameShell({ children }: { children: ReactNode }) {
             <span className="brand__mark"><Icon icon={Club} /></span>
             <span>Looking Glass <small>Club</small></span>
           </div>
-          <span className="access-badge">Private playtest</span>
+          <AccountAccess />
         </header>
         <aside className="sidebar">
           <nav aria-label="Main navigation">
