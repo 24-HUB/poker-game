@@ -17,7 +17,7 @@ const uncertainReply: Result<RoomReply> = {
 };
 
 export function useRoomConnection(roomId: string | null) {
-  const { session } = useSession();
+  const { session, refresh: refreshSession } = useSession();
   const room = useStore(roomStore, (state) => state.room);
   const pendingCommand = useStore(roomStore, (state) => state.pendingCommand);
   const [status, setStatus] = useState<RoomConnectionStatus>('connecting');
@@ -82,9 +82,14 @@ export function useRoomConnection(roomId: string | null) {
       roomStore.getState().setPendingCommand(null);
       clearPendingCommand(sessionStorage);
     }
+    if (result.error?.code === 'UNAUTHENTICATED') {
+      roomStore.getState().clear();
+      await refreshSession();
+      return result;
+    }
     if (result.data?.room) roomStore.getState().applySnapshot(result.data.room);
     return result;
-  }, [accountId]);
+  }, [accountId, refreshSession]);
 
   return { status, room, pendingCommand, authorityBootId, send, sync };
 }

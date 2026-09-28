@@ -18,14 +18,15 @@ for (const viewport of viewports) {
   });
 }
 
-test('Escape closes the room dialog and restores focus', async ({ page }) => {
+test('the room form is keyboard operable and restores focus', async ({ page }) => {
   await page.goto('/');
   const trigger = page.getByRole('button', { name: 'Create Room' });
 
   await trigger.click();
-  await expect(page.getByRole('dialog', { name: 'Set your table.' })).toBeVisible();
-  await page.keyboard.press('Escape');
+  await expect(page.getByRole('heading', { name: 'Set your table.' })).toBeVisible();
+  await expect(page.getByLabel('Room title')).toBeFocused();
+  await page.getByRole('button', { name: 'Back to room options' }).click();
 
-  await expect(page.getByRole('dialog')).toBeHidden();
+  await expect(page.getByRole('heading', { name: 'Set your table.' })).toBeHidden();
   await expect(trigger).toBeFocused();
 });

@@ -2,7 +2,7 @@
 
 import { roomTitleSchema } from '@poker/contracts';
 import { ArrowLeft, ArrowRight, Clock3, Plus, Users } from 'lucide-react';
-import { type FormEvent, useEffect, useState } from 'react';
+import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react';
 
 import { CompanionPortrait } from '../../components/shell/CompanionPortrait';
 import { Icon } from '../../components/ui/Icon';
@@ -22,6 +22,7 @@ export function Lobby({ onCreate, onJoin, pending, error, initialInvitation = nu
   const [title, setTitle] = useState('');
   const [invitation, setInvitation] = useState(initialInvitation ?? '');
   const [validationError, setValidationError] = useState<string | null>(null);
+  const lastTrigger = useRef<HTMLButtonElement | null>(null);
 
   useEffect(() => {
     if (!initialInvitation) return;
@@ -29,9 +30,21 @@ export function Lobby({ onCreate, onJoin, pending, error, initialInvitation = nu
     setMode('join');
   }, [initialInvitation]);
 
-  function show(nextMode: Exclude<LobbyMode, 'actions'>) {
+  function show(nextMode: Exclude<LobbyMode, 'actions'>, trigger: HTMLButtonElement) {
+    lastTrigger.current = trigger;
     setValidationError(null);
     setMode(nextMode);
+  }
+
+  function returnToActions() {
+    setMode('actions');
+    requestAnimationFrame(() => lastTrigger.current?.focus());
+  }
+
+  function handleFormKeyDown(event: KeyboardEvent<HTMLFormElement>) {
+    if (event.key !== 'Escape') return;
+    event.preventDefault();
+    returnToActions();
   }
 
   function submitCreate(event: FormEvent<HTMLFormElement>) {
@@ -43,7 +56,7 @@ export function Lobby({ onCreate, onJoin, pending, error, initialInvitation = nu
     }
     setValidationError(null);
     void onCreate(parsed.data);
-    setMode('actions');
+    returnToActions();
   }
 
   function submitJoin(event: FormEvent<HTMLFormElement>) {
@@ -55,7 +68,7 @@ export function Lobby({ onCreate, onJoin, pending, error, initialInvitation = nu
     }
     setValidationError(null);
     void onJoin(token);
-    setMode('actions');
+    returnToActions();
   }
 
   return (
@@ -71,20 +84,20 @@ export function Lobby({ onCreate, onJoin, pending, error, initialInvitation = nu
             <p>Set the table, invite your friends, and make yourself at home.</p>
           </div>
           <div className="room-actions" hidden={mode !== 'actions'}>
-            <button className="room-action room-action--primary" type="button" aria-label="Create Room" onClick={() => show('create')}>
+            <button className="room-action room-action--primary" type="button" aria-label="Create Room" onClick={(event) => show('create', event.currentTarget)}>
               <span className="room-action__icon"><Icon icon={Plus} /></span>
               <span><strong>Create Room</strong><small>Start a private table for 2–6 players.</small></span>
               <span className="room-action__arrow"><Icon icon={ArrowRight} /></span>
             </button>
-            <button className="room-action room-action--secondary" type="button" aria-label="Join Room" onClick={() => show('join')}>
+            <button className="room-action room-action--secondary" type="button" aria-label="Join Room" onClick={(event) => show('join', event.currentTarget)}>
               <span className="room-action__icon"><Icon icon={Users} /></span>
               <span><strong>Join Room</strong><small>Use a private invitation from the host.</small></span>
               <span className="room-action__arrow"><Icon icon={ArrowRight} /></span>
             </button>
           </div>
           {mode === 'create' ? (
-            <form className="room-form" onSubmit={submitCreate}>
-              <button className="room-form__back" type="button" onClick={() => setMode('actions')}>
+            <form className="room-form" onSubmit={submitCreate} onKeyDown={handleFormKeyDown}>
+              <button className="room-form__back" type="button" onClick={returnToActions}>
                 <Icon icon={ArrowLeft} /> Back to room options
               </button>
               <div>
@@ -105,8 +118,8 @@ export function Lobby({ onCreate, onJoin, pending, error, initialInvitation = nu
             </form>
           ) : null}
           {mode === 'join' ? (
-            <form className="room-form" onSubmit={submitJoin}>
-              <button className="room-form__back" type="button" onClick={() => setMode('actions')}>
+            <form className="room-form" onSubmit={submitJoin} onKeyDown={handleFormKeyDown}>
+              <button className="room-form__back" type="button" onClick={returnToActions}>
                 <Icon icon={ArrowLeft} /> Back to room options
               </button>
               <div>

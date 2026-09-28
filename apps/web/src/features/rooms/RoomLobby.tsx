@@ -88,7 +88,7 @@ export function RoomLobby({
             </button>
           ) : null}
           {isHost ? (
-            <button className="secondary-button" type="button" disabled={pending} onClick={onRotateInvitation}>
+            <button className="secondary-button" type="button" disabled={pending || !room.control.isController} onClick={onRotateInvitation}>
               <Icon icon={RefreshCw} /> Rotate room invitation
             </button>
           ) : null}
@@ -97,7 +97,7 @@ export function RoomLobby({
               <Icon icon={Link2} /> Claim control in this tab
             </button>
           ) : null}
-          <button className="text-button" type="button" disabled={pending} onClick={onLeave}>
+          <button className="text-button" type="button" disabled={pending || !room.control.isController} onClick={onLeave}>
             <Icon icon={LogOut} /> Leave room
           </button>
           {message ? <p className="room-control-message" role="status">{message}</p> : null}

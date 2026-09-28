@@ -10,7 +10,7 @@ export default defineConfig({
     trace: 'retain-on-failure',
   },
   webServer: {
-    command: 'pnpm dev --hostname 127.0.0.1 --port 3100',
+    command: 'node scripts/e2e-stack.mjs',
     url: 'http://127.0.0.1:3100',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,
