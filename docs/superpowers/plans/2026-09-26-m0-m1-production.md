@@ -73,6 +73,8 @@ Checkpoint 2026-09-28: locally complete. Stable uncertain-command retry, cold-ba
 
 Add CI, Render and Worker configuration, environment documentation, accessibility coverage, and non-secret deployment smoke tooling without provisioning providers. Run frozen install, migrations twice, `pnpm check`, builds, real local Socket.IO and replica-set flows, browser suites, visual checks, diff checks, and whole-branch review. Record deployed M0 acceptance as `not run - deployment not authorized`.
 
+Checkpoint 2026-09-28: local implementation and acceptance are complete. The frozen install, two migrations, `pnpm check` (121/121 tests plus configured production builds), and combined Chromium suite (11/11) pass. Render, CI, Wrangler variable preservation, deployment documentation, redacted smoke tooling, and accessibility coverage are prepared. The OpenNext build passes Next compilation but Windows denies its required symlink; the committed Linux CI job is the pending Worker-bundle evidence. Deployed M0/M1 acceptance is not run—deployment not authorized.
+
 ## Handoff
 
 Fetch `origin` again, report whether the branch contains current `origin/dev`, push the explicit task branch, and create a pull request with base `dev`. Never merge, enable auto-merge, or delete the branch.

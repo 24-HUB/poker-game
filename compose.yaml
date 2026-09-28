@@ -4,6 +4,8 @@ services:
     command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
     ports:
       - "127.0.0.1:27018:27017"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     healthcheck:
       test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
       interval: 2s

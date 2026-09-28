@@ -10,7 +10,9 @@
     "check": "pnpm typecheck && pnpm test && pnpm build",
     "db:init": "node scripts/init-replica-set.mjs",
     "db:migrate": "pnpm --filter @poker/server db:migrate",
-    "test": "pnpm -r --if-present test",
+    "smoke:deployment": "node scripts/smoke-deployment.mjs",
+    "test": "pnpm test:deployment && pnpm -r --if-present test",
+    "test:deployment": "node --test scripts/smoke-deployment.test.mjs",
     "typecheck": "pnpm -r --if-present typecheck"
   },
   "devDependencies": {

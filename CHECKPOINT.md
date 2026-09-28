@@ -1,6 +1,6 @@
 # Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-28. Status: Tasks 1–9 are locally complete on `codex/m0-m1-foundation`; Task 10 local acceptance and deployment preparation is next.
+Updated: 2026-09-28. Status: Tasks 1–10 are locally complete on `codex/m0-m1-foundation`; final branch review, push, Linux CI, and PR handoff remain.
 
 ## User intent and usage rule
 
@@ -10,13 +10,22 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 
 - Branch: `codex/m0-m1-foundation`, created from fetched `origin/dev` at `01f033d0`.
 - Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
-- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes; Task 4, fenced backend authority, startup cleanup, health separation, renewal, takeover, and safe shutdown ordering; Task 5, fixed-upstream Worker proxy and protected Socket.IO transport; Task 6, invite-only email authentication and shared HTTP/Socket.IO session UI; Task 7, authoritative private rooms, invitations, seats, and explicit tab control; Task 8, authorized realtime delivery, reconnect, abuse bounds, and shutdown draining; Task 9, integrated authenticated private-room web flow and local browser acceptance.
-- Current task: Task 9 is locally complete. Invitation parsing/storage, monotonic room state, exact pending-command retries, shared account isolation, Socket.IO lifecycle, create/join forms, six-seat room UI, cold/restart recovery, and room routes are implemented and verified.
-- Next action: begin Task 10 by reviewing existing CI/deployment files, then add the remaining environment documentation, accessibility coverage, and non-secret smoke tooling without provisioning providers.
-- Verification: a frozen install completed with the committed lockfile; `pnpm check` passes 119/119 tests, all workspace typechecks, and all configured production builds. The combined real Chromium suite passes 10/10 against the disposable replica set. Responsive room screenshots at 360×800, 900×900, and 1440×1000 were visually inspected with no horizontal overflow. Deployed acceptance is not run—deployment not authorized.
+- Completed tasks: Tasks 1–9 above, plus Task 10 local acceptance and deployment preparation: CI, Render/Worker configuration, environment documentation, redacted smoke tooling, and accessibility coverage.
+- Current task: Task 10 is locally complete with one platform-deferred check. No provider was provisioned and no live secret or production migration was used.
+- Next action: commit and push the Task 10 checkpoint, fetch `origin` again, review the whole branch against current `origin/dev`, then open a PR targeting `dev`. Linux CI must supply OpenNext Worker-bundle evidence.
+- Verification: a frozen install completed with the committed lockfile; controlled migrations pass twice; `pnpm check` passes 121/121 tests, all workspace typechecks, and configured contracts/Nest/Next production builds. The combined real Chromium suite passes 11/11 against the disposable replica set. Render/Cloudflare deployment smoke remains not run—deployment not authorized.
 - Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
-- Usage at checkpoint: five-hour remaining 44%, weekly remaining 13%. No reset credit was used.
-- Blockers: Linux CI is still required for final OpenNext bundle evidence. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally.
+- Usage at checkpoint: five-hour remaining 20%, weekly remaining 10%. No reset credit was used.
+- Blockers: OpenNext reaches bundle generation locally but Windows denies its required symlink; Linux CI is required for final Worker-bundle evidence. Live provider checks remain unauthorized. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally.
+
+## Task 10 implementation evidence
+
+- Added a manual Render free-service blueprint with automatic deploy disabled, `/health/deploy`, bounded shutdown, pinned Node/pnpm build commands, and dashboard-supplied secret/configuration fields. No pre-deploy production migration is configured.
+- Added read-only GitHub CI for `dev` pull requests/pushes: frozen install, disposable MongoDB services, replica-set initialization, two migrations, `pnpm check`, and Linux OpenNext Worker build. It contains no deploy job or provider credential reference.
+- Added a bounded public deployment smoke command. Tests prove a 200 shell plus authoritative ready state succeeds and an unavailable origin fails nonzero without printing unrelated secret environment values.
+- Added deployment/environment documentation and Wrangler dashboard-variable preservation. Provider provisioning, secret upload, live migration, and deployment are explicitly outside authorization.
+- Added a dedicated 360×800 accessibility case covering keyboard activation, focus restoration, 44px target size, reduced motion, a long authenticated name, named sign-out, and overflow. The complete browser suite passes 11/11.
+- Controlled local migrations pass twice. `pnpm check` passes 121/121 tests and configured builds. OpenNext passes Next compilation, then Windows returns `EPERM` for a required symlink; Linux CI evidence remains pending.
 
 ## Task 3 implementation evidence
 

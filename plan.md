@@ -617,11 +617,13 @@ These five failure cases receive explicit tests below:
 
 **Interfaces:** `pnpm smoke:deployment` reads `PUBLIC_ORIGIN` and checks public shell/health without secrets in output. CI runs `pnpm install --frozen-lockfile`, replica-set setup, migrations, `pnpm check`, and the Worker build. Render uses `/health/deploy` and manual deployments. Its free tier has no pre-deploy command; run controlled migrations from an authorized local/CI context before deploying. [Render deploy commands](https://render.com/docs/deploys#pre-deploy-command)
 
-- [ ] Add smoke assertions `expect(shell.status).toBe(200)` and readiness state validation; execute against an unavailable test origin and confirm a clear nonzero exit without credential output.
-- [ ] Prepare Render, Atlas, and Cloudflare configuration plus non-secret smoke tooling. Do not provision providers, apply production migrations, or configure live secrets in this task. Record deployed M0 acceptance as `not run - deployment not authorized`.
-- [ ] Verify local registration/sign-in cookies, `/api/me`, polling and WebSocket upgrade, direct-backend denial, and frontend reload. Keep private-account pages uncached.
+- [x] Add smoke assertions `expect(shell.status).toBe(200)` and readiness state validation; execute against an unavailable test origin and confirm a clear nonzero exit without credential output.
+- [x] Prepare Render, Atlas, and Cloudflare configuration plus non-secret smoke tooling. Do not provision providers, apply production migrations, or configure live secrets in this task. Record deployed M0 acceptance as `not run - deployment not authorized`.
+- [x] Verify local registration/sign-in cookies, `/api/me`, polling and WebSocket upgrade, direct-backend denial, and frontend reload. Keep private-account pages uncached.
 - [ ] Let Render sleep naturally; open the shell and verify wake-up handling, then perform a controlled replacement with no active play. Observe standby deployment health, a visible readiness interval, old-owner shutdown, new-owner acquisition, and socket reauthentication. Record actual timings and results. No scheduled keepalive traffic.
 - [ ] Mark M0 verified only when all local and deployed checks pass; otherwise record exactly which environment checks remain blocked. Commit: `chore: verify foundation deployment and record evidence`.
+
+Local deployment-preparation evidence on 2026-09-28: the frozen install passed; controlled migrations passed twice against `poker_task10_acceptance`; `pnpm check` passed 121/121 tests, all typechecks, and the contracts/Nest/Next production builds; and the combined real Chromium suite passed 11/11. The OpenNext command passed its Next build but Windows denied a required symlink during bundle generation, so Linux CI remains the required Worker-bundle check. Render sleep/wake, provider limits, public-origin cookies, Cloudflare-to-Render HTTP/WebSocket proxying, Atlas transactions, and controlled replacement remain **not run—deployment not authorized**. M0 is not marked deployed or fully verified.
 
 ### Task 7 — Room commands, invitations, seats and tab ownership
 

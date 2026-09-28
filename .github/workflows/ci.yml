@@ -1,0 +1,43 @@
+name: CI
+
+on:
+  pull_request:
+    branches: [dev]
+  push:
+    branches: [dev]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: "true"
+      TEST_MONGODB_URI: mongodb://127.0.0.1:27018/?replicaSet=rs0&directConnection=true
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.33.0
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.16.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Start disposable MongoDB services
+        run: docker compose up -d mongodb mongodb-standalone
+      - name: Initialize replica set
+        run: pnpm db:init
+      - name: Prove migration idempotency
+        env:
+          MONGODB_URI: mongodb://127.0.0.1:27018/?replicaSet=rs0&directConnection=true
+          MONGODB_DATABASE: poker_ci_migrations
+        run: |
+          pnpm db:migrate
+          pnpm db:migrate
+      - run: pnpm check
+      - name: Build Cloudflare Worker
+        run: pnpm --filter @poker/web build:worker

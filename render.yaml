@@ -1,0 +1,29 @@
+services:
+  - type: web
+    name: poker-anime-gacha-server
+    runtime: node
+    plan: free
+    region: singapore
+    branch: dev
+    autoDeployTrigger: "off"
+    buildCommand: corepack enable && corepack prepare pnpm@10.33.0 --activate && pnpm install --frozen-lockfile && pnpm --filter @poker/contracts build && pnpm --filter @poker/server build
+    startCommand: pnpm --filter @poker/server start
+    healthCheckPath: /health/deploy
+    maxShutdownDelaySeconds: 30
+    envVars:
+      - key: NODE_VERSION
+        value: 22.16.0
+      - key: NODE_ENV
+        value: production
+      - key: PUBLIC_ORIGIN
+        sync: false
+      - key: PROXY_SECRET
+        sync: false
+      - key: MONGODB_URI
+        sync: false
+      - key: MONGODB_DATABASE
+        sync: false
+      - key: BETTER_AUTH_SECRET
+        sync: false
+      - key: REGISTRATION_INVITE_CODE_SHA256
+        sync: false
