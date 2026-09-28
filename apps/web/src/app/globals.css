@@ -110,6 +110,7 @@ main { min-width: 0; padding: 37px 42px 22px; }
 .room-form input { min-height: 48px; padding: 10px 12px; border: 1px solid #637fa3; border-radius: var(--radius-sm); color: var(--ink); background: var(--surface); font-size: 16px; }
 .room-form input:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
 .room-form__error { margin: 12px 0 0; padding: 11px 12px; border: 1px solid #e4a3ac; border-radius: var(--radius-sm); color: var(--danger); background: #fff5f6; font-size: 14px; }
+.room-reconcile { margin-top: 10px; }
 .room-eyebrow { margin: 0 0 7px; color: var(--brand); font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; }
 .room-lobby__heading { margin-bottom: 28px; }
 .room-lobby__grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(245px, 320px); gap: 28px; align-items: start; }
@@ -170,6 +171,7 @@ main { min-width: 0; padding: 37px 42px 22px; }
   .page-heading h1 { font-size: 26px; }
   .page-heading p { font-size: 12px; }
   .page-heading > span { display: none; }
+  .room-lobby__heading > .connection-state { display: inline-flex; }
   .lobby-layout { display: flex; flex-direction: column-reverse; gap: 24px; }
   .companion { width: 100%; padding: 0; }
   .companion__frame { height: 86px; border-color: var(--line); border-radius: 9px; }

@@ -2,7 +2,7 @@
 
 import type { RoomMutationCommand } from '@poker/contracts';
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useStore } from 'zustand';
 
 import { useSession } from '../auth/SessionBoundary';
@@ -14,13 +14,26 @@ export function RoomExperience({ roomId }: { roomId: string }) {
   const router = useRouter();
   const { session } = useSession();
   const invitation = useStore(roomStore, (state) => state.invitation);
-  const { room, status, pendingCommand, authorityBootId, send } = useRoomConnection(roomId);
+  const interruption = useStore(roomStore, (state) => state.interruption);
+  const {
+    room,
+    status,
+    pendingCommand,
+    authorityBootId,
+    canRetryPending,
+    retryPending,
+    send,
+  } = useRoomConnection(roomId);
   const [message, setMessage] = useState<string | null>(null);
   const accountId = session.status === 'authenticated' ? session.account.accountId : null;
   const currentRoom = room?.roomId === roomId ? room : null;
   const invitationUrl = invitation
     ? `${typeof window === 'undefined' ? '' : window.location.origin}/#invite=${encodeURIComponent(invitation.token)}`
     : null;
+
+  useEffect(() => {
+    if (interruption) router.replace('/');
+  }, [interruption, router]);
 
   if (!accountId) return <p className="session-boundary">Sign in to enter this private room.</p>;
   if (!currentRoom) {
@@ -57,6 +70,7 @@ export function RoomExperience({ roomId }: { roomId: string }) {
       pending={pendingCommand !== null}
       invitationUrl={invitationUrl}
       message={message}
+      canRetryPending={canRetryPending}
       onTakeSeat={(seat) => {
         const bootId = requireBootId();
         if (bootId) void run(createMutationCommand('room:takeSeat', bootId, {
@@ -87,6 +101,13 @@ export function RoomExperience({ roomId }: { roomId: string }) {
             roomStore.getState().clear();
             router.push('/');
           }
+        });
+      }}
+      onRetryPending={() => {
+        setMessage(null);
+        void retryPending().then((result) => {
+          if (result.error) setMessage(result.error.message);
+          else if (result.data.invitation) roomStore.getState().setInvitation(result.data.invitation);
         });
       }}
     />

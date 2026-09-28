@@ -3,6 +3,7 @@
 import type { Result, RoomReply } from '@poker/contracts';
 import { useRouter } from 'next/navigation';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useStore } from 'zustand';
 
 import { useSession } from '../auth/SessionBoundary';
 import {
@@ -20,7 +21,8 @@ const transientErrorCodes = new Set(['COMMAND_UNCERTAIN', 'SERVICE_UNAVAILABLE',
 export function LobbyExperience() {
   const router = useRouter();
   const { session } = useSession();
-  const { status, pendingCommand, authorityBootId, send } = useRoomConnection(null);
+  const { status, pendingCommand, authorityBootId, canRetryPending, retryPending, send } = useRoomConnection(null);
+  const interruption = useStore(roomStore, (state) => state.interruption);
   const [invitation, setInvitation] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const automaticJoin = useRef<string | null>(null);
@@ -45,6 +47,7 @@ export function LobbyExperience() {
       }
       return;
     }
+    setError(null);
     clearPendingInvitation(sessionStorage);
     setInvitation(null);
     roomStore.getState().setInvitation(result.data.invitation ?? null);
@@ -52,6 +55,7 @@ export function LobbyExperience() {
   }, [router]);
 
   const joinRoom = useCallback(async (token: string) => {
+    roomStore.getState().clearInterruption();
     if (!accountId) {
       storePendingInvitation(token, sessionStorage);
       setInvitation(token);
@@ -76,6 +80,7 @@ export function LobbyExperience() {
   }, [accountId, authorityBootId, invitation, joinRoom, status]);
 
   async function createRoom(title: string) {
+    roomStore.getState().clearInterruption();
     if (!accountId) {
       setError('Sign in before creating a private room.');
       return;
@@ -94,8 +99,13 @@ export function LobbyExperience() {
       onCreate={createRoom}
       onJoin={joinRoom}
       pending={pendingCommand !== null}
-      error={error}
+      error={error ?? interruption}
       initialInvitation={invitation}
+      canRetryPending={canRetryPending}
+      onRetryPending={async () => {
+        const attemptedInvitation = pendingCommand?.type === 'room:join' ? pendingCommand.token : undefined;
+        handleRoomResult(await retryPending(), attemptedInvitation);
+      }}
     />
   );
 }

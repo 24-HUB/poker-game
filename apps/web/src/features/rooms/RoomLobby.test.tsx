@@ -24,10 +24,12 @@ describe('RoomLobby', () => {
       pending: false,
       invitationUrl: null,
       message: null,
+      canRetryPending: false,
       onTakeSeat: vi.fn(),
       onRotateInvitation: vi.fn(),
       onClaimControl: vi.fn(),
       onLeave: vi.fn(),
+      onRetryPending: vi.fn(),
     }));
 
     expect(screen.getAllByRole('listitem')).toHaveLength(6);

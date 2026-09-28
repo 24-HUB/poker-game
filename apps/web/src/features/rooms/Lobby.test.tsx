@@ -27,4 +27,22 @@ describe('Lobby', () => {
     expect(onCreate).toHaveBeenCalledWith('Friday table');
     expect(onJoin).toHaveBeenCalledWith('private-token');
   });
+
+  it('offers an explicit retry for an uncertain command', async () => {
+    const user = userEvent.setup();
+    const onRetryPending = vi.fn();
+
+    render(createElement(Lobby, {
+      onCreate: vi.fn(),
+      onJoin: vi.fn(),
+      pending: true,
+      error: 'The server may have received that command.',
+      canRetryPending: true,
+      onRetryPending,
+    }));
+
+    await user.click(screen.getByRole('button', { name: 'Reconcile pending room action' }));
+
+    expect(onRetryPending).toHaveBeenCalledOnce();
+  });
 });

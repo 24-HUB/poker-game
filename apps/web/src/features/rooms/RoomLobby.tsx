@@ -13,10 +13,12 @@ export type RoomLobbyProps = {
   pending: boolean;
   invitationUrl: string | null;
   message: string | null;
+  canRetryPending: boolean;
   onTakeSeat: (seat: number) => void;
   onRotateInvitation: () => void;
   onClaimControl: () => void;
   onLeave: () => void;
+  onRetryPending: () => void;
 };
 
 export function RoomLobby({
@@ -26,10 +28,12 @@ export function RoomLobby({
   pending,
   invitationUrl,
   message,
+  canRetryPending,
   onTakeSeat,
   onRotateInvitation,
   onClaimControl,
   onLeave,
+  onRetryPending,
 }: RoomLobbyProps) {
   const isHost = room.hostAccountId === accountId;
 
@@ -101,6 +105,9 @@ export function RoomLobby({
             <Icon icon={LogOut} /> Leave room
           </button>
           {message ? <p className="room-control-message" role="status">{message}</p> : null}
+          {canRetryPending ? (
+            <button className="secondary-button" type="button" onClick={onRetryPending}>Reconcile pending room action</button>
+          ) : null}
         </aside>
       </div>
     </section>

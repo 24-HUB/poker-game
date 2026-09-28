@@ -2,7 +2,7 @@ import { expect, test } from '@playwright/test';
 
 import { createAccount, createAccountThroughNativeApi } from './support/accounts';
 
-test('two accounts join one room and explicit takeover disables the old tab', async ({ browser }) => {
+test('two accounts join one room and explicit takeover disables the old tab', async ({ browser }, testInfo) => {
   test.setTimeout(60_000);
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const hostContext = await browser.newContext({ permissions: ['clipboard-read', 'clipboard-write'] });
@@ -17,6 +17,18 @@ test('two accounts join one room and explicit takeover disables the old tab', as
     await host.getByRole('button', { name: 'Create private room' }).click();
     await expect(host).toHaveURL(/\/rooms\/[^/]+$/);
     await expect(host.getByRole('heading', { name: 'Friday table' })).toBeVisible();
+
+    for (const viewport of [
+      { name: 'mobile', width: 360, height: 800 },
+      { name: 'square', width: 900, height: 900 },
+      { name: 'desktop', width: 1440, height: 1000 },
+    ]) {
+      await host.setViewportSize(viewport);
+      await expect(host.getByRole('listitem')).toHaveCount(6);
+      await expect(host.getByText('Connected', { exact: true })).toBeVisible();
+      await expect.poll(() => host.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
+      await host.screenshot({ path: testInfo.outputPath(`room-${viewport.name}.png`), fullPage: true });
+    }
 
     await host.getByRole('button', { name: 'Copy room link' }).click();
     const invitationUrl = await host.evaluate(() => navigator.clipboard.readText());

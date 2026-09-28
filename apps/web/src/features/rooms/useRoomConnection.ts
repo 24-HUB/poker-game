@@ -22,6 +22,7 @@ export function useRoomConnection(roomId: string | null) {
   const pendingCommand = useStore(roomStore, (state) => state.pendingCommand);
   const [status, setStatus] = useState<RoomConnectionStatus>('connecting');
   const [authorityBootId, setAuthorityBootId] = useState<string | null>(null);
+  const [uncertainCommandId, setUncertainCommandId] = useState<string | null>(null);
   const socketRef = useRef<GameSocket | null>(null);
   const accountId = session.status === 'authenticated' ? session.account.accountId : null;
 
@@ -34,6 +35,7 @@ export function useRoomConnection(roomId: string | null) {
   useEffect(() => {
     if (!accountId) {
       roomStore.getState().clear();
+      setUncertainCommandId(null);
       setStatus('closed');
       return;
     }
@@ -46,14 +48,15 @@ export function useRoomConnection(roomId: string | null) {
       setStatus('connected');
       const stored = readPendingCommand(accountId, sessionStorage);
       roomStore.getState().setPendingCommand(stored);
+      setUncertainCommandId(stored?.commandId ?? null);
       if (roomId) void emitWithAck(socket, 'room:sync', { type: 'room:sync', roomId }).then((result) => {
         if (result.data?.room) roomStore.getState().applySnapshot(result.data.room);
       });
     });
     socket.on('room:snapshot', (view) => roomStore.getState().applySnapshot(view));
-    socket.on('room:closed', ({ roomId: closedRoomId }) => {
+    socket.on('room:closed', ({ roomId: closedRoomId, reason }) => {
       if (roomStore.getState().room?.roomId === closedRoomId || roomId === closedRoomId) {
-        roomStore.getState().clear();
+        roomStore.getState().close(reason);
         setStatus('closed');
       }
     });
@@ -73,13 +76,18 @@ export function useRoomConnection(roomId: string | null) {
     const socket = socketRef.current;
     if (!socket?.connected || !accountId) return unavailableReply();
     if (command.type !== 'room:sync') {
+      setUncertainCommandId(null);
       roomStore.getState().setPendingCommand(command);
       storePendingCommand(accountId, command, sessionStorage);
     }
     const result = await emitWithAck(socket, command.type, command);
-    if (result.error?.code === 'COMMAND_UNCERTAIN') return result;
+    if (result.error?.code === 'COMMAND_UNCERTAIN') {
+      if (command.type !== 'room:sync') setUncertainCommandId(command.commandId);
+      return result;
+    }
     if (command.type !== 'room:sync') {
       roomStore.getState().setPendingCommand(null);
+      setUncertainCommandId(null);
       clearPendingCommand(sessionStorage);
     }
     if (result.error?.code === 'UNAUTHENTICATED') {
@@ -91,7 +99,21 @@ export function useRoomConnection(roomId: string | null) {
     return result;
   }, [accountId, refreshSession]);
 
-  return { status, room, pendingCommand, authorityBootId, send, sync };
+  const retryPending = useCallback((): Promise<Result<RoomReply>> => {
+    const command = roomStore.getState().pendingCommand;
+    return command ? send(command) : Promise.resolve(unavailableReply());
+  }, [send]);
+
+  return {
+    status,
+    room,
+    pendingCommand,
+    authorityBootId,
+    canRetryPending: pendingCommand !== null && pendingCommand.commandId === uncertainCommandId,
+    retryPending,
+    send,
+    sync,
+  };
 }
 
 function emitWithAck(

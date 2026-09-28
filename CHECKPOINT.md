@@ -1,6 +1,6 @@
 # Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-28. Status: Tasks 1–8 complete on `codex/m0-m1-foundation`; Task 9 integrated private-room web flow is in progress at a recoverable UI/state checkpoint.
+Updated: 2026-09-28. Status: Tasks 1–9 are locally complete on `codex/m0-m1-foundation`; Task 10 local acceptance and deployment preparation is next.
 
 ## User intent and usage rule
 
@@ -10,12 +10,12 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 
 - Branch: `codex/m0-m1-foundation`, created from fetched `origin/dev` at `01f033d0`.
 - Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
-- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes; Task 4, fenced backend authority, startup cleanup, health separation, renewal, takeover, and safe shutdown ordering; Task 5, fixed-upstream Worker proxy and protected Socket.IO transport; Task 6, invite-only email authentication and shared HTTP/Socket.IO session UI; Task 7, authoritative private rooms, invitations, seats, and explicit tab control; Task 8, authorized realtime delivery, reconnect, abuse bounds, and shutdown draining.
-- Current task: Task 9 is in progress. Invitation parsing/storage, monotonic room state, pending-command identity, shared account state, Socket.IO client lifecycle, create/join forms, six-seat room UI, and room routes are implemented; browser acceptance is not yet complete.
-- Next action: run the complete Playwright suite in one fresh stack, then add the remaining backend-restart/cold-start and uncertain-command reconciliation cases before full `pnpm check`, responsive visual review, and Task 9 completion review.
-- Verification: the full web unit suite passes 40/40, contracts pass 5/5, web typecheck passes, the Next production build passes, and `git diff --check` passes at the earlier checkpoint. The six existing lobby/session browser cases pass together. The real two-account invitation/sign-in/refresh/takeover/revocation case and the six-seat overflow/token-cleanup case each pass in focused runs. Task 9 has not yet received one combined browser run or full workspace `pnpm check` and must not be called complete.
+- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes; Task 4, fenced backend authority, startup cleanup, health separation, renewal, takeover, and safe shutdown ordering; Task 5, fixed-upstream Worker proxy and protected Socket.IO transport; Task 6, invite-only email authentication and shared HTTP/Socket.IO session UI; Task 7, authoritative private rooms, invitations, seats, and explicit tab control; Task 8, authorized realtime delivery, reconnect, abuse bounds, and shutdown draining; Task 9, integrated authenticated private-room web flow and local browser acceptance.
+- Current task: Task 9 is locally complete. Invitation parsing/storage, monotonic room state, exact pending-command retries, shared account isolation, Socket.IO lifecycle, create/join forms, six-seat room UI, cold/restart recovery, and room routes are implemented and verified.
+- Next action: begin Task 10 by reviewing existing CI/deployment files, then add the remaining environment documentation, accessibility coverage, and non-secret smoke tooling without provisioning providers.
+- Verification: a frozen install completed with the committed lockfile; `pnpm check` passes 119/119 tests, all workspace typechecks, and all configured production builds. The combined real Chromium suite passes 10/10 against the disposable replica set. Responsive room screenshots at 360×800, 900×900, and 1440×1000 were visually inspected with no horizontal overflow. Deployed acceptance is not run—deployment not authorized.
 - Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
-- Usage at checkpoint: five-hour remaining 3%, weekly remaining 23%. No reset credit was used.
+- Usage at checkpoint: five-hour remaining 44%, weekly remaining 13%. No reset credit was used.
 - Blockers: Linux CI is still required for final OpenNext bundle evidence. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally.
 
 ## Task 3 implementation evidence
@@ -72,13 +72,15 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 - Full-suite RED restored the omitted `connection:check` contract. A separate shutdown RED proved acknowledged publication and in-flight room execution could outlive shutdown; command tracking now drains both and rejects commands arriving after shutdown begins.
 - Focused gateway acceptance passes 12/12. Final `pnpm check` passes 95/95 tests, all workspace typechecks, and all configured production builds.
 
-## Task 9 in-progress evidence
+## Task 9 implementation evidence
 
 - RED/GREEN coverage now verifies fragment-only invitation parsing, 15-minute tab-scoped invitation expiry, stable pending command identity, monotonic room revisions, account isolation, fixed server reads, malformed envelopes, distinct unavailable session state, validated room titles, six rendered seats, host-only invitation controls, and sign-out cleanup of private room and pending invitation state.
 - The web now has a shared TanStack Query session provider, a minimal Zustand room store, same-origin typed Socket.IO client creation inside effects, uncertain-command retention, secure fragment removal, automatic post-auth invitation resume, create/join forms, a recipient-specific six-seat room view, explicit takeover, rotation, seat, leave controls, and a dynamic room route. There is no functional poker start action.
-- Unit coverage remains green for the integrated session, storage, command, and room-view behavior; the focused browser evidence below extends that boundary without completing Task 9.
+- Unit coverage remains green for the integrated session, storage, command, and room-view behavior. Lost-ack coverage proves an explicit retry reuses the exact stored command object and command ID, then clears only after a definitive acknowledgement.
 - A local-only proxy harness now starts a unique isolated MongoDB database, compiled Nest backend, Next dev server, and exact-path HTTP/WebSocket gateway without exposing the proxy secret. It preserves the production origin and direct-backend trust boundary.
-- Real Chromium acceptance now covers signed-out fragment removal followed by signup and automatic join, two persisted accounts in distinct seats, refresh synchronization, host-only rotation, explicit takeover, stale-tab mutation controls, revoked-session cleanup, a six-member room, seventh-member rejection, and deletion of the rejected pending token. Focused runs are green; the combined suite and restart/cold-start cases remain.
+- Real Chromium acceptance now covers signed-out fragment removal followed by signup and automatic join, two persisted accounts in distinct seats, refresh synchronization, host-only rotation, explicit takeover, stale-tab mutation controls, revoked-session cleanup, a six-member room, seventh-member rejection, deletion of the rejected pending token, cold-backend recovery, and backend-restart interruption. The combined suite passes 10/10.
+- The local E2E harness exposes a bounded restart control only inside the test gateway, expires the isolated authority lease before relaunch, and supports the plan's exact `pnpm exec playwright` command on Windows and Unix. No production test endpoint or secret was added.
+- Responsive populated-room screenshots at 360×800, 900×900, and 1440×1000 retain all six seats, visible connection status, and no horizontal overflow.
 
 ## Task 2 implementation evidence
 

@@ -13,11 +13,21 @@ export type LobbyProps = {
   pending: boolean;
   error: string | null;
   initialInvitation?: string | null;
+  canRetryPending?: boolean;
+  onRetryPending?: () => void | Promise<void>;
 };
 
 type LobbyMode = 'actions' | 'create' | 'join';
 
-export function Lobby({ onCreate, onJoin, pending, error, initialInvitation = null }: LobbyProps) {
+export function Lobby({
+  onCreate,
+  onJoin,
+  pending,
+  error,
+  initialInvitation = null,
+  canRetryPending = false,
+  onRetryPending,
+}: LobbyProps) {
   const [mode, setMode] = useState<LobbyMode>(initialInvitation ? 'join' : 'actions');
   const [title, setTitle] = useState('');
   const [invitation, setInvitation] = useState(initialInvitation ?? '');
@@ -139,6 +149,11 @@ export function Lobby({ onCreate, onJoin, pending, error, initialInvitation = nu
             </form>
           ) : null}
           {validationError || error ? <p className="room-form__error" role="alert">{validationError ?? error}</p> : null}
+          {canRetryPending && onRetryPending ? (
+            <button className="secondary-button room-reconcile" type="button" onClick={() => void onRetryPending()}>
+              Reconcile pending room action
+            </button>
+          ) : null}
           <p className="quiet-note"><Icon icon={Clock3} /> Rooms expire after 24 hours.</p>
         </div>
         <CompanionPortrait />

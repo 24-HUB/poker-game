@@ -54,4 +54,15 @@ describe('roomStore', () => {
     expect(store.getState().pendingCommand?.commandId).toBe(commandId);
     expect(store.getState().pendingCommand).toBe(command);
   });
+
+  it('records a backend-restart interruption while clearing private room state', () => {
+    const store = createRoomStore();
+    store.getState().applySnapshot(room(3));
+
+    store.getState().close('RESTARTED');
+
+    expect(store.getState().room).toBeNull();
+    expect(store.getState().invitation).toBeNull();
+    expect(store.getState().interruption).toBe('The game server restarted, so the previous room was closed.');
+  });
 });
