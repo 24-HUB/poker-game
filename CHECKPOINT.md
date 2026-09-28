@@ -1,6 +1,6 @@
 # Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-27. Status: Tasks 1–7 complete on `codex/m0-m1-foundation`; Task 8 realtime room delivery and abuse bounds is implemented through a recoverable emergency checkpoint, with full boundary verification still pending.
+Updated: 2026-09-28. Status: Tasks 1–8 complete on `codex/m0-m1-foundation`; Task 9 integrated private-room web flow is next.
 
 ## User intent and usage rule
 
@@ -10,12 +10,12 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 
 - Branch: `codex/m0-m1-foundation`, created from fetched `origin/dev` at `01f033d0`.
 - Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
-- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes; Task 4, fenced backend authority, startup cleanup, health separation, renewal, takeover, and safe shutdown ordering; Task 5, fixed-upstream Worker proxy and protected Socket.IO transport; Task 6, invite-only email authentication and shared HTTP/Socket.IO session UI; Task 7, authoritative private rooms, invitations, seats, and explicit tab control.
-- Current task: Task 8 is in progress at an emergency checkpoint. Its core real Socket.IO command delivery, recipient-safe publication, reconnect/sync, revocation handling, explicit takeover, and abuse bounds are implemented, but the task is not recorded complete.
-- Next action: resume Task 8 by running the full `pnpm check`, reviewing the complete Task 8 diff, and closing any remaining transport acceptance gaps before marking its task boundary complete. Do not begin Task 9 first.
-- Verification: Task 7's final `pnpm check` passed all workspace typechecks, 83 tests (59 server, 20 web, 4 contracts), and Nest/contract/Next production builds. At this Task 8 checkpoint, `pnpm --filter @poker/server test -- gateway.e2e-spec.ts` passed 10/10 real-client cases and `pnpm --filter @poker/server typecheck` passed. Full workspace checks and the complete Task 8 diff review remain pending.
+- Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes; Task 4, fenced backend authority, startup cleanup, health separation, renewal, takeover, and safe shutdown ordering; Task 5, fixed-upstream Worker proxy and protected Socket.IO transport; Task 6, invite-only email authentication and shared HTTP/Socket.IO session UI; Task 7, authoritative private rooms, invitations, seats, and explicit tab control; Task 8, authorized realtime delivery, reconnect, abuse bounds, and shutdown draining.
+- Current task: Task 8 is complete at this recoverable boundary.
+- Next action: begin Task 9 with failing invitation-fragment parsing, monotonic room-store, stable lost-command identity, account-isolation, and real two-account browser tests before implementing the integrated room UI.
+- Verification: fresh `pnpm --filter @poker/server test --runInBand gateway.e2e-spec` passed 12/12 real Socket.IO cases. Fresh final `pnpm check` passed all workspace typechecks, 95 tests (71 server, 20 web, 4 contracts), and Nest/contract/Next production builds. The complete Task 8 diff review and `git diff --check` passed before the boundary commit.
 - Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
-- Usage at checkpoint: five-hour remaining 5%, weekly remaining 39%. The under-6% emergency-checkpoint rule triggered; no reset credit was used.
+- Usage at checkpoint: five-hour remaining 74%, weekly remaining 34%. No reset credit was used.
 - Blockers: Linux CI is still required for final OpenNext bundle evidence. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally.
 
 ## Task 3 implementation evidence
@@ -64,12 +64,13 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 - Explicit `room:claimControl` increments the controller epoch. Observer and superseded tabs cannot mutate; a stale disconnect cannot clear newer control. Participant-only sync, monotonic connection revisions, reconnect without implicit takeover, and two-minute empty-room closure are enforced.
 - Real replica-set coverage includes last-seat and cross-room membership races, lost/concurrent acknowledgements, full/expired/rotated invitations, outsider access, forged host action, payload conflict, stale boot, timestamp expiry, cache saturation, host disconnect/leave, transaction rollback before publication, and additive upgrade from migration version 1.
 
-## Task 8 implementation evidence (in progress)
+## Task 8 implementation evidence
 
 - RED began with a real Socket.IO client receiving no `connection:ready`; subsequent failures exposed a shutdown/disconnect race and concurrent Better Auth test-signup transaction interference.
 - Added typed client/server room events, strict event-specific command parsing, server-derived identity and connection context, exactly-once acknowledgements, post-commit recipient publication with uncached authorization, and explicit shutdown draining.
 - Added 16 KiB payload, four-sockets-per-account, mutation/create/join/sync rate, and bounded room-queue enforcement. Real-client coverage includes malformed and unauthenticated acknowledgements, reconnect sync, revoked-recipient nondelivery, rate/socket/payload/queue limits, token nondisclosure, and stale-tab takeover behavior.
-- Focused gateway acceptance passes 10/10 and the server typecheck passes. This is a recoverable emergency checkpoint, not Task 8 completion; full workspace verification and final diff review are still required.
+- Full-suite RED restored the omitted `connection:check` contract. A separate shutdown RED proved acknowledged publication and in-flight room execution could outlive shutdown; command tracking now drains both and rejects commands arriving after shutdown begins.
+- Focused gateway acceptance passes 12/12. Final `pnpm check` passes 95/95 tests, all workspace typechecks, and all configured production builds.
 
 ## Task 2 implementation evidence
 

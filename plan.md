@@ -647,8 +647,8 @@ These five failure cases receive explicit tests below:
 - [x] Write `guardAndPipeFailuresAckOnce`: actual Socket.IO clients receive exactly one error ack for unauthenticated and malformed commands; `expect(ackCount).toBe(1)`. Write `reconnectReauthenticatesAndSyncs`: missed notifications are recovered by `room:sync`, with `expect(sync.data.room.revision).toBe(currentRevision)`. Write `revokedRecipientReceivesNoSnapshot`: after revocation, `expect(receivedSnapshots).toHaveLength(0)`.
 - [x] Run `pnpm --filter @poker/server test --runInBand gateway.e2e-spec`; confirm real transport failures without mocking the room service.
 - [x] Delegate validated commands to `RoomService.execute`; derive account/connection context on the server. Limit each socket message to 16 KiB, each account to four sockets and 20 mutation attempts per 10 seconds, and create/join attempts to five per minute. Count retries for abuse limits; sync uses a separate 10-per-10-second allowance. Return `RATE_LIMITED` safely, bound queue depth to 100, and reject excess with `SERVER_BUSY`. Values are initial operational defaults, not throughput guarantees.
-- [ ] Run clients concurrently for seat races, duplicate sends, takeover, abrupt disconnect, reconnect, expiry/revocation, missing callback and queue overflow. Assert no observer command succeeds, no private token is broadcast, one room registry exists, and shutdown closes every socket. Verify unauthorized origins are rejected before joining any room channel.
-- [ ] Commit: `feat: deliver authorized room snapshots and reconnect flow`.
+- [x] Run clients concurrently for seat races, duplicate sends, takeover, abrupt disconnect, reconnect, expiry/revocation, missing callback and queue overflow. Assert no observer command succeeds, no private token is broadcast, one room registry exists, and shutdown closes every socket. Verify unauthorized origins are rejected before joining any room channel.
+- [x] Commit: `feat: deliver authorized room snapshots and reconnect flow`.
 
 ### Task 9 — Usable lobby and M1 end-to-end acceptance
 

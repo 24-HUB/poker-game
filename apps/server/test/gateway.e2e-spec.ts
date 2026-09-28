@@ -13,6 +13,9 @@ import request from 'supertest';
 
 import { applyMigrations } from '../src/database/migrate';
 import { createApplication } from '../src/main';
+import { RoomService } from '../src/modules/rooms/room.service';
+import { GameGateway } from '../src/realtime/game.gateway';
+import { RoomPublisher } from '../src/realtime/roomPublisher';
 import { createTestDatabase, type TestDatabase } from './support/testDatabase';
 
 const mongoUri = process.env.TEST_MONGODB_URI ?? 'mongodb://127.0.0.1:27018/?replicaSet=rs0&directConnection=true';
@@ -77,6 +80,90 @@ describe('room gateway', () => {
       });
       expect(synchronized.error).toBeNull();
     } finally {
+      socket.close();
+    }
+  });
+
+  it('waits for an acknowledged publication before application shutdown', async () => {
+    const account = await signUp('shutdown@example.com', 'Shutdown Host');
+    const socket = connectSocket(account.cookie);
+    const publisher = application.get(RoomPublisher);
+    const gateway = application.get(GameGateway);
+    let releasePublication!: () => void;
+    let publicationStarted!: () => void;
+    const release = new Promise<void>((resolve) => { releasePublication = resolve; });
+    const started = new Promise<void>((resolve) => { publicationStarted = resolve; });
+    const publish = jest.spyOn(publisher, 'publish').mockImplementation(async () => {
+      publicationStarted();
+      await release;
+    });
+
+    try {
+      const ready = await connectAndWaitForReady(socket);
+      const acknowledgement = await emitWithAck(socket, 'room:create', mutation('room:create', ready.authorityBootId, {
+        title: 'Shutdown room',
+      }));
+      expect(acknowledgement.error).toBeNull();
+      await started;
+
+      let shutdownFinished = false;
+      const shutdown = gateway.beforeApplicationShutdown().then(() => { shutdownFinished = true; });
+      await new Promise((resolve) => setTimeout(resolve, 25));
+      expect(shutdownFinished).toBe(false);
+
+      releasePublication();
+      await shutdown;
+      expect(shutdownFinished).toBe(true);
+    } finally {
+      releasePublication();
+      publish.mockRestore();
+      socket.close();
+    }
+  });
+
+  it('drains an executing command and rejects commands that arrive during shutdown', async () => {
+    const account = await signUp('command-shutdown@example.com', 'Command Shutdown Host');
+    const socket = connectSocket(account.cookie);
+    const rooms = application.get(RoomService);
+    const gateway = application.get(GameGateway);
+    const execute = rooms.execute.bind(rooms);
+    let releaseExecution!: () => void;
+    let executionStarted!: () => void;
+    const release = new Promise<void>((resolve) => { releaseExecution = resolve; });
+    const started = new Promise<void>((resolve) => { executionStarted = resolve; });
+    let delayNextExecution = true;
+    const executeSpy = jest.spyOn(rooms, 'execute').mockImplementation(async (...arguments_) => {
+      if (delayNextExecution) {
+        delayNextExecution = false;
+        executionStarted();
+        await release;
+      }
+      return execute(...arguments_);
+    });
+
+    try {
+      const ready = await connectAndWaitForReady(socket);
+      emitWithoutAck(socket, 'room:create', mutation('room:create', ready.authorityBootId, {
+        title: 'Draining room',
+      }));
+      await started;
+
+      let shutdownFinished = false;
+      const shutdown = gateway.beforeApplicationShutdown().then(() => { shutdownFinished = true; });
+      await new Promise((resolve) => setTimeout(resolve, 25));
+      expect(shutdownFinished).toBe(false);
+
+      const rejected = await emitWithAck(socket, 'room:create', mutation('room:create', ready.authorityBootId, {
+        title: 'Too late',
+      }));
+      expect(rejected.error?.code).toBe('SERVICE_UNAVAILABLE');
+
+      releaseExecution();
+      await shutdown;
+      expect(shutdownFinished).toBe(true);
+    } finally {
+      releaseExecution();
+      executeSpy.mockRestore();
       socket.close();
     }
   });
