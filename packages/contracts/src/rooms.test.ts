@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { roomCommandSchema, roomReplySchema, roomViewSchema } from './rooms.js';
+import { roomCommandSchema, roomReplySchema, roomTitleSchema, roomViewSchema } from './rooms.js';
 
 const mutation = {
   commandId: '11111111-1111-4111-8111-111111111111',
@@ -29,6 +29,11 @@ describe('room contracts', () => {
     expect(roomCommandSchema.safeParse({ type: 'room:takeSeat', roomId: 'room-a', seat: 6, controlEpoch: 1, ...mutation }).success).toBe(false);
     expect(roomCommandSchema.safeParse({ type: 'room:leave', roomId: 'room-a', controlEpoch: 1, ...mutation, accountId: 'forged' }).success).toBe(false);
     expect(roomCommandSchema.safeParse({ type: 'room:create', title: 'Room', ...mutation, commandId: 'not-a-uuid' }).success).toBe(false);
+  });
+
+  it('keeps the room title boundary consistent at 24 characters', () => {
+    expect(roomTitleSchema.safeParse('x'.repeat(24)).success).toBe(true);
+    expect(roomTitleSchema.safeParse('x'.repeat(25)).success).toBe(false);
   });
 
   it('validates recipient room views and optional private invitation replies', () => {

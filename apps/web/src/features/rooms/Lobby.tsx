@@ -1,16 +1,63 @@
 'use client';
 
-import { ArrowRight, Clock3, Plus, Users } from 'lucide-react';
+import { roomTitleSchema } from '@poker/contracts';
+import { ArrowLeft, ArrowRight, Clock3, Plus, Users } from 'lucide-react';
+import { type FormEvent, useEffect, useState } from 'react';
 
 import { CompanionPortrait } from '../../components/shell/CompanionPortrait';
 import { Icon } from '../../components/ui/Icon';
 
 export type LobbyProps = {
-  onCreate: () => void;
-  onJoin: () => void;
+  onCreate: (title: string) => void | Promise<void>;
+  onJoin: (token: string) => void | Promise<void>;
+  pending: boolean;
+  error: string | null;
+  initialInvitation?: string | null;
 };
 
-export function Lobby({ onCreate, onJoin }: LobbyProps) {
+type LobbyMode = 'actions' | 'create' | 'join';
+
+export function Lobby({ onCreate, onJoin, pending, error, initialInvitation = null }: LobbyProps) {
+  const [mode, setMode] = useState<LobbyMode>(initialInvitation ? 'join' : 'actions');
+  const [title, setTitle] = useState('');
+  const [invitation, setInvitation] = useState(initialInvitation ?? '');
+  const [validationError, setValidationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (!initialInvitation) return;
+    setInvitation(initialInvitation);
+    setMode('join');
+  }, [initialInvitation]);
+
+  function show(nextMode: Exclude<LobbyMode, 'actions'>) {
+    setValidationError(null);
+    setMode(nextMode);
+  }
+
+  function submitCreate(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const parsed = roomTitleSchema.safeParse(title);
+    if (!parsed.success) {
+      setValidationError('Use a room title between 1 and 24 characters.');
+      return;
+    }
+    setValidationError(null);
+    void onCreate(parsed.data);
+    setMode('actions');
+  }
+
+  function submitJoin(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    const token = invitation.trim();
+    if (!token) {
+      setValidationError('Enter the private invitation from the host.');
+      return;
+    }
+    setValidationError(null);
+    void onJoin(token);
+    setMode('actions');
+  }
+
   return (
     <section aria-label="Private room lobby">
       <header className="page-heading">
@@ -23,18 +70,62 @@ export function Lobby({ onCreate, onJoin }: LobbyProps) {
             <h2>Play with friends.<br /><span>Your table is waiting.</span></h2>
             <p>Set the table, invite your friends, and make yourself at home.</p>
           </div>
-          <div className="room-actions">
-            <button className="room-action room-action--primary" type="button" aria-label="Create Room" onClick={onCreate}>
+          <div className="room-actions" hidden={mode !== 'actions'}>
+            <button className="room-action room-action--primary" type="button" aria-label="Create Room" onClick={() => show('create')}>
               <span className="room-action__icon"><Icon icon={Plus} /></span>
               <span><strong>Create Room</strong><small>Start a private table for 2–6 players.</small></span>
               <span className="room-action__arrow"><Icon icon={ArrowRight} /></span>
             </button>
-            <button className="room-action room-action--secondary" type="button" aria-label="Join Room" onClick={onJoin}>
+            <button className="room-action room-action--secondary" type="button" aria-label="Join Room" onClick={() => show('join')}>
               <span className="room-action__icon"><Icon icon={Users} /></span>
               <span><strong>Join Room</strong><small>Use a private invitation from the host.</small></span>
               <span className="room-action__arrow"><Icon icon={ArrowRight} /></span>
             </button>
           </div>
+          {mode === 'create' ? (
+            <form className="room-form" onSubmit={submitCreate}>
+              <button className="room-form__back" type="button" onClick={() => setMode('actions')}>
+                <Icon icon={ArrowLeft} /> Back to room options
+              </button>
+              <div>
+                <h3>Set your table.</h3>
+                <p>Give the room a short name your friends will recognize.</p>
+              </div>
+              <label>
+                Room title
+                <input
+                  autoFocus
+                  maxLength={24}
+                  value={title}
+                  onChange={(event) => setTitle(event.target.value)}
+                  autoComplete="off"
+                />
+              </label>
+              <button className="primary-button" type="submit" disabled={pending}>Create private room</button>
+            </form>
+          ) : null}
+          {mode === 'join' ? (
+            <form className="room-form" onSubmit={submitJoin}>
+              <button className="room-form__back" type="button" onClick={() => setMode('actions')}>
+                <Icon icon={ArrowLeft} /> Back to room options
+              </button>
+              <div>
+                <h3>A seat is waiting.</h3>
+                <p>Paste the private invitation sent by the room host.</p>
+              </div>
+              <label>
+                Private invitation
+                <input
+                  autoFocus
+                  value={invitation}
+                  onChange={(event) => setInvitation(event.target.value)}
+                  autoComplete="off"
+                />
+              </label>
+              <button className="primary-button" type="submit" disabled={pending}>Join private room</button>
+            </form>
+          ) : null}
+          {validationError || error ? <p className="room-form__error" role="alert">{validationError ?? error}</p> : null}
           <p className="quiet-note"><Icon icon={Clock3} /> Rooms expire after 24 hours.</p>
         </div>
         <CompanionPortrait />

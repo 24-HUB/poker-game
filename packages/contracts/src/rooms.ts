@@ -3,6 +3,7 @@ import { z } from 'zod';
 import type { Result } from './common.js';
 
 const identifierSchema = z.string().min(1).max(128);
+export const roomTitleSchema = z.string().trim().min(1).max(24);
 const mutationMetadata = {
   commandId: z.uuid(),
   authorityBootId: identifierSchema,
@@ -11,7 +12,7 @@ const mutationMetadata = {
 
 const createRoomCommandSchema = z.object({
   type: z.literal('room:create'),
-  title: z.string().trim().min(1).max(24),
+  title: roomTitleSchema,
   ...mutationMetadata,
 }).strict();
 

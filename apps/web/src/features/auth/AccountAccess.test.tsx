@@ -8,6 +8,8 @@ import { createElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { AccountAccess } from './AccountAccess';
+import { readPendingInvitation, storePendingInvitation } from '../rooms/invitation';
+import { roomStore } from '../rooms/roomStore';
 
 afterEach(cleanup);
 
@@ -48,6 +50,16 @@ describe('AccountAccess', () => {
       account: { accountId: 'account-a', displayName: 'Alice' },
     });
     const signOutAction = vi.fn().mockResolvedValue(undefined);
+    roomStore.getState().setAccount('account-a');
+    roomStore.getState().applySnapshot({
+      roomId: 'room-a',
+      title: 'Private table',
+      revision: 1,
+      hostAccountId: 'account-a',
+      members: [],
+      control: { isController: true, epoch: 1 },
+    });
+    storePendingInvitation('private-token', sessionStorage);
     render(createElement(AccountAccess, { sessionReader, signOutAction }));
 
     await screen.findByText('Alice');
@@ -56,5 +68,8 @@ describe('AccountAccess', () => {
     expect(signOutAction).toHaveBeenCalledOnce();
     expect(screen.queryByText('Alice')).not.toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Sign in' })).toBeVisible();
+    expect(roomStore.getState().accountId).toBeNull();
+    expect(roomStore.getState().room).toBeNull();
+    expect(readPendingInvitation(sessionStorage)).toBeNull();
   });
 });

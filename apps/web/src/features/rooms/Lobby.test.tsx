@@ -10,17 +10,21 @@ import { describe, expect, it, vi } from 'vitest';
 import { Lobby } from './Lobby';
 
 describe('Lobby', () => {
-  it('lobbyInvokesCreateAndJoin', async () => {
+  it('submits a validated room title and private invitation', async () => {
     const user = userEvent.setup();
     const onCreate = vi.fn();
     const onJoin = vi.fn();
 
-    render(createElement(Lobby, { onCreate, onJoin }));
+    render(createElement(Lobby, { onCreate, onJoin, pending: false, error: null }));
 
     await user.click(screen.getByRole('button', { name: 'Create Room' }));
+    await user.type(screen.getByLabelText('Room title'), 'Friday table');
+    await user.click(screen.getByRole('button', { name: 'Create private room' }));
     await user.click(screen.getByRole('button', { name: 'Join Room' }));
+    await user.type(screen.getByLabelText('Private invitation'), 'private-token');
+    await user.click(screen.getByRole('button', { name: 'Join private room' }));
 
-    expect(onCreate).toHaveBeenCalledOnce();
-    expect(onJoin).toHaveBeenCalledOnce();
+    expect(onCreate).toHaveBeenCalledWith('Friday table');
+    expect(onJoin).toHaveBeenCalledWith('private-token');
   });
 });

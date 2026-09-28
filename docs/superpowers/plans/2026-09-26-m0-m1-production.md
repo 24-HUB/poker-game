@@ -67,6 +67,8 @@ Connect validated Socket.IO commands to the room service, reauthorize each deliv
 
 Build invitation capture, create/join, seat movement, host controls, invitation rotation, reconnect, pending-command recovery, explicit takeover, sign-out isolation, and accessible failure states. Start with invitation parsing, snapshot ordering, lost-command identity, two-account, full-room, takeover, and server-wake tests.
 
+Checkpoint 2026-09-28: in progress. The unit-tested session/store/socket foundation and responsive create/join/six-seat room UI are implemented. Next is real-browser two-account, full-room, reconnect, invitation-through-sign-in, and takeover acceptance. Do not mark Task 9 complete until those Playwright cases and full workspace verification pass.
+
 ### Task 10: Local acceptance and deployment preparation
 
 Add CI, Render and Worker configuration, environment documentation, accessibility coverage, and non-secret deployment smoke tooling without provisioning providers. Run frozen install, migrations twice, `pnpm check`, builds, real local Socket.IO and replica-set flows, browser suites, visual checks, diff checks, and whole-branch review. Record deployed M0 acceptance as `not run - deployment not authorized`.

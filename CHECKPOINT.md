@@ -1,21 +1,21 @@
 # Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-28. Status: Tasks 1–8 complete on `codex/m0-m1-foundation`; Task 9 integrated private-room web flow is next.
+Updated: 2026-09-28. Status: Tasks 1–8 complete on `codex/m0-m1-foundation`; Task 9 integrated private-room web flow is in progress at a recoverable UI/state checkpoint.
 
 ## User intent and usage rule
 
-The user approved the M0/M1 implementation plan and requested inline execution. Work is limited to local implementation and deployment preparation; no cloud provisioning, live secrets, or production database operations are authorized. Save this checkpoint at every task boundary and whenever either remaining usage window drops below 6%. Latest execution-start reading: five-hour remaining 39%, weekly remaining 91%. Never purchase or consume reset credits automatically.
+The user approved the M0/M1 implementation plan and requested inline execution. Work is limited to local implementation and deployment preparation; no cloud provisioning, live secrets, or production database operations are authorized. Save this checkpoint at every task boundary and whenever either remaining usage window drops below 6%. Latest reading: five-hour remaining 39%, weekly remaining 28%. Never purchase or consume reset credits automatically.
 
 ## Active execution
 
 - Branch: `codex/m0-m1-foundation`, created from fetched `origin/dev` at `01f033d0`.
 - Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
 - Completed tasks: Task 1, bootable workspace and shared contracts; Task 2, approved responsive application shell; Task 3, replica-set persistence, transactions, migrations, validators, and indexes; Task 4, fenced backend authority, startup cleanup, health separation, renewal, takeover, and safe shutdown ordering; Task 5, fixed-upstream Worker proxy and protected Socket.IO transport; Task 6, invite-only email authentication and shared HTTP/Socket.IO session UI; Task 7, authoritative private rooms, invitations, seats, and explicit tab control; Task 8, authorized realtime delivery, reconnect, abuse bounds, and shutdown draining.
-- Current task: Task 8 is complete at this recoverable boundary.
-- Next action: begin Task 9 with failing invitation-fragment parsing, monotonic room-store, stable lost-command identity, account-isolation, and real two-account browser tests before implementing the integrated room UI.
-- Verification: fresh `pnpm --filter @poker/server test --runInBand gateway.e2e-spec` passed 12/12 real Socket.IO cases. Fresh final `pnpm check` passed all workspace typechecks, 95 tests (71 server, 20 web, 4 contracts), and Nest/contract/Next production builds. The complete Task 8 diff review and `git diff --check` passed before the boundary commit.
+- Current task: Task 9 is in progress. Invitation parsing/storage, monotonic room state, pending-command identity, shared account state, Socket.IO client lifecycle, create/join forms, six-seat room UI, and room routes are implemented; browser acceptance is not yet complete.
+- Next action: add RED Playwright coverage with real local accounts for invitation-through-sign-in, two-account room isolation, full-room rejection, reconnect, and explicit old-tab takeover; then finish command reconciliation and responsive browser verification.
+- Verification: the full web unit suite passes 40/40, contracts pass 5/5, web typecheck passes, the Next production build passes, and `git diff --check` passes. Task 9 has not yet received full workspace `pnpm check` or browser-suite evidence and must not be called complete.
 - Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
-- Usage at checkpoint: five-hour remaining 74%, weekly remaining 34%. No reset credit was used.
+- Usage at checkpoint: five-hour remaining 39%, weekly remaining 28%. No reset credit was used.
 - Blockers: Linux CI is still required for final OpenNext bundle evidence. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally.
 
 ## Task 3 implementation evidence
@@ -71,6 +71,12 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 - Added 16 KiB payload, four-sockets-per-account, mutation/create/join/sync rate, and bounded room-queue enforcement. Real-client coverage includes malformed and unauthenticated acknowledgements, reconnect sync, revoked-recipient nondelivery, rate/socket/payload/queue limits, token nondisclosure, and stale-tab takeover behavior.
 - Full-suite RED restored the omitted `connection:check` contract. A separate shutdown RED proved acknowledged publication and in-flight room execution could outlive shutdown; command tracking now drains both and rejects commands arriving after shutdown begins.
 - Focused gateway acceptance passes 12/12. Final `pnpm check` passes 95/95 tests, all workspace typechecks, and all configured production builds.
+
+## Task 9 in-progress evidence
+
+- RED/GREEN coverage now verifies fragment-only invitation parsing, 15-minute tab-scoped invitation expiry, stable pending command identity, monotonic room revisions, account isolation, fixed server reads, malformed envelopes, distinct unavailable session state, validated room titles, six rendered seats, host-only invitation controls, and sign-out cleanup of private room and pending invitation state.
+- The web now has a shared TanStack Query session provider, a minimal Zustand room store, same-origin typed Socket.IO client creation inside effects, uncertain-command retention, secure fragment removal, automatic post-auth invitation resume, create/join forms, a recipient-specific six-seat room view, explicit takeover, rotation, seat, leave controls, and a dynamic room route. There is no functional poker start action.
+- The current green boundary is unit/typecheck only. Real-browser two-account, full-room, reconnect, backend-restart, and takeover acceptance remains the next required RED/GREEN cycle.
 
 ## Task 2 implementation evidence
 

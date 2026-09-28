@@ -5,7 +5,10 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 
 import { Icon } from '../../components/ui/Icon';
 import { readSession, signOut, type SessionState } from '../../lib/auth-client';
+import { clearPendingInvitation } from '../rooms/invitation';
+import { roomStore } from '../rooms/roomStore';
 import { SignInButton } from './SignInButton';
+import { useOptionalSession } from './SessionBoundary';
 
 export function AccountAccess({
   sessionReader = readSession,
@@ -14,6 +17,7 @@ export function AccountAccess({
   sessionReader?: typeof readSession;
   signOutAction?: typeof signOut;
 }) {
+  const sharedSession = useOptionalSession();
   const [session, setSession] = useState<SessionState>({ status: 'loading' });
   const requestSequence = useRef(0);
 
@@ -26,37 +30,43 @@ export function AccountAccess({
   }, [sessionReader]);
 
   useEffect(() => {
+    if (sharedSession) return;
     void refresh();
     return () => { requestSequence.current += 1; };
-  }, [refresh]);
+  }, [refresh, sharedSession]);
 
-  if (session.status === 'loading') {
+  const visibleSession = sharedSession?.session ?? session;
+  const refreshVisibleSession = sharedSession?.refresh ?? refresh;
+
+  if (visibleSession.status === 'loading') {
     return <span className="access-badge" role="status">Checking access…</span>;
   }
-  if (session.status === 'unavailable') {
+  if (visibleSession.status === 'unavailable') {
     return (
       <span className="access-recovery" role="status">
         <span>Server starting</span>
-        <button type="button" onClick={() => void refresh()}><Icon icon={RefreshCw} /> Retry</button>
+        <button type="button" onClick={() => void refreshVisibleSession()}><Icon icon={RefreshCw} /> Retry</button>
       </span>
     );
   }
-  if (session.status === 'unauthenticated') {
-    return <SignInButton onAuthenticated={() => void refresh()} />;
+  if (visibleSession.status === 'unauthenticated') {
+    return <SignInButton onAuthenticated={() => void refreshVisibleSession()} />;
   }
   return (
     <span className="authenticated-access">
-      <span className="account-chip" title={session.account.displayName}>
+      <span className="account-chip" title={visibleSession.account.displayName}>
         <Icon icon={UserRound} />
-        <span>{session.account.displayName}</span>
+        <span>{visibleSession.account.displayName}</span>
       </span>
       <button
         className="sign-out-button"
         type="button"
         onClick={() => {
-          void signOutAction()
+          void (sharedSession?.signOut() ?? signOutAction())
             .then(() => {
               requestSequence.current += 1;
+              clearPendingInvitation(sessionStorage);
+              roomStore.getState().setAccount(null);
               setSession({ status: 'unauthenticated' });
             })
             .catch(() => setSession({ status: 'unavailable' }));

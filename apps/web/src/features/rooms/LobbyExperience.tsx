@@ -1,56 +1,101 @@
 'use client';
 
-import { Club, X } from 'lucide-react';
-import { useEffect, useRef, useState } from 'react';
+import type { Result, RoomReply } from '@poker/contracts';
+import { useRouter } from 'next/navigation';
+import { useCallback, useEffect, useRef, useState } from 'react';
 
-import { Icon } from '../../components/ui/Icon';
+import { useSession } from '../auth/SessionBoundary';
+import {
+  clearPendingInvitation,
+  readInvitationFragment,
+  readPendingInvitation,
+  storePendingInvitation,
+} from './invitation';
 import { Lobby } from './Lobby';
+import { roomStore } from './roomStore';
+import { createMutationCommand, useRoomConnection } from './useRoomConnection';
 
-type RoomAction = 'create' | 'join';
+const transientErrorCodes = new Set(['COMMAND_UNCERTAIN', 'SERVICE_UNAVAILABLE', 'RATE_LIMITED']);
 
 export function LobbyExperience() {
-  const [action, setAction] = useState<RoomAction | null>(null);
-  const dialog = useRef<HTMLDialogElement>(null);
-  const lastTrigger = useRef<HTMLButtonElement | null>(null);
-
-  function openDialog(nextAction: RoomAction) {
-    lastTrigger.current = document.activeElement as HTMLButtonElement;
-    setAction(nextAction);
-  }
+  const router = useRouter();
+  const { session } = useSession();
+  const { status, pendingCommand, authorityBootId, send } = useRoomConnection(null);
+  const [invitation, setInvitation] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const automaticJoin = useRef<string | null>(null);
+  const accountId = session.status === 'authenticated' ? session.account.accountId : null;
 
   useEffect(() => {
-    if (action && dialog.current && !dialog.current.open) dialog.current.showModal();
-  }, [action]);
+    const fragmentInvitation = readInvitationFragment(window.location.hash);
+    if (fragmentInvitation) {
+      storePendingInvitation(fragmentInvitation, sessionStorage);
+      const cleanUrl = `${window.location.pathname}${window.location.search}`;
+      window.history.replaceState(window.history.state, '', cleanUrl);
+    }
+    setInvitation(fragmentInvitation ?? readPendingInvitation(sessionStorage));
+  }, []);
 
-  function closeDialog() {
-    dialog.current?.close();
+  const handleRoomResult = useCallback((result: Result<RoomReply>, attemptedInvitation?: string) => {
+    if (result.error) {
+      setError(result.error.message);
+      if (attemptedInvitation && !transientErrorCodes.has(result.error.code)) {
+        clearPendingInvitation(sessionStorage);
+        setInvitation(null);
+      }
+      return;
+    }
+    clearPendingInvitation(sessionStorage);
+    setInvitation(null);
+    roomStore.getState().setInvitation(result.data.invitation ?? null);
+    if (result.data.room) router.push(`/rooms/${encodeURIComponent(result.data.room.roomId)}`);
+  }, [router]);
+
+  const joinRoom = useCallback(async (token: string) => {
+    if (!accountId) {
+      storePendingInvitation(token, sessionStorage);
+      setInvitation(token);
+      setError('Sign in to use this private invitation. It will stay in this tab.');
+      return;
+    }
+    if (!authorityBootId || status !== 'connected') {
+      setError('The private room connection is still starting. Try again shortly.');
+      return;
+    }
+    setError(null);
+    const result = await send(createMutationCommand('room:join', authorityBootId, { token }));
+    handleRoomResult(result, token);
+  }, [accountId, authorityBootId, handleRoomResult, send, status]);
+
+  useEffect(() => {
+    if (!invitation || !accountId || !authorityBootId || status !== 'connected') return;
+    const attemptKey = `${accountId}:${authorityBootId}:${invitation}`;
+    if (automaticJoin.current === attemptKey) return;
+    automaticJoin.current = attemptKey;
+    void joinRoom(invitation);
+  }, [accountId, authorityBootId, invitation, joinRoom, status]);
+
+  async function createRoom(title: string) {
+    if (!accountId) {
+      setError('Sign in before creating a private room.');
+      return;
+    }
+    if (!authorityBootId || status !== 'connected') {
+      setError('The private room connection is still starting. Try again shortly.');
+      return;
+    }
+    setError(null);
+    const result = await send(createMutationCommand('room:create', authorityBootId, { title }));
+    handleRoomResult(result);
   }
 
   return (
-    <>
-      <Lobby onCreate={() => openDialog('create')} onJoin={() => openDialog('join')} />
-      <dialog
-        ref={dialog}
-        className="room-dialog"
-        aria-labelledby="room-dialog-title"
-        onClose={() => {
-          setAction(null);
-          lastTrigger.current?.focus();
-        }}
-      >
-        <div className="dialog-heading">
-          <Icon icon={Club} />
-          <button className="icon-button" type="button" onClick={closeDialog} aria-label="Close dialog"><Icon icon={X} /></button>
-        </div>
-        <h2 id="room-dialog-title">{action === 'join' ? 'A seat is waiting.' : 'Set your table.'}</h2>
-        <p>
-          {action === 'join'
-            ? 'Sign in first, then open the private invitation from your host.'
-            : 'Room creation will be available after you sign in.'}
-        </p>
-        <p className="dialog-status">Accounts and secure room actions are connected in the next implementation task.</p>
-        <button className="primary-button" type="button" onClick={closeDialog}>Got it</button>
-      </dialog>
-    </>
+    <Lobby
+      onCreate={createRoom}
+      onJoin={joinRoom}
+      pending={pendingCommand !== null}
+      error={error}
+      initialInvitation={invitation}
+    />
   );
 }
