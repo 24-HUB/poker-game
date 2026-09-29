@@ -16,6 +16,8 @@ import { RoomRegistry } from '../src/modules/rooms/roomRegistry';
 import { RoomService, type RoomContext } from '../src/modules/rooms/room.service';
 import { SessionRepository } from '../src/modules/rooms/session.repository';
 import { SessionService } from '../src/modules/rooms/session.service';
+import { SettlementRepository } from '../src/modules/settlement/settlement.repository';
+import { SettlementService } from '../src/modules/settlement/settlement.service';
 import { createTestDatabase, type TestDatabase } from './support/testDatabase';
 
 class FakeClock implements GameClock {
@@ -35,6 +37,7 @@ describe('authoritative poker actions', () => {
   let registry: RoomRegistry;
   let rooms: RoomService;
   let game: GameService;
+  let settlement: SettlementService;
   let clock: FakeClock;
   let roomId: string;
   let bootId: string;
@@ -75,7 +78,9 @@ describe('authoritative poker actions', () => {
       const accountId = headers.get('x-test-account');
       return accountId ? identity(accountId) : null;
     } } as IdentityService;
-    game = new GameService(repository, sessions, registry, authority, identityService, clock, deckFactory, new GameCommandCache());
+    settlement = new SettlementService(new SettlementRepository(database.db, new TransactionRunner(database.client), authority));
+    game = new GameService(repository, sessions, registry, authority, identityService, clock, deckFactory,
+      new GameCommandCache(), settlement);
     const created = await rooms.execute(roomContext('host'), {
       type: 'room:create', title: 'Poker', commandId: randomUUID(), authorityBootId: bootId,
       issuedAt: new Date(clock.current).toISOString(),
@@ -141,7 +146,7 @@ describe('authoritative poker actions', () => {
     const command = { ...action('host'), action: { type: 'fold' as const } };
     const first = await game.execute(gameContext('host'), command);
     expect(first.error).toBeNull();
-    expect(first.data?.game?.handPhase).toBe('settling');
+    expect(first.data?.game?.handPhase).toBe('result');
     const retry = await game.execute(gameContext('host'), command);
     expect(retry.error).toBeNull();
     expect(retry.data?.outcome).toEqual(first.data?.outcome);
@@ -219,7 +224,7 @@ describe('authoritative poker actions', () => {
     expect(shove.error).toBeNull();
     const called = await game.execute(gameContext('guest'), action('guest', 1));
     expect(called.error).toBeNull();
-    expect(called.data?.game?.handPhase).toBe('settling');
+    expect(called.data?.game?.handPhase).toBe('result');
     expect(called.data?.game?.board).toHaveLength(5);
     expect(registry.controller(roomId).session?.settlement?.finalStacks.reduce((sum, value) => sum + value, 0))
       .toBe(2000);
@@ -232,5 +237,69 @@ describe('authoritative poker actions', () => {
     expect(retry.data?.outcome?.acceptedGameVersion).toBe(0);
     expect(retry.data?.game?.gameVersion).toBe(1);
     expect(await database.db.collection('hands').countDocuments()).toBe(1);
+  });
+
+  it('commits a hand before carrying its stacks into a persisted next hand', async () => {
+    const finished = await game.execute(gameContext('host'), { ...action('host'), action: { type: 'fold' } });
+    expect(finished.error).toBeNull();
+    expect(finished.data?.game?.handResult?.winners).toEqual(['guest']);
+    expect((await database.db.collection<{ _id: string; status: string }>('hands')
+      .findOne({ _id: handId }))?.status).toBe('COMPLETED');
+    const resultTimer = clock.callbacks.at(-1)!;
+    expect(resultTimer.at).toBe(clock.current + 5_000);
+    clock.current = resultTimer.at;
+    resultTimer.callback();
+    await registry.enqueue(roomId, async () => undefined);
+    const next = await game.execute(gameContext('host'), { type: 'game:sync', roomId });
+    expect(next.data?.game?.handId).not.toBe(handId);
+    expect(next.data?.game?.buttonSeat).toBe(1);
+    expect((await database.db.collection<{ _id: string; stacks: number[] }>('gameSessions')
+      .findOne({ _id: sessionId }))?.stacks).toEqual([990, 1010]);
+    expect(await database.db.collection('hands').countDocuments()).toBe(2);
+    resultTimer.callback();
+    await registry.enqueue(roomId, async () => undefined);
+    expect(await database.db.collection('hands').countDocuments()).toBe(2);
+  });
+
+  it('honors host end during the result interval and releases participation', async () => {
+    await game.execute(gameContext('host'), { ...action('host'), action: { type: 'fold' } });
+    const ended = await game.execute(gameContext('host'), {
+      type: 'session:end', ...metadata(), controlEpoch: 1, sessionId,
+    });
+    expect(ended.error).toBeNull();
+    const resultTimer = clock.callbacks.at(-1)!;
+    clock.current = resultTimer.at;
+    resultTimer.callback();
+    await registry.enqueue(roomId, async () => undefined);
+    const view = await game.execute(gameContext('host'), { type: 'game:sync', roomId });
+    expect(view.data?.game?.sessionResult?.reason).toBe('HOST_ENDED');
+    expect((await rooms.execute(roomContext('host'), { type: 'room:sync', roomId })).data?.room?.phase)
+      .toBe('waiting');
+    expect(await database.db.collection('activeParticipants').countDocuments()).toBe(0);
+    expect(await database.db.collection('hands').countDocuments()).toBe(1);
+  });
+
+  it('pauses on settlement failure and retries the frozen result before dealing', async () => {
+    const actualCommit = settlement.commit.bind(settlement);
+    let attempts = 0;
+    jest.spyOn(settlement, 'commit').mockImplementation(async (candidate) => {
+      attempts += 1;
+      if (attempts === 1) throw new Error('temporary database outage');
+      return actualCommit(candidate);
+    });
+    const finished = await game.execute(gameContext('host'), { ...action('host'), action: { type: 'fold' } });
+    expect(finished.data?.game?.handPhase).toBe('paused');
+    expect(finished.data?.game?.handResult).toBeNull();
+    expect((await database.db.collection<{ _id: string; status: string }>('hands').findOne({ _id: handId }))?.status)
+      .toBe('PENDING');
+    const retry = clock.callbacks.at(-1)!;
+    clock.current = retry.at;
+    retry.callback();
+    await registry.enqueue(roomId, async () => undefined);
+    const recovered = await game.execute(gameContext('host'), { type: 'game:sync', roomId });
+    expect(recovered.data?.game?.handPhase).toBe('result');
+    expect(recovered.data?.game?.handResult?.winners).toEqual(['guest']);
+    expect(await database.db.collection('hands').countDocuments()).toBe(1);
+    expect(attempts).toBe(2);
   });
 });

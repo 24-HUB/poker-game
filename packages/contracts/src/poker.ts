@@ -50,7 +50,7 @@ const potSchema = z.object({ amount: chips, eligibleAccountIds: z.array(id).max(
 const payoutSchema = z.object({ accountId: id, amount: chips }).strict();
 export const committedHandResultSchema = z.object({
   handId: id, sessionId: id, handNumber: chips.positive(),
-  completedAt: z.iso.datetime(), rulesVersion: chips.positive(),
+  completedAt: z.iso.datetime(), completedDateUtc: z.iso.date(), rulesVersion: chips.positive(),
   contributions: z.array(payoutSchema).min(2).max(6),
   payouts: z.array(payoutSchema).min(2).max(6),
   finalStacks: z.array(payoutSchema).min(2).max(6),
@@ -78,7 +78,7 @@ export const gameViewSchema = z.object({
   roomId: id, authorityBootId: id, sessionId: id, handId: id.nullable(),
   snapshotRevision: chips, gameVersion: chips,
   sessionPhase: z.enum(['playing', 'ending', 'ended', 'aborted']),
-  handPhase: z.enum(['preflop', 'flop', 'turn', 'river', 'settling', 'result']).nullable(),
+  handPhase: z.enum(['preflop', 'flop', 'turn', 'river', 'settling', 'paused', 'result']).nullable(),
   participants: z.array(participantSchema).min(2).max(6),
   board: z.array(card).max(5), pots: z.array(potSchema),
   buttonSeat: z.number().int().min(0).max(5),

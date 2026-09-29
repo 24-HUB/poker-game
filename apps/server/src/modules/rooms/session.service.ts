@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
-import type { GameCommand } from '@poker/contracts' with { 'resolution-mode': 'import' };
+import type { CommittedHandResult, GameCommand, SessionResult } from '@poker/contracts' with { 'resolution-mode': 'import' };
 import type { EngineSettlement, HandState } from '@poker/poker-engine' with { 'resolution-mode': 'import' };
 
 import { AuthorityLease } from '../../authority/authorityLease';
@@ -27,6 +27,9 @@ export type SessionRuntime = {
   deadline: number | null;
   settlement: EngineSettlement | null;
   previousHandId: string | null;
+  committedHandResult: CommittedHandResult | null;
+  sessionResult: SessionResult | null;
+  paused: boolean;
 };
 
 function runtime(document: StoredGameSession): SessionRuntime {
@@ -36,6 +39,7 @@ function runtime(document: StoredGameSession): SessionRuntime {
     buttonSeat: document.buttonSeat, smallBlind: 10, bigBlind: 20,
     ending: document.endingRequested, hand: null, handId: document.firstHandId,
     gameVersion: 0, snapshotRevision: 0, deadline: null, settlement: null, previousHandId: null,
+    committedHandResult: null, sessionResult: document.result ?? null, paused: false,
   };
 }
 
@@ -87,5 +91,31 @@ export class SessionService {
     });
     const controller = this.registry.controller(command.roomId);
     if (controller.session?.sessionId === command.sessionId) controller.session.ending = true;
+  }
+
+  public async nextHandInQueue(runtime: SessionRuntime, handId: string, buttonSeat: number, createdAt: Date): Promise<void> {
+    const authority = this.authority.currentToken();
+    if (!authority) throw new SessionError('SERVICE_UNAVAILABLE', 'Room authority is unavailable.');
+    await this.repository.nextHand({ sessionId: runtime.sessionId, roomId: runtime.roomId,
+      previousHandNumber: runtime.handNumber, handId, buttonSeat, createdAt, authority });
+    runtime.previousHandId = runtime.handId;
+    runtime.handId = handId;
+    runtime.handNumber += 1;
+    runtime.buttonSeat = buttonSeat;
+  }
+
+  public async completeInQueue(runtime: SessionRuntime, reason: SessionResult['reason'], endedAt: Date): Promise<void> {
+    const authority = this.authority.currentToken();
+    if (!authority) throw new SessionError('SERVICE_UNAVAILABLE', 'Room authority is unavailable.');
+    const standings = runtime.participants.map((participant, index) => ({
+      accountId: participant.accountId, seat: participant.seat, stack: runtime.stacks[index]!,
+    }));
+    const highest = Math.max(...runtime.stacks);
+    const result: SessionResult = { sessionId: runtime.sessionId, roomId: runtime.roomId,
+      endedAt: endedAt.toISOString(), reason, standings,
+      leaderAccountIds: standings.filter((entry) => entry.stack === highest).map((entry) => entry.accountId) };
+    await this.repository.complete({ sessionId: runtime.sessionId, roomId: runtime.roomId, result, authority });
+    runtime.sessionResult = result;
+    runtime.snapshotRevision += 1;
   }
 }

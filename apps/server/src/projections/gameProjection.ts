@@ -30,8 +30,8 @@ export function projectGame(runtime: SessionRuntime, room: InternalRoom, control
     roomId: runtime.roomId, authorityBootId: room.authorityBootId,
     sessionId: runtime.sessionId, handId: hand ? runtime.handId : null,
     snapshotRevision: runtime.snapshotRevision, gameVersion: runtime.gameVersion,
-    sessionPhase: runtime.ending ? 'ending' : 'playing',
-    handPhase: hand?.street === 'complete' ? 'settling' : hand?.street ?? null,
+    sessionPhase: runtime.sessionResult ? 'ended' : runtime.ending ? 'ending' : 'playing',
+    handPhase: hand?.street === 'complete' ? runtime.paused ? 'paused' : runtime.committedHandResult?.handId === runtime.handId ? 'result' : 'settling' : hand?.street ?? null,
     participants: runtime.participants.map((participant, index) => {
       const seat = hand?.seats.find((candidate) => candidate.accountId === participant.accountId);
       return {
@@ -47,8 +47,8 @@ export function projectGame(runtime: SessionRuntime, room: InternalRoom, control
     holeCards: hand?.seats.find((seat) => seat.accountId === accountId)?.holeCards
       ? [...hand.seats.find((seat) => seat.accountId === accountId)!.holeCards] as [number, number]
       : null,
-    revealedCards: [], legalActions: legal,
+    revealedCards: runtime.committedHandResult?.handId === runtime.handId ? runtime.committedHandResult.revealedCards : [], legalActions: legal,
     control: { isController, epoch: control?.epoch ?? member?.controllerEpoch ?? 0 },
-    handResult: null, sessionResult: null,
+    handResult: runtime.committedHandResult, sessionResult: runtime.sessionResult,
   };
 }

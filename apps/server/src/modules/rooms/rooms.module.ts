@@ -4,6 +4,7 @@ import { AuthorityModule } from '../../authority/authority.module';
 import { CryptoDeckFactory, DECK_FACTORY } from '../../infrastructure/deckFactory';
 import { GAME_CLOCK, SystemGameClock } from '../../infrastructure/gameClock';
 import { IdentityModule } from '../identity/identity.module';
+import { SettlementModule } from '../settlement/settlement.module';
 import { GameCommandCache } from './gameCommandCache';
 import { GameService } from './game.service';
 import { RoomCommandCache } from './roomCommandCache';
@@ -14,7 +15,7 @@ import { SessionRepository } from './session.repository';
 import { SessionService } from './session.service';
 
 @Module({
-  imports: [AuthorityModule, IdentityModule],
+  imports: [AuthorityModule, IdentityModule, SettlementModule],
   providers: [
     RoomRepository,
     SessionRepository,

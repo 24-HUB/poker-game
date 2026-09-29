@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import { Inject, Injectable, type OnApplicationShutdown } from '@nestjs/common';
 import type { CommandOutcome, GameCommand, GameReply, Result } from '@poker/contracts' with { 'resolution-mode': 'import' };
@@ -15,6 +15,7 @@ import { RoomRepository } from './room.repository';
 import { RoomQueueFullError, RoomRegistry } from './roomRegistry';
 import { SessionError } from './session.repository';
 import { SessionService, type SessionRuntime } from './session.service';
+import { SettlementService, type SettlementCandidate } from '../settlement/settlement.service';
 
 export type GameContext = RoomContext & { headers: Headers };
 type TimerIdentity = { sessionId: string; handId: string; gameVersion: number; actor: string; deadline: number };
@@ -36,6 +37,8 @@ function hash(command: GameCommand): string {
 @Injectable()
 export class GameService implements OnApplicationShutdown {
   private readonly timers = new Map<string, CancelTimer>();
+  private readonly resultTimers = new Map<string, CancelTimer>();
+  private readonly candidates = new Map<string, SettlementCandidate>();
   private disposed = false;
 
   public constructor(
@@ -47,6 +50,7 @@ export class GameService implements OnApplicationShutdown {
     @Inject(GAME_CLOCK) private readonly clock: GameClock,
     @Inject(DECK_FACTORY) private readonly decks: DeckFactory,
     private readonly cache: GameCommandCache,
+    private readonly settlements: SettlementService,
   ) {}
 
   public async execute(context: GameContext, command: GameCommand): Promise<Result<GameReply>> {
@@ -92,12 +96,13 @@ export class GameService implements OnApplicationShutdown {
           handId: runtime.firstHandId, acceptedGameVersion: 0 });
     }
     const runtime = controller.session;
-    if (!runtime || runtime.sessionId !== room.sessionId) {
+    if (!runtime || (runtime.sessionId !== room.sessionId && !runtime.sessionResult)) {
       return command.type === 'game:sync'
         ? { data: { game: null, outcome: null }, error: null }
         : fail('SESSION_NOT_ACTIVE', 'No active session is available.');
     }
     if (command.type === 'game:sync') return this.reply(runtime, command.roomId, verified.accountId, context.connectionId, null);
+    if (runtime.sessionResult) return fail('SESSION_NOT_ACTIVE', 'The session has ended.');
     if (member.controllerConnectionId !== context.connectionId || member.controllerEpoch !== command.controlEpoch) {
       return fail('NOT_CONTROLLER', 'This tab does not control the player.');
     }
@@ -120,7 +125,7 @@ export class GameService implements OnApplicationShutdown {
     if (command.handId !== runtime.handId) return fail('STALE_STATE', 'This action belongs to an earlier hand.');
     if (!runtime.hand || runtime.hand.street === 'complete') return fail('HAND_SETTLING', 'The hand is settling.');
     if (runtime.deadline !== null && this.clock.now() >= runtime.deadline) {
-      this.applyTimeout(runtime);
+      await this.applyTimeout(runtime);
       return fail('STALE_STATE', 'The turn deadline has passed.');
     }
     if (command.expectedGameVersion !== runtime.gameVersion) return fail('STALE_STATE', 'The game state changed.');
@@ -131,7 +136,7 @@ export class GameService implements OnApplicationShutdown {
       if (error instanceof RangeError) return fail('ILLEGAL_ACTION', 'This action is not legal.');
       throw error;
     }
-    this.accept(runtime, transition);
+    await this.accept(runtime, transition);
     const outcome = { commandId: command.commandId, sessionId: runtime.sessionId,
       handId: runtime.handId, acceptedGameVersion: runtime.gameVersion };
     this.cache.store(verified.accountId, command.commandId, payloadHash, outcome,
@@ -143,9 +148,9 @@ export class GameService implements OnApplicationShutdown {
     const deck = this.decks.shuffle();
     assertDeck(deck);
     const transition = startHand({
-      seats: runtime.participants.map((participant, index) => ({
+      seats: runtime.participants.flatMap((participant, index) => runtime.stacks[index]! > 0 ? [{
         accountId: participant.accountId, seat: participant.seat, startingStack: runtime.stacks[index]!,
-      })),
+      }] : []),
       buttonSeat: runtime.buttonSeat, smallBlind: runtime.smallBlind, bigBlind: runtime.bigBlind, deck,
     });
     runtime.hand = transition.state;
@@ -155,19 +160,20 @@ export class GameService implements OnApplicationShutdown {
     this.scheduleTurn(runtime);
   }
 
-  private accept(runtime: SessionRuntime, transition: ReturnType<typeof applyAction>): void {
+  private async accept(runtime: SessionRuntime, transition: ReturnType<typeof applyAction>): Promise<void> {
     runtime.hand = transition.state;
     runtime.gameVersion = transition.state.version;
     runtime.snapshotRevision += 1;
     runtime.settlement = transition.settlement;
     this.scheduleTurn(runtime);
+    if (transition.settlement) await this.commitSettlement(runtime);
   }
 
-  private applyTimeout(runtime: SessionRuntime): void {
+  private async applyTimeout(runtime: SessionRuntime): Promise<void> {
     const actor = runtime.hand?.actorAccountId;
     if (!actor || !runtime.hand) return;
     const legal = legalActions(runtime.hand, actor);
-    this.accept(runtime, applyAction(runtime.hand, actor,
+    await this.accept(runtime, applyAction(runtime.hand, actor,
       legal.canCheck ? { type: 'check' } : { type: 'fold' }, 'timeout'));
   }
 
@@ -192,7 +198,7 @@ export class GameService implements OnApplicationShutdown {
         if (!current || current.sessionId !== identity.sessionId || current.handId !== identity.handId ||
             current.gameVersion !== identity.gameVersion || current.hand?.actorAccountId !== identity.actor ||
             current.deadline !== identity.deadline || this.clock.now() < identity.deadline) return;
-        this.applyTimeout(current);
+        await this.applyTimeout(current);
       }).catch(() => undefined);
     });
     this.timers.set(runtime.roomId, cancel);
@@ -211,6 +217,8 @@ export class GameService implements OnApplicationShutdown {
   public dispose(): void {
     this.disposed = true;
     for (const roomId of this.timers.keys()) this.cancelTurn(roomId);
+    for (const cancel of this.resultTimers.values()) cancel();
+    this.resultTimers.clear();
   }
 
   private cancelTurn(roomId: string): void {
@@ -221,4 +229,76 @@ export class GameService implements OnApplicationShutdown {
   }
 
   public onApplicationShutdown(): void { this.dispose(); }
+
+  private async commitSettlement(runtime: SessionRuntime): Promise<void> {
+    const engine = runtime.settlement;
+    if (!engine) return;
+    let candidate = this.candidates.get(runtime.handId);
+    if (!candidate) {
+      const authority = this.authority.currentToken();
+      if (!authority) { runtime.paused = true; return; }
+      const completedAt = new Date(this.clock.now());
+      candidate = { roomId: runtime.roomId, sessionId: runtime.sessionId, handId: runtime.handId,
+        handNumber: runtime.handNumber, authority, expectedRevision: 0, rulesVersion: 1,
+        completedAt, completedDateUtc: completedAt.toISOString().slice(0, 10),
+        participants: runtime.participants,
+        engine: { ...engine, finalStacks: runtime.participants.map((participant) => {
+          const seatIndex = runtime.hand?.seats.findIndex((seat) => seat.accountId === participant.accountId) ?? -1;
+          return seatIndex < 0 ? runtime.stacks[runtime.participants.indexOf(participant)]! : engine.finalStacks[seatIndex]!;
+        }) },
+      };
+      this.candidates.set(runtime.handId, candidate);
+    }
+    try {
+      const result = await this.settlements.commit(candidate);
+      runtime.committedHandResult = result;
+      runtime.stacks = result.finalStacks.map((entry) => entry.amount);
+      runtime.paused = false;
+      runtime.snapshotRevision += 1;
+      this.candidates.delete(runtime.handId);
+      this.scheduleResult(runtime, 5_000);
+    } catch {
+      runtime.paused = true;
+      runtime.snapshotRevision += 1;
+      this.scheduleResult(runtime, 1_000, true);
+    }
+  }
+
+  private scheduleResult(runtime: SessionRuntime, delay: number, retry = false): void {
+    this.resultTimers.get(runtime.roomId)?.();
+    const handId = runtime.handId;
+    const at = this.clock.now() + delay;
+    this.resultTimers.set(runtime.roomId, this.clock.schedule(at, () => {
+      void this.registry.enqueue(runtime.roomId, async () => {
+        if (this.disposed || !this.authority.currentToken() || this.clock.now() < at) return;
+        const current = this.registry.controller(runtime.roomId).session;
+        if (!current || current.sessionId !== runtime.sessionId || current.handId !== handId || current.sessionResult) return;
+        try {
+          if (retry) await this.commitSettlement(current);
+          else await this.afterResult(current);
+        } catch {
+          current.paused = true;
+          current.snapshotRevision += 1;
+          this.scheduleResult(current, 1_000, retry);
+        }
+      }).catch(() => undefined);
+    }));
+  }
+
+  private async afterResult(runtime: SessionRuntime): Promise<void> {
+    if (!runtime.committedHandResult) return;
+    if (runtime.ending || runtime.stacks.filter((stack) => stack > 0).length < 2) {
+      await this.sessions.completeInQueue(runtime, runtime.ending ? 'HOST_ENDED' : 'ONE_FUNDED', new Date(this.clock.now()));
+      runtime.hand = null;
+      this.resultTimers.delete(runtime.roomId);
+      return;
+    }
+    const seats = runtime.participants.filter((participant, index) => runtime.stacks[index]! > 0)
+      .map((participant) => participant.seat).sort((a, b) => a - b);
+    const buttonSeat = seats.find((seat) => seat > runtime.buttonSeat) ?? seats[0]!;
+    const nextHandId = randomUUID();
+    await this.sessions.nextHandInQueue(runtime, nextHandId, buttonSeat, new Date(this.clock.now()));
+    this.resultTimers.delete(runtime.roomId);
+    this.dealFirstHand(runtime);
+  }
 }

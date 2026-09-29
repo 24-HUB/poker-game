@@ -4,6 +4,7 @@ import type { ClientSession, Db } from 'mongodb';
 import { AuthorityLease, type AuthorityToken } from '../../authority/authorityLease';
 import { MONGO_DB, TRANSACTION_RUNNER } from '../../database/database.tokens';
 import { TransactionRunner } from '../../database/transactionRunner';
+import type { SessionResult } from '@poker/contracts' with { 'resolution-mode': 'import' };
 
 export type SessionParticipant = { accountId: string; displayName: string; seat: number };
 export type StoredGameSession = {
@@ -22,6 +23,7 @@ export type StoredGameSession = {
   buttonSeat: number;
   startedAt: Date;
   endingRequested: boolean;
+  result?: SessionResult;
 };
 
 export class SessionError extends Error {
@@ -35,6 +37,7 @@ type RoomDocument = {
 type MembershipDocument = {
   roomId: string; accountId: string; displayName: string; seat: number | null;
   controllerConnectionId: string | null; controllerEpoch: number; leftAt: Date | null;
+  pendingDeparture?: boolean;
 };
 
 export type StartSessionInput = {
@@ -159,6 +162,66 @@ export class SessionRepository {
       await this.db.collection<RoomDocument>('rooms').updateOne(
         { _id: input.roomId, revision: room.revision }, { $inc: { revision: 1 } }, { session },
       );
+    });
+  }
+
+  public async nextHand(input: { sessionId: string; roomId: string; previousHandNumber: number;
+    handId: string; buttonSeat: number; createdAt: Date; authority: AuthorityToken }): Promise<void> {
+    await this.transactions.run(async (session) => {
+      await this.authority.fence(session, input.authority);
+      const current = await this.db.collection<StoredGameSession>('gameSessions').findOne({
+        _id: input.sessionId, roomId: input.roomId, status: 'ACTIVE', endingRequested: false,
+        handNumber: input.previousHandNumber,
+      }, { session });
+      if (!current) throw new SessionError('SESSION_NOT_ACTIVE', 'The session cannot advance.');
+      const previous = await this.db.collection<{ _id: string; sessionId: string; handNumber: number; status: string }>('hands').findOne({
+        sessionId: input.sessionId, handNumber: input.previousHandNumber, status: 'COMPLETED',
+      }, { session });
+      if (!previous) throw new SessionError('HAND_SETTLING', 'The previous hand has not committed.');
+      await this.db.collection<{ _id: string; sessionId: string; roomId: string; handNumber: number; status: string; revision: number; createdAt: Date }>('hands').insertOne({
+        _id: input.handId, sessionId: input.sessionId, roomId: input.roomId,
+        handNumber: input.previousHandNumber + 1, status: 'PENDING', revision: 0, createdAt: input.createdAt,
+      }, { session });
+      const updated = await this.db.collection<StoredGameSession>('gameSessions').updateOne({
+        _id: input.sessionId, status: 'ACTIVE', endingRequested: false, handNumber: input.previousHandNumber,
+      }, { $set: { handNumber: input.previousHandNumber + 1, buttonSeat: input.buttonSeat } }, { session });
+      if (updated.matchedCount !== 1) throw new SessionError('STALE_STATE', 'The session changed before the next hand.');
+    });
+  }
+
+  public async complete(input: { sessionId: string; roomId: string; result: SessionResult;
+    authority: AuthorityToken }): Promise<void> {
+    await this.transactions.run(async (session) => {
+      await this.authority.fence(session, input.authority);
+      const game = await this.db.collection<StoredGameSession>('gameSessions').findOne({
+        _id: input.sessionId, roomId: input.roomId, status: 'ACTIVE',
+      }, { session });
+      if (!game) throw new SessionError('SESSION_NOT_ACTIVE', 'The session is no longer active.');
+      const hand = await this.db.collection<{ _id: string; sessionId: string; handNumber: number; status: string }>('hands').findOne({
+        sessionId: input.sessionId, handNumber: game.handNumber, status: 'COMPLETED',
+      }, { session });
+      if (!hand) throw new SessionError('HAND_SETTLING', 'The hand has not committed.');
+      const room = await this.db.collection<RoomDocument>('rooms').findOne({
+        _id: input.roomId, status: 'OPEN', phase: 'playing', sessionId: input.sessionId,
+      }, { session });
+      if (!room) throw new SessionError('ROOM_CLOSED', 'The room is no longer active.');
+      const updated = await this.db.collection<StoredGameSession>('gameSessions').updateOne({
+        _id: input.sessionId, status: 'ACTIVE', handNumber: game.handNumber,
+      }, { $set: { status: 'COMPLETED', result: input.result } }, { session });
+      if (updated.matchedCount !== 1) throw new SessionError('STALE_STATE', 'The session changed before completion.');
+      await this.db.collection('activeParticipants').deleteMany({ sessionId: input.sessionId }, { session });
+      const departing = await this.db.collection<MembershipDocument>('roomMemberships').find({
+        roomId: input.roomId, pendingDeparture: true,
+      }, { session }).toArray();
+      for (const member of departing) {
+        await this.db.collection<{ _id: string; roomId: string }>('activeRoomMemberships').deleteOne({ _id: member.accountId, roomId: input.roomId }, { session });
+        await this.db.collection('roomMemberships').updateOne({ roomId: input.roomId, accountId: member.accountId },
+          { $set: { leftAt: new Date(input.result.endedAt), seat: null, pendingDeparture: false } }, { session });
+      }
+      const roomUpdated = await this.db.collection<RoomDocument>('rooms').updateOne({
+        _id: input.roomId, revision: room.revision, sessionId: input.sessionId,
+      }, { $set: { phase: 'waiting', sessionId: null }, $inc: { revision: 1 } }, { session });
+      if (roomUpdated.matchedCount !== 1) throw new SessionError('STALE_STATE', 'The room changed before completion.');
     });
   }
 }
