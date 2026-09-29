@@ -31,9 +31,7 @@ Where prototype behavior conflicts with the system plan, the system plan wins. T
 
 ## 2. Global constraints
 
-- Preserve the current dev checkout and all uncommitted design/prototype/checkpoint files. Preserve codex/system-design as the existing plan-only branch.
-- Before production code, inspect attached worktrees. Reuse a suitable free checkout or create a managed worktree from the reviewed planning ref. Use the planned `codex/m0-m1-foundation` implementation branch, checking whether it already exists before creation. Do not reset or clear a checkout.
-- Copy the reviewed design, this plan, approved reference, and prototype reference into the implementation checkout explicitly; managed worktree creation does not copy uncommitted files. Verify copied contents before relying on them.
+- Preserve the committed design/prototype/checkpoint files and implement only on `codex/m0-m1-foundation`, created from freshly fetched `origin/dev`. Do not reset, rebase, or clear the checkout.
 - Retain package names `@poker/contracts`, `@poker/server`, and `@poker/web` and the `{ data, error }` result envelope from plan.md.
 - Server identity, room permissions, legal actions, wallet changes, and equipment remain authoritative. No optimistic chips, seats, ownership, or ticket balances.
 - Use original/licensed art. Treat the generated hostess as provisional artwork. Keep Looking Glass Club as a provisional name until naming is confirmed.
@@ -51,13 +49,13 @@ The design is sufficient to start the first production slice. Remaining visual d
 
 | Item | Current position | Resolve by |
 |---|---|---|
-| Google-only sign-in | Existing M1 proposal, not newly confirmed by visual approval | Before authentication implementation |
-| Participant-only room access; one controlling tab/account | Existing M1 proposals | Before room/gateway behavior is locked |
+| Invite-only email/password | Confirmed for M0/M1; shared registration code, no outbound email or reset | Resolve recovery before M3 |
+| Participant-only room access; explicit control takeover | Confirmed for M1 | Implement in room/gateway behavior |
 | Final product/character names | Looking Glass Club and Alice are placeholders | Before public release; not a foundation blocker |
 | Starting stacks, blinds, timeout, seat locking, bust-out behavior | Proposals in plan.md | Before detailed M2 execution plan |
 | Reward amounts, cap, prices, pity, duplicates, catalogue | Proposals in plan.md | Before M3/M4 implementation |
 | Final avatar/card-back assets | One provisional character exists | Before M4 acceptance |
-| OAuth/provider access and free-tier settings | Not verified by the prototype | During M0 deployed acceptance |
+| Free-tier provider settings | Not verified by the prototype; provisioning is not authorized in this slice | Future deployed M0 acceptance |
 
 Do not ask again about the approved visual blend, desktop priority, portrait seating, or envelope reveal. Review only unresolved product choices when the relevant milestone begins.
 
@@ -94,7 +92,7 @@ Execute A first, introduce B after its workspace exists, then integrate C and D 
 - [ ] Verify toolchain/provider compatibility against current official documentation; pin actual versions in task 1 and the lockfile.
 - [ ] Run each existing task's meaningful failing behavior test before implementing its behavior. Use build checks for configuration-only work.
 - [ ] Complete tasks 1–5, then 7–8 with their prescribed suites and focused commits. Frontend tasks B–D join this sequence at the dependencies in section 4.
-- [ ] Preserve task 6's real deployed checks for Task E; local seeded sessions do not count as successful OAuth deployment.
+- [ ] Preserve task 6's real deployed checks for a separately authorized deployment; local sessions count only as local acceptance.
 
 **Pass evidence:** The original foundation/room tests, typechecks, production builds and recorded commands pass. No test runner or app scaffold currently exists in this checkout; commands below become runnable after this task creates them.
 
@@ -137,7 +135,7 @@ Execute A first, introduce B after its workspace exists, then integrate C and D 
 - [ ] Add `backendUnavailableDoesNotSignOut`: HTTP 503 shows server-starting/retry UI without presenting it as a revoked session. Add `signOutClearsPrivateState`: switching accounts clears query/live state and disconnects the old socket.
 - [ ] Run the focused suite and browser test, verify the expected failures, then implement the session boundary and sign-in composition.
 - [ ] Keep initial private reads bounded and uncached. Map authentication errors separately from transport/readiness errors. Account switching must remove the preceding user's data before rendering another account.
-- [ ] Run `pnpm --filter @poker/web exec playwright test e2e/session.spec.ts`, web tests/typecheck, and the existing auth integration suite. Verify actual OAuth separately in Task E.
+- [ ] Run `pnpm --filter @poker/web exec playwright test e2e/session.spec.ts`, web tests/typecheck, and the existing auth integration suite.
 - [ ] Commit: `feat: connect lobby authentication and recovery states`.
 
 ### Task D — Replace demo room flows with authorized realtime flows
@@ -166,7 +164,7 @@ Execute A first, introduce B after its workspace exists, then integrate C and D 
 
 - [ ] Run `pnpm check` as defined by the foundation; confirm contract/server/web checks and both builds pass. Run browser suites separately against the real local services and test replica set.
 - [ ] Inspect desktop/phone sign-in, lobby, populated/full waiting room, errors and reconnect states. Verify 44 px targets, 4.5:1 normal-text contrast, visible focus, long names, reduced motion and no overflow at 360 px. Use a visual review, not only snapshot assertions.
-- [ ] Execute the original task 6 deployment checks: actual OAuth callback/cookies, Worker proxy and Socket.IO transport, sleep/wake, backend ownership replacement and provider limits. Record environment limitations honestly.
+- [ ] Prepare the original task 6 deployment configuration and smoke checks without provisioning. Record live Worker proxy, sleep/wake, provider limits, and public-origin cookies as `not run - deployment not authorized`.
 - [ ] Run two real signed-in accounts through create → copy secure invitation → join → seat move → reconnect → leave. Verify authorization directly at the API/socket boundary as well as through the UI.
 - [ ] Have the completed implementation reviewed against both specs. Fix material findings and rerun affected checks before recording M1 as verified.
 - [ ] Commit: `test: verify approved lobby and private-room milestone`.

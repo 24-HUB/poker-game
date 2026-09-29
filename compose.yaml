@@ -1,0 +1,28 @@
+services:
+  mongodb:
+    image: mongo:8.0.17
+    command: ["mongod", "--replSet", "rs0", "--bind_ip_all", "--port", "27018"]
+    ports:
+      - "127.0.0.1:27018:27018"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--port", "27018", "--eval", "db.adminCommand('ping').ok"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+      start_period: 5s
+    tmpfs:
+      - /data/db
+
+  mongodb-standalone:
+    image: mongo:8.0.17
+    command: ["mongod", "--bind_ip_all", "--port", "27017"]
+    ports:
+      - "127.0.0.1:27019:27017"
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 2s
+      timeout: 2s
+      retries: 30
+      start_period: 5s
+    tmpfs:
+      - /data/db

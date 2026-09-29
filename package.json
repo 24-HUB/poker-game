@@ -1,0 +1,29 @@
+{
+  "name": "poker-anime-gacha",
+  "private": true,
+  "packageManager": "pnpm@10.33.0",
+  "engines": {
+    "node": ">=22.16.0 <23"
+  },
+  "scripts": {
+    "build": "pnpm -r --if-present build",
+    "check": "pnpm typecheck && pnpm test && pnpm build",
+    "db:init": "node scripts/init-replica-set.mjs",
+    "db:migrate": "pnpm --filter @poker/server db:migrate",
+    "smoke:deployment": "node scripts/smoke-deployment.mjs",
+    "test": "pnpm test:db:init && pnpm test:deployment && pnpm -r --if-present test",
+    "test:db:init": "node --test scripts/init-replica-set.test.mjs",
+    "test:deployment": "node --test scripts/smoke-deployment.test.mjs",
+    "typecheck": "pnpm --filter @poker/contracts build && pnpm -r --if-present typecheck"
+  },
+  "devDependencies": {
+    "mongodb": "7.6.0",
+    "typescript": "5.9.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild",
+      "workerd"
+    ]
+  }
+}

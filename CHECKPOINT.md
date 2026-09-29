@@ -1,10 +1,112 @@
-# Checkpoint — interactive lobby prototype
+# Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-26. Status: prototype reviewed; design-to-production implementation plan written for user review.
+Updated: 2026-09-29. Status: Tasks 1–10 are locally complete on `codex/m0-m1-foundation`; PR [#6](https://github.com/24-HUB/poker-game/pull/6) targets `dev`. The [Linux CI run](https://github.com/24-HUB/poker-game/actions/runs/36510938422/job/109222664262?pr=6) passed replica-set initialization, migrations, `pnpm check`, and the Cloudflare Worker build.
 
 ## User intent and usage rule
 
-The user approved the visual direction and interactive lobby prototype, then requested the next design step or an implementation plan if the design was ready. The plan has now been written; production implementation has not begun. Save a checkpoint whenever remaining usage drops below 6%. A previous turn stopped at 3% and later resumed after reset. Latest reading at the start of the planning turn: five-hour remaining 58%, weekly remaining 93%. Never purchase or consume reset credits automatically.
+The user approved the M0/M1 implementation plan and requested inline execution. Work is limited to local implementation and deployment preparation; no cloud provisioning, live secrets, or production database operations are authorized. Save this checkpoint at every task boundary and whenever either remaining usage window drops below 6%. Latest reading: five-hour remaining 39%, weekly remaining 28%. Never purchase or consume reset credits automatically.
+
+## Active execution
+
+- Branch: `codex/m0-m1-foundation`, created from fetched `origin/dev` at `01f033d0`.
+- Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
+- Completed tasks: Tasks 1–9 above, plus Task 10 local acceptance and deployment preparation: CI, Render/Worker configuration, environment documentation, redacted smoke tooling, and accessibility coverage.
+- Current task: Task 10 local and Linux CI verification is complete; deployed acceptance remains not run—deployment not authorized. No provider was provisioned and no live secret or production migration was used.
+- Next action: verify the PR check and branch freshness after this evidence checkpoint is pushed, then hand PR #6 to the user for manual review and merge.
+- Verification: frozen install, controlled migrations twice, 11/11 real Chromium cases, and the original 121-test `pnpm check` passed for Task 10. The CI bootstrap fix was reproduced RED against a fresh isolated MongoDB container and passed GREEN; the updated `pnpm check` passes 122/122 tests, all workspace typechecks, and configured contracts/Nest/Next production builds. Render/Cloudflare deployment smoke remains not run—deployment not authorized.
+- Worker evidence: `pnpm --filter @poker/web build:worker` completed successfully in Linux CI. Windows still denies OpenNext's required symlink during local packaging, so the local Windows Worker bundle remains unavailable.
+- Usage at checkpoint: five-hour remaining 61%, weekly remaining 94%. No reset credit was used.
+- Remaining limitation: live provider checks remain unauthorized. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally. The existing local replica-set container was not recreated, preserving the user's current disposable room data.
+
+## PR #6 CI follow-ups
+
+- GitHub CI failed at `pnpm db:init` with MongoDB `InvalidReplicaSetConfig`: `host.docker.internal:27018` did not map back to the Linux container during `replSetInitiate`.
+- A new real-container regression test reproduced the same error before the fix, then passed after the fix. It uses a separate disposable container and leaves the currently running local database untouched.
+- The replica member now uses the loopback host/port from the bootstrap URI; the Compose replica-set service listens and publishes on the same port, 27018. The root test suite includes the regression.
+- A first full-suite run had one unrelated timeout because the standalone comparison container was stopped; after starting that disposable service, `pnpm check` passed 122/122 tests and all configured builds. `docker compose config --quiet` and `git diff --check` passed.
+- The first Linux rerun passed replica-set initialization and migrations. It then failed at root `pnpm check` because a clean checkout had no `@poker/contracts/dist` before server typechecking. The root typecheck command now builds contracts first.
+- The second Linux rerun passed typechecking, but the unquoted `dist/**` in the contracts test script expanded to files under Bash and made Vitest report no test files. Quoting the glob preserves its intended meaning on Windows and Linux. Focused contracts tests pass 5/5, and local `pnpm check` passes 122/122 tests and all configured builds.
+- The third Linux run succeeded: replica-set initialization, migrations twice, `pnpm check`, and `pnpm --filter @poker/web build:worker` all passed. No deployment was performed.
+
+## Task 10 implementation evidence
+
+- Added a manual Render free-service blueprint with automatic deploy disabled, `/health/deploy`, bounded shutdown, pinned Node/pnpm build commands, and dashboard-supplied secret/configuration fields. No pre-deploy production migration is configured.
+- Added read-only GitHub CI for `dev` pull requests/pushes: frozen install, disposable MongoDB services, replica-set initialization, two migrations, `pnpm check`, and Linux OpenNext Worker build. It contains no deploy job or provider credential reference.
+- Added a bounded public deployment smoke command. Tests prove a 200 shell plus authoritative ready state succeeds and an unavailable origin fails nonzero without printing unrelated secret environment values.
+- Added deployment/environment documentation and Wrangler dashboard-variable preservation. Provider provisioning, secret upload, live migration, and deployment are explicitly outside authorization.
+- Added a dedicated 360×800 accessibility case covering keyboard activation, focus restoration, 44px target size, reduced motion, a long authenticated name, named sign-out, and overflow. The complete browser suite passes 11/11.
+- Controlled local migrations pass twice. `pnpm check` passes 121/121 tests and configured builds. OpenNext passes Next compilation, then Windows returns `EPERM` for a required symlink; Linux CI evidence remains pending.
+
+## Task 3 implementation evidence
+
+- RED captured: `database.e2e-spec.ts` initially failed because the transaction runner and migrations did not exist.
+- Added pinned MongoDB driver 7.6.0, disposable replica-set and standalone services, replica-set initialization, unique per-test databases, the singleton Nest database module, shared provider tokens, bounded connection pools, single-session transaction execution, additive migration tracking, validators, and M0/M1 indexes.
+- Docker Desktop recovered and both disposable MongoDB services reached healthy state. Replica-set initialization selected a PRIMARY at `host.docker.internal:27018`.
+- The first real run exposed a MongoDB 7 driver/Jest VM incompatibility: dynamically resolved runtime metadata became empty and the server rejected the handshake. Added a narrow RED compatibility test and centralized `MongoClient` construction with the driver's explicit Node OS runtime adapter; the compatibility test then passed.
+- Added real tests for rollback, occupied-seat uniqueness, idempotent migrations, and standalone rejection. All four pass against the disposable services.
+- `pnpm db:migrate` passed twice against an isolated database. `pnpm check`, the compiled Better Auth import check, and `git diff --check` pass.
+
+## Task 4 implementation evidence
+
+- RED captured: `authority.e2e-spec.ts` initially failed because the authority lease module did not exist. The stricter process-boundary acceptance test separately failed until its real-process harness was added; its sandboxed run also demonstrated the expected Windows `spawn EPERM` boundary before the approved full-permission run passed.
+- Added MongoDB-server-time conditional acquisition, monotonic epochs and lease revisions, 30-second leases, 5-second renewal, conservative local validity deadlines, transactional fencing with stable `AUTHORITY_LOST`, conditional release, and bounded standby retry.
+- Startup cleanup runs only after ownership and fences its transaction before closing older open rooms and clearing active seats. Already-closed records are untouched.
+- `/health/deploy` verifies database/schema health without requiring authority. `/api/health/ready` returns 503 for standby or expired authority and 200 only after owner cleanup. Shutdown marks readiness false and stops authority timers before releasing the lease; database closure remains in the later application-shutdown phase.
+- The authority acceptance suite passes 8/8 against the disposable replica set, including two independently spawned Nest backend processes. Fresh `pnpm check` passes 21 tests and all production builds.
+
+## Task 5 implementation evidence
+
+- RED captured: Worker proxy tests initially failed because `worker/proxy.ts` did not exist; the backend proxy suite initially failed because `common/proxyGuard.ts` did not exist.
+- Added exact `/api` and `/socket.io` path matching, HTTPS-only configured origins, fixed upstream construction, hostile forwarding/secret header replacement, public-origin checks for mutations and socket handshakes, manual redirects, 15-second non-upgrade timeout, uncached streaming responses, and multi-cookie preservation.
+- Added a custom Worker entry that sends backend paths through the proxy and delegates all other requests to the generated OpenNext worker. Wrangler now points at that entry.
+- Added a timing-safe backend proxy-secret guard before application routes. Only `/health/live` and `/health/deploy` are direct-host exceptions; readiness remains protected.
+- Added NestJS/Socket.IO transport attachment with a secure adapter that enforces the proxy secret and exact public origin at the Engine.IO handshake boundary, including requests that bypass Express middleware.
+- A raw Engine.IO WebSocket handshake proves valid proxied traffic receives HTTP 101. Forged secrets and hostile origins are rejected. Worker coverage proves upgrades retain their headers and unwrapped switching-protocol response.
+- Added backend timeout handling as an uncached 504, request-body/cookie streaming coverage, invalid backend-origin coverage, and explicit frontend delegation for non-backend lookalike paths.
+- Shutdown now follows the full lifecycle requirement: Nest disposes Socket.IO before authority release, while MongoDB stays available until conditional release completes. A live-upgrade regression test observed the original wrong order in RED and the corrected order in GREEN.
+- Frozen installation and fresh `pnpm check` pass. The Linux-only OpenNext bundle remains deferred to Task 10 as already recorded; Task 5 local acceptance is complete.
+
+## Task 6 implementation evidence
+
+- RED captured for the missing native auth mount, `/api/me`, application error envelope, socket acknowledgement, revocation ordering, database-outage classification, malformed payload rejection, modal focus containment, session-state distinction, and successful sign-out account clearing.
+- Better Auth 1.7.6 is mounted on Express before bounded body parsing and uses its MongoDB adapter with the shared client and transactions. The exact `/sign-up/email` before-hook compares a SHA-256 registration-code digest in constant time and deletes the submitted code before account creation. Provider logging is disabled so credentials and registration codes are not emitted.
+- Email/password registration enforces 8–128 characters, duplicate email behavior, native auth responses, database-backed uncached sessions, stable trusted origin, and host-only HttpOnly cookies. HTTPS cookies are mandatory for production; loopback HTTP is allowed only outside production so the committed local `.env.example` remains runnable.
+- `GET /api/me` and the temporary `connection:check` event share `IdentityService`. HTTP and socket guards re-read persisted sessions for every protected operation. Revoked or expired sockets receive one `UNAUTHENTICATED` acknowledgement and disconnect; storage outages return `SERVICE_UNAVAILABLE` without fabricating logout or disconnecting a potentially valid caller.
+- The responsive lobby header now renders distinct loading, unavailable/retry, unauthenticated/sign-in, and authenticated/sign-out states. Sign-up requests display name, email, password, and registration code; errors preserve inputs, pending submission is disabled, focus is contained and restored, and recovery copy tells M1 testers to contact the host because password reset is deferred.
+- Bounded desktop/mobile inspection at 1440×1000 and 360×800 found no horizontal overflow. The complete Task 6 verification is recorded in Active execution above; deployed acceptance remains not run because deployment is not authorized.
+
+## Task 7 implementation evidence
+
+- Shared strict Zod contracts now define every M1 room command, recipient `RoomView`, and private `RoomReply`; schema tests cover mutation metadata, metadata-free sync, title/seat bounds, extra-field rejection, and private-field exclusion.
+- A fenced transactional room repository, one global create queue, one bounded queue per room, and additive migration 002 provide active-membership uniqueness, persisted command outcomes, canonical-payload deduplication, invitation hashes/expiry, six-seat allocation, seat moves, leave/host transfer, and replacement cleanup.
+- Invitation tokens use 32 random bytes, are returned only for create/rotate, remain only in the private retry cache, and are never stored in room or command documents. Concurrent duplicate creates coalesce to the same room and token; cache saturation rejects before mutation.
+- Explicit `room:claimControl` increments the controller epoch. Observer and superseded tabs cannot mutate; a stale disconnect cannot clear newer control. Participant-only sync, monotonic connection revisions, reconnect without implicit takeover, and two-minute empty-room closure are enforced.
+- Real replica-set coverage includes last-seat and cross-room membership races, lost/concurrent acknowledgements, full/expired/rotated invitations, outsider access, forged host action, payload conflict, stale boot, timestamp expiry, cache saturation, host disconnect/leave, transaction rollback before publication, and additive upgrade from migration version 1.
+
+## Task 8 implementation evidence
+
+- RED began with a real Socket.IO client receiving no `connection:ready`; subsequent failures exposed a shutdown/disconnect race and concurrent Better Auth test-signup transaction interference.
+- Added typed client/server room events, strict event-specific command parsing, server-derived identity and connection context, exactly-once acknowledgements, post-commit recipient publication with uncached authorization, and explicit shutdown draining.
+- Added 16 KiB payload, four-sockets-per-account, mutation/create/join/sync rate, and bounded room-queue enforcement. Real-client coverage includes malformed and unauthenticated acknowledgements, reconnect sync, revoked-recipient nondelivery, rate/socket/payload/queue limits, token nondisclosure, and stale-tab takeover behavior.
+- Full-suite RED restored the omitted `connection:check` contract. A separate shutdown RED proved acknowledged publication and in-flight room execution could outlive shutdown; command tracking now drains both and rejects commands arriving after shutdown begins.
+- Focused gateway acceptance passes 12/12. Final `pnpm check` passes 95/95 tests, all workspace typechecks, and all configured production builds.
+
+## Task 9 implementation evidence
+
+- RED/GREEN coverage now verifies fragment-only invitation parsing, 15-minute tab-scoped invitation expiry, stable pending command identity, monotonic room revisions, account isolation, fixed server reads, malformed envelopes, distinct unavailable session state, validated room titles, six rendered seats, host-only invitation controls, and sign-out cleanup of private room and pending invitation state.
+- The web now has a shared TanStack Query session provider, a minimal Zustand room store, same-origin typed Socket.IO client creation inside effects, uncertain-command retention, secure fragment removal, automatic post-auth invitation resume, create/join forms, a recipient-specific six-seat room view, explicit takeover, rotation, seat, leave controls, and a dynamic room route. There is no functional poker start action.
+- Unit coverage remains green for the integrated session, storage, command, and room-view behavior. Lost-ack coverage proves an explicit retry reuses the exact stored command object and command ID, then clears only after a definitive acknowledgement.
+- A local-only proxy harness now starts a unique isolated MongoDB database, compiled Nest backend, Next dev server, and exact-path HTTP/WebSocket gateway without exposing the proxy secret. It preserves the production origin and direct-backend trust boundary.
+- Real Chromium acceptance now covers signed-out fragment removal followed by signup and automatic join, two persisted accounts in distinct seats, refresh synchronization, host-only rotation, explicit takeover, stale-tab mutation controls, revoked-session cleanup, a six-member room, seventh-member rejection, deletion of the rejected pending token, cold-backend recovery, and backend-restart interruption. The combined suite passes 10/10.
+- The local E2E harness exposes a bounded restart control only inside the test gateway, expires the isolated authority lease before relaunch, and supports the plan's exact `pnpm exec playwright` command on Windows and Unix. No production test endpoint or secret was added.
+- Responsive populated-room screenshots at 360×800, 900×900, and 1440×1000 retain all six seats, visible connection status, and no horizontal overflow.
+
+## Task 2 implementation evidence
+
+- Ported the approved blue/white lobby into the Next.js App Router application with real semantic actions, a compact responsive companion treatment, design tokens, Lucide icons, and documented provisional artwork provenance.
+- Removed prototype-only balances, unfinished navigation, demo invitation codes, query-string invitations, and functional poker claims from the production shell.
+- Added accessible modal messaging for the intentionally not-yet-connected room actions. Native Escape handling closes the dialog and restores focus to the initiating action.
+- Added colocated Vitest behavior coverage and isolated Playwright browser coverage. Visual screenshots at all three required viewports showed no horizontal clipping and retained action-first hierarchy.
 
 ## Approved direction
 
@@ -42,7 +144,7 @@ Node syntax checks and local asset-reference checks passed. Original plan.md rem
 
 No real backend, authentication, multiplayer, poker engine, economic transactions, or pulls. Sample balances and rooms are local demo data. Collection and Invitations are descriptive preview screens. This prototype does not replace the planned Next.js/NestJS production architecture.
 
-## Resume guidance
+## Previous prototype and resume guidance
 
 The prototype is complete within its demo scope and the user said it looks good. The visual direction is sufficient for implementation planning; the remaining screens receive milestone-specific reviews as they are built.
 
@@ -50,6 +152,4 @@ Read docs/superpowers/plans/2026-09-26-design-to-production.md next. It integrat
 
 Important production differences: 24-character room titles (prototype allows 40); secure fragment invitation tokens (prototype six-character codes/query-string links are demo only); no fake ticket balance or unfinished production navigation before its milestone. Tasks B–E expand existing frontend task 9, not a second competing implementation.
 
-Next after plan review and user instruction to implement: resolve existing M1 proposals for Google-only sign-in, participant-only access, and one controlling tab; prepare/reuse a managed implementation worktree and the planned codex/m0-m1-foundation branch; explicitly copy the uncommitted design/plan/reference artifacts into it; execute original foundation task 1. Inline execution is recommended. Preserve the dev checkout and codex/system-design plan-only branch. No new application code was added in this planning turn.
-
-Current checkout: dev. No commits, pushes, deployments, or worktree changes were performed. Design, prototype and checkpoint files remain untracked/uncommitted; preserve them. Check usage when resuming and at work milestones, saving this checkpoint below 6%.
+Confirmed M1 decisions replace the older proposals: invite-only email/password with no outbound email, participant-only room access, and explicit tab/device takeover. The repository is no longer an untracked planning checkout; the reviewed design and prototype are committed on `dev`. Resume from the first incomplete task recorded above and trust the execution ledger plus Git history over conversational memory.
