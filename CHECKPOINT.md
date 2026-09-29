@@ -24,6 +24,10 @@ targets `dev`; the user merges manually.
   correction, and ending-phase action fix are in `1cdc72ba`. The working tree
   was clean at the save point. The regression test and browser flow remain
   unverified after the last fix.
+- Draft PR #9 CI first run failed two existing migration assertions: M2 added
+  version 3, while `database.e2e-spec.ts` still expected two applied versions.
+  The assertions now expect three and check the new `gameSessions` collection;
+  a fresh CI run is pending this follow-up push.
 - Automatic approval review rejected the next `pnpm --filter @poker/web
   test:e2e -- poker.spec.ts` run because the workspace reported no credits.
   The review could not complete; it did not identify the command as unsafe.
