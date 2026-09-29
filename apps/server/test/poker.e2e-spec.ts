@@ -114,11 +114,14 @@ describe('authoritative poker actions', () => {
   });
 
   it('applies timeout first at the exact deadline even before the callback fires', async () => {
+    const publications: string[] = [];
+    game.subscribeUpdates((updatedRoomId) => { publications.push(updatedRoomId); });
     clock.current = clock.callbacks[0]!.at;
     const late = await game.execute(gameContext('host'), action('host'));
     expect(late.error?.code).toBe('STALE_STATE');
     expect(registry.controller(roomId).session?.hand?.version).toBe(1);
     expect(registry.controller(roomId).session?.hand?.street).toBe('complete');
+    expect(publications).toEqual([roomId]);
   });
 
   it('ignores a stale timer after a manual transition', async () => {
@@ -237,6 +240,33 @@ describe('authoritative poker actions', () => {
     expect(retry.data?.outcome?.acceptedGameVersion).toBe(0);
     expect(retry.data?.game?.gameVersion).toBe(1);
     expect(await database.db.collection('hands').countDocuments()).toBe(1);
+  });
+
+  it('replays an old start outcome without replacing a newer live session', async () => {
+    await game.execute(gameContext('host'), {
+      type: 'session:end', ...metadata(), controlEpoch: 1, sessionId,
+    });
+    await game.execute(gameContext('host'), { ...action('host'), action: { type: 'fold' } });
+    const resultTimer = clock.callbacks.at(-1)!;
+    clock.current = resultTimer.at;
+    resultTimer.callback();
+    await registry.enqueue(roomId, async () => undefined);
+
+    const nextStart = await game.execute(gameContext('host'), {
+      type: 'session:start', ...metadata(), controlEpoch: 1,
+    });
+    expect(nextStart.error).toBeNull();
+    const currentSessionId = nextStart.data?.game?.sessionId;
+    const currentHandId = nextStart.data?.game?.handId;
+    expect(currentSessionId).not.toBe(sessionId);
+
+    const retry = await game.execute(gameContext('host'), startCommand);
+    expect(retry.error).toBeNull();
+    expect(retry.data?.outcome?.sessionId).toBe(sessionId);
+    expect(retry.data?.game?.sessionId).toBe(currentSessionId);
+    expect(registry.controller(roomId).session?.sessionId).toBe(currentSessionId);
+    expect(registry.controller(roomId).session?.handId).toBe(currentHandId);
+    expect(await database.db.collection('hands').countDocuments()).toBe(2);
   });
 
   it('commits a hand before carrying its stacks into a persisted next hand', async () => {

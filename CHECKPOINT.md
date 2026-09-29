@@ -7,6 +7,13 @@ targets `dev`; the user merges manually.
 
 ## Current M2 save point
 
+- PR #9 review follow-up is in progress for three findings: old start retries
+  replacing a newer session, publication clearing a pending departure, and
+  deadline-crossing commands failing to publish the timeout transition.
+  Regression cases were added first. Local RED execution is blocked because
+  Docker Desktop is not yet providing the disposable MongoDB replica set;
+  do not treat the resulting setup timeouts as a code test result.
+
 - Plan: `docs/superpowers/plans/2026-09-29-m2-poker.md`; the ignored execution
   ledger is `.superpowers/sdd/2026-09-29-m2-poker/progress.md`.
 - Committed: shared poker contracts, deterministic engine and betting, durable

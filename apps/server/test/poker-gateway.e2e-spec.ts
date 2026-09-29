@@ -7,6 +7,7 @@ import request from 'supertest';
 
 import { applyMigrations } from '../src/database/migrate';
 import { createApplication } from '../src/main';
+import { RoomPublisher } from '../src/realtime/roomPublisher';
 import { createTestDatabase, type TestDatabase } from './support/testDatabase';
 
 const mongoUri = process.env.TEST_MONGODB_URI ?? 'mongodb://127.0.0.1:27018/?replicaSet=rs0&directConnection=true';
@@ -112,6 +113,33 @@ describe('private poker gateway', () => {
       expect((await emit(host, 'game:action', 'malformed')).error?.code).toBe('INVALID_REQUEST');
     } finally {
       host.close(); guest.close(); outsider.close(); observer.close();
+    }
+  }, 20_000);
+
+  it('keeps an active-session leave pending when room publication runs', async () => {
+    const host = socket(await signUp('leave-host@example.com'));
+    const guest = socket(await signUp('leave-guest@example.com'));
+    try {
+      const bootId = await ready(host);
+      await ready(guest);
+      const meta = () => ({ commandId: randomUUID(), authorityBootId: bootId, issuedAt: new Date().toISOString() });
+      const created = await emit(host, 'room:create', { type: 'room:create', title: 'Leave during poker', ...meta() });
+      const roomId = created.data.room.roomId as string;
+      const joined = await emit(guest, 'room:join', { type: 'room:join', token: created.data.invitation.token, ...meta() });
+      const guestAccountId = joined.data.room.members.find((member: { accountId: string }) =>
+        member.accountId !== created.data.room.hostAccountId)?.accountId;
+      expect(guestAccountId).toBeDefined();
+      expect((await emit(host, 'session:start', { type: 'session:start', roomId, controlEpoch: 1, ...meta() })).error)
+        .toBeNull();
+      expect((await emit(guest, 'room:leave', { type: 'room:leave', roomId, controlEpoch: 1, ...meta() })).error)
+        .toBeNull();
+
+      await app.get(RoomPublisher).publish(roomId);
+      const membership = await db.db.collection<{ pendingDeparture?: boolean }>('roomMemberships')
+        .findOne({ roomId, accountId: guestAccountId });
+      expect(membership?.pendingDeparture).toBe(true);
+    } finally {
+      host.close(); guest.close();
     }
   }, 20_000);
 });
