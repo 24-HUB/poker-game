@@ -19,6 +19,7 @@
     "@nestjs/platform-socket.io": "11.2.6",
     "@nestjs/websockets": "11.2.6",
     "@poker/contracts": "workspace:*",
+    "@poker/poker-engine": "workspace:*",
     "better-auth": "1.7.6",
     "express": "5.2.1",
     "mongodb": "7.6.0",
