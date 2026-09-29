@@ -63,7 +63,15 @@ function advance(state: HandState): EngineTransition {
   const contenders = state.seats.filter((seat) => !seat.folded);
   if (contenders.length === 1) return settle(state);
   const actionable = contenders.filter((seat) => !seat.allIn);
-  // With at most one player able to bet, no further betting can change a pot.
+  if (actionable.length === 1) {
+    const player = actionable[0]!;
+    const amountToMatch = Math.max(...contenders.filter((seat) => seat.accountId !== player.accountId)
+      .map((seat) => seat.streetContribution));
+    if (player.streetContribution < amountToMatch) {
+      return { state: { ...state, actorAccountId: player.accountId }, settlement: null };
+    }
+  }
+  // With at most one player able to bet and nothing left to call, run out the board.
   if (actionable.length <= 1) {
     let runout = state;
     if (runout.street === 'preflop') runout = dealBoard(runout, 3, 'flop');

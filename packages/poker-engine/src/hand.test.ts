@@ -52,6 +52,16 @@ describe('holdem hand transitions', () => {
     expect(hand.settlement?.finalStacks.every((stack) => stack >= 0)).toBe(true);
   });
 
+  it('lets the last funded player call or fold a shove before runout', () => {
+    let hand = start([1000, 1000]);
+    hand = act(hand, 'raise', 1000);
+    expect(hand.state.actorAccountId).toBe('p1');
+    expect(legalActions(hand.state, 'p1').callAmount).toBe(980);
+    hand = act(hand, 'call');
+    expect(hand.settlement).not.toBeNull();
+    expect(hand.state.board).toHaveLength(5);
+  });
+
   it('handles a five-chip small blind and ten-chip big blind', () => {
     const hand = startHand({ seats: seats([5, 10]), buttonSeat: 0, smallBlind: 10, bigBlind: 20, deck });
     expect(hand.state.seats.map((seat) => seat.stack)).toEqual([0, 0]);

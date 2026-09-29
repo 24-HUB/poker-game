@@ -2,7 +2,7 @@ import { createHash, randomUUID } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
 import type { GameCommand } from '@poker/contracts' with { 'resolution-mode': 'import' };
-import type { HandState } from '@poker/poker-engine' with { 'resolution-mode': 'import' };
+import type { EngineSettlement, HandState } from '@poker/poker-engine' with { 'resolution-mode': 'import' };
 
 import { AuthorityLease } from '../../authority/authorityLease';
 import type { RoomContext } from './room.service';
@@ -21,6 +21,12 @@ export type SessionRuntime = {
   bigBlind: number;
   ending: boolean;
   hand: HandState | null;
+  handId: string;
+  gameVersion: number;
+  snapshotRevision: number;
+  deadline: number | null;
+  settlement: EngineSettlement | null;
+  previousHandId: string | null;
 };
 
 function runtime(document: StoredGameSession): SessionRuntime {
@@ -28,7 +34,8 @@ function runtime(document: StoredGameSession): SessionRuntime {
     sessionId: document._id, roomId: document.roomId, firstHandId: document.firstHandId,
     handNumber: document.handNumber, participants: document.participants, stacks: document.stacks,
     buttonSeat: document.buttonSeat, smallBlind: 10, bigBlind: 20,
-    ending: document.endingRequested, hand: null,
+    ending: document.endingRequested, hand: null, handId: document.firstHandId,
+    gameVersion: 0, snapshotRevision: 0, deadline: null, settlement: null, previousHandId: null,
   };
 }
 

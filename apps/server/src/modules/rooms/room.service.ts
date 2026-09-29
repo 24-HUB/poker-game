@@ -172,6 +172,7 @@ export class RoomService implements OnApplicationShutdown {
       } else {
         await this.repository.touchConnection(roomId, authority);
       }
+      this.bumpGameSnapshot(roomId);
       if (disconnected.roomEmpty) this.scheduleEmptyClosure(roomId);
     })));
   }
@@ -257,7 +258,10 @@ export class RoomService implements OnApplicationShutdown {
       );
     } else {
       const connected = this.registry.connect(roomId, context.identity.accountId, context.connectionId);
-      if (connected) await this.repository.touchConnection(roomId, authority, context.identity.accountId);
+      if (connected) {
+        await this.repository.touchConnection(roomId, authority, context.identity.accountId);
+        this.bumpGameSnapshot(roomId);
+      }
     }
     this.cancelEmptyClosure(roomId);
     return this.projectForMember(roomId, context, false);
@@ -333,6 +337,7 @@ export class RoomService implements OnApplicationShutdown {
     }
     if (!outcome.ok) return failure(outcome.code, outcome.message);
     if (command.type === 'room:leave') {
+      this.bumpGameSnapshot(command.roomId);
       this.registry.removeAccount(command.roomId, context.identity.accountId);
       if (this.registry.controller(command.roomId).isEmpty()) this.scheduleEmptyClosure(command.roomId);
       return success({ room: null });
@@ -344,6 +349,7 @@ export class RoomService implements OnApplicationShutdown {
         context.connectionId,
         outcome.controllerEpoch ?? 1,
       );
+      this.bumpGameSnapshot(command.roomId);
     }
     const projected = await this.projectForMember(command.roomId, context, false);
     if (projected.error || !invitation) return projected;
@@ -389,6 +395,7 @@ export class RoomService implements OnApplicationShutdown {
         }
         room = await this.repository.load(roomId);
         if (!room) return failure('ROOM_CLOSED', 'The room is no longer available.');
+        this.bumpGameSnapshot(roomId);
       }
     }
     const controller = this.registry.controller(roomId);
@@ -428,6 +435,11 @@ export class RoomService implements OnApplicationShutdown {
       room: projected.data.room,
       ...(reply.data.invitation ? { invitation: reply.data.invitation } : {}),
     });
+  }
+
+  private bumpGameSnapshot(roomId: string): void {
+    const runtime = this.registry.controller(roomId).session;
+    if (runtime) runtime.snapshotRevision += 1;
   }
 
   private scheduleEmptyClosure(roomId: string): void {

@@ -2,7 +2,7 @@
   "name": "@poker/poker-engine",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
+  "type": "commonjs",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
