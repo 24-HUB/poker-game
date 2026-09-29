@@ -512,6 +512,13 @@ in that plan before implementation; M2 application work has not started in this
 planning task. Tickets remain M3 and collection remains M4. Continue to require
 separate authorization for deployment and production database operations.
 
+Character design update (2026-09-29): `design.md` now records the five-character
+lineup and `docs/design/character-lineup-v1.png` as a concept reference, with
+simplification and portrait-use requirements. The requested 4-star/5-star and
+starter descriptions are concept metadata; mapping to R/SR/SSR, starter
+acquisition, and launch-pool inclusion remain open for M4. This documentation
+update does not change the proposed catalogue, economy, or application behavior.
+
 ### Historical design-branch checkpoint
 
 Checkpoint date: **2026-09-26**.

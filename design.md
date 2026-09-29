@@ -1,7 +1,8 @@
 # Anime Poker — Visual and Interaction Design
 
-Date: 2026-09-26  
-Status: **Visual direction approved. Detailed specifications below are design defaults for implementation review; no application has been built.**
+Date: 2026-09-29
+
+Status: **Visual direction approved; five-character concept reference added. Detailed specifications below guide implementation review. Current application progress is recorded in plan.md; this update changes documentation and reference artwork only.**
 
 ## 1. Purpose and source of truth
 
@@ -120,6 +121,37 @@ Asset set:
 | Lobby background | White/pale-blue geometry with one faint checkerboard fragment; no large scenery asset needed |
 
 The proposed launch catalogue size and rarities come from plan.md and are not expanded by this document. The reference PNG is for review, not a background image to stretch behind working controls.
+
+### Five-character visual direction
+
+![Five-character concept lineup: silver-haired key bearer, navy-haired tea companion, blue-haired sailor, crimson-haired regal woman, and lavender-white-haired compass bearer](docs/design/character-lineup-v1.png)
+
+This lineup records the user's character brief, generated with the built-in image generation tool. It complements the approved interface board in section 3. The image is a concept reference, not a production sprite sheet. The following written briefs govern details where generation differs, including the glass key and short side-tails.
+
+| Position | Character concept | Appearance and signature details |
+|---|---|---|
+| Far left | 5-star starter female, age 18 | Medium-length platinum-silver hair, soft blue eyes; white and cobalt military dress with champagne-gold trim, white gloves, and a glass key |
+| Left center | 4-star male, age 20 | Neat dark navy hair, sharp amber eyes; white waistcoat over a deep-blue shirt, gold pocket-watch chain, and porcelain teacup |
+| Center | 4-star female, age 17 | Short pastel-blue twin side-tails, mischievous teal eyes; sporty cobalt-and-white sailor jacket, dark navy pleated skirt, and thigh-high socks |
+| Right center | 5-star female, age 21 | Long flowing crimson-red hair, ruby eyes; regal white-and-cobalt coat worn over the shoulders, gold trim, and a heart-shaped crest |
+| Far right | 5-star female, age 19 | Waist-length lavender-white hair, pale blue eyes; asymmetric white dress with navy silk layers and celestial compass embroidery |
+
+These are cosmetic identities, with no poker abilities or statistical advantages. The ages are character-design metadata, not collection badges. Keep poses and framing natural and age-appropriate.
+
+#### Adaptation for the interface
+
+- Preserve each character's hair silhouette, eye color, main outfit blocks, and signature motif. Simplify layered chains, embroidery, ruffles, and metallic highlights into a few readable shapes; use the restrained cel shading specified above.
+- Keep the shared white/cobalt/navy wardrobe and sparse champagne-gold accents. Crimson hair and teal eyes distinguish characters without changing interface tokens or rarity colors.
+- Create separate, consistently framed portraits for 40–64 px seats. Faces and hair must identify the character without relying on small accessories. Do not shrink the entire lineup into an avatar.
+- Use only the equipped character in the lobby arch, within the existing one-quarter-width limit. Use larger individual illustrations in collection details; the five-person composition belongs in design review, not behind gameplay controls.
+- Remove background celestial rings and extra ornaments from portrait exports. A future illustration master should have clean isolated edges; this white-background reference is not a transparent asset.
+- Review future portrait exports at their actual desktop and phone display sizes before treating them as production-ready.
+
+#### Catalogue boundary
+
+The requested 4-star/5-star descriptions and starter designation are retained as concept metadata. Their mapping to R/SR/SSR, the starter's acquisition/default-equipment behavior, and inclusion in the launch pull pool remain unresolved product decisions. In particular, the three 5-star concepts do not silently expand the proposed two-SSR catalogue in plan.md. Do not infer pull rates, grants, pity changes, or a complete six-avatar catalogue from this five-character sheet. Until those decisions are reconciled for M4, use configured rarity and ownership labels in the working interface.
+
+Generation brief used for the reference: a 16:9, five-character anime gacha lineup in the exact left-to-right order and with the appearances listed above; full-body standing poses, a solid white background, minimal champagne-gold celestial linework, crisp high-contrast detailed rendering, and no lettering or UI. The original high-detail rendering is reference material; production adaptations follow this document's simpler artwork rules. “8k-style detail” described the generation brief, not a verified output resolution.
 
 ## 6. Navigation and screen structure
 
@@ -283,4 +315,4 @@ Before accepting a future implementation:
 - Keyboard flow, reduced motion, text contrast, long names, and large amounts are checked on actual screens.
 - The working title and reference artwork are not misrepresented as final branding or production-ready assets.
 
-Next deliverable after this documentation task: a reviewable implementation plan or interactive screen prototype when requested. Application implementation has not started.
+Next artwork deliverable when requested: simplified individual illustrations and readable portrait exports for the five concepts, with catalogue mapping resolved before M4 integration. See plan.md for current application implementation progress.
