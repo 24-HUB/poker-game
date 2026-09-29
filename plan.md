@@ -496,6 +496,24 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Current handoff — 2026-09-29
+
+M0/M1 local implementation and the recorded Linux CI verification are present on
+`origin/dev` at `4ccd2daf`; detailed execution evidence remains in `CHECKPOINT.md`
+and section 19. Deployed acceptance is **not run — deployment not authorized**.
+The historical planning checkpoint below describes the earlier design branch,
+not the current implementation status.
+
+The next milestone is **M2 — Poker sessions**. Its proposed implementation plan
+is [M2 Poker Sessions](docs/superpowers/plans/2026-09-29-m2-poker.md), covering
+contracts, a pure engine, session lifecycle, timers, chip settlement, private
+delivery/recovery, table UI, and acceptance. Review the proposed gameplay rules
+in that plan before implementation; M2 application work has not started in this
+planning task. Tickets remain M3 and collection remains M4. Continue to require
+separate authorization for deployment and production database operations.
+
+### Historical design-branch checkpoint
+
 Checkpoint date: **2026-09-26**.
 
 | Item | Saved state |
