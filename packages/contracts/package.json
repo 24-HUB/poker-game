@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "test": "vitest run --pool=threads --exclude dist/**",
+    "test": "vitest run --pool=threads --exclude \"dist/**\"",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

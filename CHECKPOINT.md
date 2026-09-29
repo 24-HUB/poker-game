@@ -1,6 +1,6 @@
 # Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-29. Status: Tasks 1–10 are locally complete on `codex/m0-m1-foundation`; PR [#6](https://github.com/24-HUB/poker-game/pull/6) targets `dev`. Linux CI passed replica-set bootstrap, then exposed a clean-checkout typecheck ordering failure that is fixed locally and awaits another rerun.
+Updated: 2026-09-29. Status: Tasks 1–10 are locally complete on `codex/m0-m1-foundation`; PR [#6](https://github.com/24-HUB/poker-game/pull/6) targets `dev`. Linux CI now passes replica-set bootstrap, migrations, and typechecking; a Unix glob expansion in the contracts test command is fixed locally and awaits another rerun.
 
 ## User intent and usage rule
 
@@ -12,10 +12,10 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 - Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
 - Completed tasks: Tasks 1–9 above, plus Task 10 local acceptance and deployment preparation: CI, Render/Worker configuration, environment documentation, redacted smoke tooling, and accessibility coverage.
 - Current task: Task 10 is locally complete with one platform-deferred check. No provider was provisioned and no live secret or production migration was used.
-- Next action: commit and push the clean-checkout typecheck ordering fix to PR #6, inspect Linux CI through the Worker-bundle result, and keep deployment acceptance marked not run—deployment not authorized.
+- Next action: commit and push the contracts test glob fix to PR #6, inspect Linux CI through the Worker-bundle result, and keep deployment acceptance marked not run—deployment not authorized.
 - Verification: frozen install, controlled migrations twice, 11/11 real Chromium cases, and the original 121-test `pnpm check` passed for Task 10. The CI bootstrap fix was reproduced RED against a fresh isolated MongoDB container and passed GREEN; the updated `pnpm check` passes 122/122 tests, all workspace typechecks, and configured contracts/Nest/Next production builds. Render/Cloudflare deployment smoke remains not run—deployment not authorized.
 - Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
-- Usage at checkpoint: five-hour remaining 80%, weekly remaining 97%. No reset credit was used.
+- Usage at checkpoint: five-hour remaining 71%, weekly remaining 96%. No reset credit was used.
 - Blockers: OpenNext reaches bundle generation locally but Windows denies its required symlink; Linux CI is required for final Worker-bundle evidence. Live provider checks remain unauthorized. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally. The existing local replica-set container was not recreated, preserving the user's current disposable room data.
 
 ## PR #6 CI bootstrap repair
@@ -24,7 +24,8 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 - A new real-container regression test reproduced the same error before the fix, then passed after the fix. It uses a separate disposable container and leaves the currently running local database untouched.
 - The replica member now uses the loopback host/port from the bootstrap URI; the Compose replica-set service listens and publishes on the same port, 27018. The root test suite includes the regression.
 - A first full-suite run had one unrelated timeout because the standalone comparison container was stopped; after starting that disposable service, `pnpm check` passed 122/122 tests and all configured builds. `docker compose config --quiet` and `git diff --check` passed.
-- The first Linux rerun passed replica-set initialization and migrations. It then failed at root `pnpm check` because a clean checkout had no `@poker/contracts/dist` before server typechecking. The root typecheck command now builds contracts first; local `pnpm check` passes 122/122 tests and all configured builds. A second Linux rerun, including OpenNext, is pending. No deployment was performed.
+- The first Linux rerun passed replica-set initialization and migrations. It then failed at root `pnpm check` because a clean checkout had no `@poker/contracts/dist` before server typechecking. The root typecheck command now builds contracts first.
+- The second Linux rerun passed typechecking, but the unquoted `dist/**` in the contracts test script expanded to files under Bash and made Vitest report no test files. Quoting the glob preserves its intended meaning on Windows and Linux. Focused contracts tests pass 5/5, and local `pnpm check` passes 122/122 tests and all configured builds. A third Linux rerun, including OpenNext, is pending. No deployment was performed.
 
 ## Task 10 implementation evidence
 
