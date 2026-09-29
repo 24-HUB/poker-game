@@ -1,6 +1,6 @@
 # Checkpoint — M0/M1 production implementation
 
-Updated: 2026-09-28. Status: Tasks 1–10 are locally complete on `codex/m0-m1-foundation`; final branch review, push, Linux CI, and PR handoff remain.
+Updated: 2026-09-29. Status: Tasks 1–10 are locally complete on `codex/m0-m1-foundation`; PR [#6](https://github.com/24-HUB/poker-game/pull/6) targets `dev`. A Linux CI replica-set bootstrap failure is fixed locally and awaits the PR rerun.
 
 ## User intent and usage rule
 
@@ -12,11 +12,19 @@ The user approved the M0/M1 implementation plan and requested inline execution. 
 - Plan: `docs/superpowers/plans/2026-09-26-m0-m1-production.md`.
 - Completed tasks: Tasks 1–9 above, plus Task 10 local acceptance and deployment preparation: CI, Render/Worker configuration, environment documentation, redacted smoke tooling, and accessibility coverage.
 - Current task: Task 10 is locally complete with one platform-deferred check. No provider was provisioned and no live secret or production migration was used.
-- Next action: commit and push the Task 10 checkpoint, fetch `origin` again, review the whole branch against current `origin/dev`, then open a PR targeting `dev`. Linux CI must supply OpenNext Worker-bundle evidence.
-- Verification: a frozen install completed with the committed lockfile; controlled migrations pass twice; `pnpm check` passes 121/121 tests, all workspace typechecks, and configured contracts/Nest/Next production builds. The combined real Chromium suite passes 11/11 against the disposable replica set. Render/Cloudflare deployment smoke remains not run—deployment not authorized.
+- Next action: commit and push the isolated CI bootstrap fix to PR #6, inspect Linux CI for the Worker-bundle result, and keep deployment acceptance marked not run—deployment not authorized.
+- Verification: frozen install, controlled migrations twice, 11/11 real Chromium cases, and the original 121-test `pnpm check` passed for Task 10. The CI bootstrap fix was reproduced RED against a fresh isolated MongoDB container and passed GREEN; the updated `pnpm check` passes 122/122 tests, all workspace typechecks, and configured contracts/Nest/Next production builds. Render/Cloudflare deployment smoke remains not run—deployment not authorized.
 - Deferred environment check: `pnpm --filter @poker/web build:worker` completed the Next build but Windows denied OpenNext's required pnpm symlink during server packaging. Re-run this in Linux CI during Task 10; do not claim the Worker bundle passed locally.
-- Usage at checkpoint: five-hour remaining 20%, weekly remaining 10%. No reset credit was used.
-- Blockers: OpenNext reaches bundle generation locally but Windows denies its required symlink; Linux CI is required for final Worker-bundle evidence. Live provider checks remain unauthorized. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally.
+- Usage at checkpoint: five-hour remaining 94%, weekly remaining 99%. No reset credit was used.
+- Blockers: OpenNext reaches bundle generation locally but Windows denies its required symlink; Linux CI is required for final Worker-bundle evidence. Live provider checks remain unauthorized. Docker Desktop is healthy; the disposable MongoDB replica set and standalone comparison node are running locally. The existing local replica-set container was not recreated, preserving the user's current disposable room data.
+
+## PR #6 CI bootstrap repair
+
+- GitHub CI failed at `pnpm db:init` with MongoDB `InvalidReplicaSetConfig`: `host.docker.internal:27018` did not map back to the Linux container during `replSetInitiate`.
+- A new real-container regression test reproduced the same error before the fix, then passed after the fix. It uses a separate disposable container and leaves the currently running local database untouched.
+- The replica member now uses the loopback host/port from the bootstrap URI; the Compose replica-set service listens and publishes on the same port, 27018. The root test suite includes the regression.
+- A first full-suite run had one unrelated timeout because the standalone comparison container was stopped; after starting that disposable service, `pnpm check` passed 122/122 tests and all configured builds. `docker compose config --quiet` and `git diff --check` passed.
+- Linux CI, including the OpenNext Worker build, is pending the PR rerun after push. No deployment was performed.
 
 ## Task 10 implementation evidence
 
