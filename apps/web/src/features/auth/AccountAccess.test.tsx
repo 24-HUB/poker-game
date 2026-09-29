@@ -56,6 +56,8 @@ describe('AccountAccess', () => {
       title: 'Private table',
       revision: 1,
       hostAccountId: 'account-a',
+      phase: 'waiting',
+      sessionId: null,
       members: [],
       control: { isController: true, epoch: 1 },
     });

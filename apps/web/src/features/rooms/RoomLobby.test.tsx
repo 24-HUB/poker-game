@@ -17,6 +17,8 @@ describe('RoomLobby', () => {
         title: 'Friday table',
         revision: 4,
         hostAccountId: 'account-a',
+        phase: 'waiting',
+        sessionId: null,
         members: [{ accountId: 'account-a', displayName: 'Alice', seat: 0, connected: true }],
         control: { isController: true, epoch: 2 },
       },

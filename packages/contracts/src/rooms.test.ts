@@ -42,6 +42,8 @@ describe('room contracts', () => {
       title: 'Friday table',
       revision: 3,
       hostAccountId: 'account-a',
+      phase: 'waiting',
+      sessionId: null,
       members: [{ accountId: 'account-a', displayName: 'Alice', seat: 0, connected: true }],
       control: { isController: true, epoch: 2 },
     };

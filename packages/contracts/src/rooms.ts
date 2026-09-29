@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { Result } from './common.js';
+import type { GameAck, GameCommand, GameView, SessionResult } from './poker.js';
 
 const identifierSchema = z.string().min(1).max(128);
 export const roomTitleSchema = z.string().trim().min(1).max(24);
@@ -81,6 +82,8 @@ export const roomViewSchema = z.object({
   title: z.string().min(1).max(24),
   revision: z.number().int().nonnegative(),
   hostAccountId: identifierSchema,
+  phase: z.enum(['waiting', 'playing']),
+  sessionId: identifierSchema.nullable(),
   members: z.array(roomMemberSchema).max(6),
   control: z.object({
     isController: z.boolean(),
@@ -103,6 +106,10 @@ export const roomReplySchema = z.object({
 export type RoomReply = z.infer<typeof roomReplySchema>;
 
 export interface ClientToServerEvents {
+  'session:start': (command: Extract<GameCommand, { type: 'session:start' }>, ack: GameAck) => void;
+  'session:end': (command: Extract<GameCommand, { type: 'session:end' }>, ack: GameAck) => void;
+  'game:action': (command: Extract<GameCommand, { type: 'game:action' }>, ack: GameAck) => void;
+  'game:sync': (command: Extract<GameCommand, { type: 'game:sync' }>, ack: GameAck) => void;
   'room:create': (command: Extract<RoomCommand, { type: 'room:create' }>, ack: RoomAck) => void;
   'room:join': (command: Extract<RoomCommand, { type: 'room:join' }>, ack: RoomAck) => void;
   'room:sync': (command: Extract<RoomCommand, { type: 'room:sync' }>, ack: RoomAck) => void;
@@ -113,6 +120,8 @@ export interface ClientToServerEvents {
 }
 
 export interface ServerToClientEvents {
+  'game:snapshot': (view: GameView) => void;
+  'session:ended': (result: SessionResult) => void;
   'connection:ready': (payload: { authorityBootId: string }) => void;
   'room:snapshot': (view: RoomView) => void;
   'room:closed': (payload: { roomId: string; reason: 'LEFT' | 'EMPTY' | 'RESTARTED' }) => void;

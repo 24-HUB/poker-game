@@ -13,6 +13,8 @@ export function projectRoom(
     title: room.title,
     revision: room.revision,
     hostAccountId: room.hostAccountId,
+    phase: 'waiting',
+    sessionId: null,
     members: room.members
       .map(({ accountId: memberAccountId, displayName, seat, connected }) => ({
         accountId: memberAccountId,
