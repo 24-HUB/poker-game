@@ -27,6 +27,8 @@ type RoomDocument = {
   hostAccountId: string;
   title: string;
   status: 'OPEN' | 'CLOSED';
+  phase?: 'waiting' | 'playing';
+  sessionId?: string | null;
   revision: number;
   invitationHash: string;
   invitationExpiresAt: Date;
@@ -47,6 +49,7 @@ type MembershipDocument = {
   controllerEpoch: number;
   joinedAt: Date;
   leftAt: Date | null;
+  pendingDeparture?: boolean;
 };
 
 type CommandInput = {
@@ -144,6 +147,8 @@ export class RoomRepository {
         hostAccountId: input.accountId,
         title: input.title,
         status: 'OPEN',
+        phase: 'waiting',
+        sessionId: null,
         revision: 1,
         invitationHash: input.invitationHash,
         invitationExpiresAt: input.invitationExpiresAt,
@@ -210,6 +215,9 @@ export class RoomRepository {
         leftAt: null,
       }, { session });
       if (existing) return this.record(input, { ok: true, roomId: input.roomId }, session);
+      if (room.phase === 'playing') return this.record(input, {
+        ok: false, code: 'SESSION_IN_PROGRESS', message: 'Try again after this session.',
+      }, session);
 
       const active = await this.db.collection<ActiveRoomMembershipDocument>('activeRoomMemberships').findOne(
         { _id: input.accountId },
@@ -339,6 +347,9 @@ export class RoomRepository {
         ok: false,
         code: 'ROOM_CLOSED',
         message: 'The room is no longer available.',
+      }, session);
+      if (room.phase === 'playing') return this.record(input, {
+        ok: false, code: 'SESSION_IN_PROGRESS', message: 'Seats are locked during a session.',
       }, session);
       const membership = await this.db.collection<MembershipDocument>('roomMemberships').findOne({
         roomId: input.roomId,
@@ -501,6 +512,24 @@ export class RoomRepository {
         message: 'This tab does not control the room member.',
       }, session);
 
+      if (room.phase === 'playing') {
+        await this.db.collection<MembershipDocument>('roomMemberships').updateOne(
+          { _id: membership._id },
+          { $set: { pendingDeparture: true, controllerConnectionId: null } },
+          { session },
+        );
+        const connected = await this.db.collection<MembershipDocument>('roomMemberships')
+          .find({ roomId: input.roomId, accountId: { $in: [...input.connectedAccountIds] }, leftAt: null }, { session })
+          .sort({ seat: 1 }).toArray();
+        const nextHost = room.hostAccountId === input.accountId
+          ? connected[0]?.accountId ?? room.hostAccountId : room.hostAccountId;
+        await this.db.collection<RoomDocument>('rooms').updateOne(
+          { _id: input.roomId, status: 'OPEN', phase: 'playing' },
+          { $set: { hostAccountId: nextHost }, $inc: { revision: 1 } }, { session },
+        );
+        return this.record(input, { ok: true, roomId: input.roomId, roomNull: true }, session);
+      }
+
       await this.db.collection<MembershipDocument>('roomMemberships').updateOne(
         { _id: membership._id },
         { $set: { seat: null, controllerConnectionId: null, leftAt: input.now } },
@@ -579,7 +608,7 @@ export class RoomRepository {
     });
   }
 
-  public async touchConnection(roomId: string, authority: AuthorityToken): Promise<boolean> {
+  public async touchConnection(roomId: string, authority: AuthorityToken, accountId?: string): Promise<boolean> {
     return this.transactions.run(async (session) => {
       await this.authority.fence(session, authority);
       const result = await this.db.collection<RoomDocument>('rooms').updateOne(
@@ -592,6 +621,12 @@ export class RoomRepository {
         { $inc: { revision: 1 } },
         { session },
       );
+      if (result.modifiedCount === 1 && accountId) {
+        await this.db.collection<MembershipDocument>('roomMemberships').updateOne(
+          { roomId, accountId, leftAt: null, pendingDeparture: true },
+          { $set: { pendingDeparture: false } }, { session },
+        );
+      }
       return result.modifiedCount === 1;
     });
   }
@@ -686,6 +721,8 @@ function toInternalRoom(room: RoomDocument, memberships: MembershipDocument[]): 
     invitationExpiresAt: room.invitationExpiresAt,
     authorityBootId: room.authorityBootId,
     authorityEpoch: room.authorityEpoch,
+    phase: room.phase ?? 'waiting',
+    sessionId: room.sessionId ?? null,
     members: memberships.map<InternalRoomMember>((membership) => ({
       accountId: membership.accountId,
       displayName: membership.displayName,

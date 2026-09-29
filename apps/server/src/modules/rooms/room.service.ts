@@ -257,7 +257,7 @@ export class RoomService implements OnApplicationShutdown {
       );
     } else {
       const connected = this.registry.connect(roomId, context.identity.accountId, context.connectionId);
-      if (connected) await this.repository.touchConnection(roomId, authority);
+      if (connected) await this.repository.touchConnection(roomId, authority, context.identity.accountId);
     }
     this.cancelEmptyClosure(roomId);
     return this.projectForMember(roomId, context, false);
@@ -378,7 +378,7 @@ export class RoomService implements OnApplicationShutdown {
         }
         let touched: boolean;
         try {
-          touched = await this.repository.touchConnection(roomId, authority);
+          touched = await this.repository.touchConnection(roomId, authority, context.identity.accountId);
         } catch (error) {
           this.registry.disconnect(roomId, context.connectionId);
           throw error;

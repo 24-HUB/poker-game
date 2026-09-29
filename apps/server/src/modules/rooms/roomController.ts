@@ -16,10 +16,13 @@ export type InternalRoom = {
   invitationExpiresAt: Date;
   authorityBootId: string;
   authorityEpoch: number;
+  phase: 'waiting' | 'playing';
+  sessionId: string | null;
   members: InternalRoomMember[];
 };
 
 export class RoomController {
+  public session: import('./session.service').SessionRuntime | null = null;
   private readonly connectionsByAccount = new Map<string, Set<string>>();
   private readonly accountByConnection = new Map<string, string>();
   private readonly controllers = new Map<string, { connectionId: string; epoch: number }>();
