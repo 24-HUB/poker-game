@@ -17,7 +17,9 @@ const registrationCode = 'E2E-PRIVATE-CODE';
 const databaseName = `poker_e2e_${process.pid}_${Date.now()}`;
 const pnpmCli = process.env.npm_execpath;
 const pnpmCommand = pnpmCli
-  ? { command: process.execPath, args: [pnpmCli] }
+  ? pnpmCli.toLowerCase().endsWith('.exe')
+    ? { command: pnpmCli, args: [] }
+    : { command: process.execPath, args: [pnpmCli] }
   : process.platform === 'win32'
     ? { command: process.env.ComSpec ?? 'cmd.exe', args: ['/d', '/s', '/c', 'pnpm'] }
     : { command: 'pnpm', args: [] };
@@ -36,6 +38,7 @@ const backendEnvironment = {
 };
 
 await runPreparation(['--filter', '@poker/contracts', 'build']);
+await runPreparation(['--filter', '@poker/poker-engine', 'build']);
 await runPreparation(['--filter', '@poker/server', 'build']);
 await runPreparation(['--filter', '@poker/server', 'db:migrate'], backendEnvironment);
 

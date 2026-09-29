@@ -35,7 +35,8 @@ export function projectGame(runtime: SessionRuntime, room: InternalRoom, control
     participants: runtime.participants.map((participant, index) => {
       const seat = hand?.seats.find((candidate) => candidate.accountId === participant.accountId);
       return {
-        ...participant, stack: seat?.stack ?? runtime.stacks[index]!,
+        ...participant, stack: hand?.street === 'complete' && runtime.committedHandResult?.handId === runtime.handId
+          ? runtime.stacks[index]! : seat?.stack ?? runtime.stacks[index]!,
         streetContribution: seat?.streetContribution ?? 0, totalContribution: seat?.totalContribution ?? 0,
         folded: seat?.folded ?? false, allIn: seat?.allIn ?? false,
         connected: controller.isConnected(participant.accountId),

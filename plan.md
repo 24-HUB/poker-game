@@ -504,13 +504,15 @@ and section 19. Deployed acceptance is **not run — deployment not authorized**
 The historical planning checkpoint below describes the earlier design branch,
 not the current implementation status.
 
-The next milestone is **M2 — Poker sessions**. Its proposed implementation plan
-is [M2 Poker Sessions](docs/superpowers/plans/2026-09-29-m2-poker.md), covering
-contracts, a pure engine, session lifecycle, timers, chip settlement, private
-delivery/recovery, table UI, and acceptance. Review the proposed gameplay rules
-in that plan before implementation; M2 application work has not started in this
-planning task. Tickets remain M3 and collection remains M4. Continue to require
-separate authorization for deployment and production database operations.
+**M2 — Poker sessions** is in local implementation on `codex/m2-poker`.
+The user approved the [M2 Poker Sessions](docs/superpowers/plans/2026-09-29-m2-poker.md)
+plan and its gameplay defaults for this implementation. Contracts, the pure
+engine, session lifecycle, chip settlement, private delivery/recovery, and a
+playable table are committed through `512b3332` and pushed to the task branch.
+Browser acceptance and final review remain in progress; see `CHECKPOINT.md` for
+the current test boundary and blocker. No M2 deployment is claimed. Tickets
+remain M3 and collection remains M4. Deployment and production database
+operations still require separate authorization.
 
 ### Historical design-branch checkpoint
 

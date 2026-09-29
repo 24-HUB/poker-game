@@ -53,4 +53,9 @@ describe('PokerTable', () => {
     expect(screen.getByLabelText('Your cards')).toHaveTextContent('2♣');
     expect(screen.getByLabelText('Hidden cards')).not.toHaveTextContent('2♣');
   });
+
+  it('allows the current actor to finish a hand after the host requests session end', () => {
+    render(<PokerTable {...props} game={{ ...game, sessionPhase: 'ending' }} />);
+    expect(screen.getByRole('button', { name: 'Fold' })).toBeEnabled();
+  });
 });

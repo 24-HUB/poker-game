@@ -93,7 +93,7 @@ export class GameService implements OnApplicationShutdown {
     const controller = this.registry.controller(command.roomId);
     if (command.type === 'session:start') {
       const runtime = await this.sessions.startInQueue({ identity: verified, connectionId: context.connectionId }, command);
-      if (!runtime.hand) this.dealFirstHand(runtime);
+      if (!runtime.hand) await this.dealFirstHand(runtime);
       return this.reply(runtime, command.roomId, verified.accountId, context.connectionId,
         { commandId: command.commandId, sessionId: runtime.sessionId,
           handId: runtime.firstHandId, acceptedGameVersion: 0 });
@@ -147,7 +147,7 @@ export class GameService implements OnApplicationShutdown {
     return this.reply(runtime, command.roomId, verified.accountId, context.connectionId, outcome);
   }
 
-  private dealFirstHand(runtime: SessionRuntime): void {
+  private async dealFirstHand(runtime: SessionRuntime): Promise<void> {
     const deck = this.decks.shuffle();
     assertDeck(deck);
     const transition = startHand({
@@ -161,6 +161,7 @@ export class GameService implements OnApplicationShutdown {
     runtime.snapshotRevision += 1;
     runtime.settlement = transition.settlement;
     this.scheduleTurn(runtime);
+    if (transition.settlement) await this.commitSettlement(runtime);
   }
 
   private async accept(runtime: SessionRuntime, transition: ReturnType<typeof applyAction>): Promise<void> {
@@ -305,6 +306,6 @@ export class GameService implements OnApplicationShutdown {
     const nextHandId = randomUUID();
     await this.sessions.nextHandInQueue(runtime, nextHandId, buttonSeat, new Date(this.clock.now()));
     this.resultTimers.delete(runtime.roomId);
-    this.dealFirstHand(runtime);
+    await this.dealFirstHand(runtime);
   }
 }

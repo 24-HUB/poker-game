@@ -36,7 +36,8 @@ export function PokerTable({ room, game, accountId, status, pending, message,
   }, []);
   const offset = useMemo(() => game ? Date.parse(game.serverTime) - Date.now() : 0, [game?.serverTime]);
   const seconds = game?.deadline ? Math.max(0, Math.ceil((Date.parse(game.deadline) - now - offset) / 1000)) : null;
-  const canAct = status === 'connected' && !pending && game?.sessionPhase === 'playing' &&
+  const canAct = status === 'connected' && !pending &&
+    (game?.sessionPhase === 'playing' || game?.sessionPhase === 'ending') &&
     game.control.isController && game.actorAccountId === accountId &&
     game.handPhase !== 'paused' && game.handPhase !== 'settling' && game.handPhase !== 'result';
   const legal = game?.legalActions;
