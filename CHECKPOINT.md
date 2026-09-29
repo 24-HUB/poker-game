@@ -1,8 +1,8 @@
 # Checkpoint — M2 poker implementation
 
 Updated: 2026-09-29. The active task branch is `codex/m2-poker`, tracking
-`origin/codex/m2-poker`. The user requested a save point; M2 Tasks 1–9 through
-`1cdc72ba` were committed and pushed. Draft PR [#9](https://github.com/24-HUB/poker-game/pull/9)
+`origin/codex/m2-poker`. The user requested a save point; M2 Tasks 1–9 and the
+CI migration-test fix were committed and pushed. Draft PR [#9](https://github.com/24-HUB/poker-game/pull/9)
 targets `dev`; the user merges manually.
 
 ## Current M2 save point
@@ -14,8 +14,8 @@ targets `dev`; the user merges manually.
   snapshots and restart cleanup, and a responsive playable table.
 - Task 8 verification: web typecheck, all 47 web unit tests, and the Next
   production build passed. Task 6 settlement/session/poker suites passed 25/25.
-  Task 7 private gateway/recovery suites passed 2/2. The full M2 aggregate
-  check and complete browser suite have not yet run.
+  Task 7 private gateway/recovery suites passed 2/2. The M2 aggregate check
+  passed in Linux CI; the complete browser suite has not yet run.
 - Task 9 browser test reached room start, private cards, a committed fold
   result, carried stacks, and the next hand. It exposed that the table disabled
   actions during the host-requested `ending` phase. The table logic and a unit
@@ -27,14 +27,15 @@ targets `dev`; the user merges manually.
 - Draft PR #9 CI first run failed two existing migration assertions: M2 added
   version 3, while `database.e2e-spec.ts` still expected two applied versions.
   The assertions now expect three and check the new `gameSessions` collection;
-  a fresh CI run is pending this follow-up push.
+  the follow-up CI run passed frozen install, two migrations, `pnpm check`, and
+  the Cloudflare Worker build. See [CI run](https://github.com/24-HUB/poker-game/actions/runs/36574478478/job/109426440829?pr=9).
 - Automatic approval review rejected the next `pnpm --filter @poker/web
   test:e2e -- poker.spec.ts` run because the workspace reported no credits.
   The review could not complete; it did not identify the command as unsafe.
   Do not bypass that approval gate. Once approvals are available, rerun the
-  browser flow, frozen install, isolated migrations, `pnpm check`, full
-  Playwright suite, and final diff/freshness checks. Keep PR #9 in draft while
-  required checks remain unavailable.
+  browser flow and full Playwright suite locally. Keep PR #9 in draft while
+  required browser checks remain unavailable. The CI frozen install, migrations,
+  `pnpm check`, and Worker build have passed.
 - No deployment, provider provisioning, production migration, paid upgrade,
   reset-credit redemption, or M3 ticket reward was performed. M0/M1 deployed
   acceptance remains separately unauthorized.
