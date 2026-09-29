@@ -7,6 +7,8 @@ import type { EngineSettlement } from '@poker/poker-engine' with { 'resolution-m
 import type { AuthorityToken } from '../../authority/authorityLease';
 import type { SessionParticipant } from '../rooms/session.repository';
 import { SettlementRepository } from './settlement.repository';
+import { SettlementError } from './settlement.error';
+export { SettlementError } from './settlement.error';
 
 export type SettlementCandidate = {
   roomId: string;
@@ -21,10 +23,6 @@ export type SettlementCandidate = {
   participants: SessionParticipant[];
   engine: EngineSettlement;
 };
-
-export class SettlementError extends Error {
-  public constructor(public readonly code: string, message: string) { super(message); }
-}
 
 function candidateHash(candidate: SettlementCandidate): string {
   return createHash('sha256').update(JSON.stringify(candidate)).digest('hex');

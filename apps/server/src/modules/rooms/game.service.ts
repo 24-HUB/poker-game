@@ -39,6 +39,7 @@ export class GameService implements OnApplicationShutdown {
   private readonly timers = new Map<string, CancelTimer>();
   private readonly resultTimers = new Map<string, CancelTimer>();
   private readonly candidates = new Map<string, SettlementCandidate>();
+  private updateListener: ((roomId: string) => void) | null = null;
   private disposed = false;
 
   public constructor(
@@ -52,6 +53,8 @@ export class GameService implements OnApplicationShutdown {
     private readonly cache: GameCommandCache,
     private readonly settlements: SettlementService,
   ) {}
+
+  public subscribeUpdates(listener: (roomId: string) => void): void { this.updateListener = listener; }
 
   public async execute(context: GameContext, command: GameCommand): Promise<Result<GameReply>> {
     if (this.disposed) return fail('SERVICE_UNAVAILABLE', 'The game is shutting down.');
@@ -199,6 +202,7 @@ export class GameService implements OnApplicationShutdown {
             current.gameVersion !== identity.gameVersion || current.hand?.actorAccountId !== identity.actor ||
             current.deadline !== identity.deadline || this.clock.now() < identity.deadline) return;
         await this.applyTimeout(current);
+        this.updateListener?.(current.roomId);
       }).catch(() => undefined);
     });
     this.timers.set(runtime.roomId, cancel);
@@ -276,10 +280,12 @@ export class GameService implements OnApplicationShutdown {
         try {
           if (retry) await this.commitSettlement(current);
           else await this.afterResult(current);
+          this.updateListener?.(current.roomId);
         } catch {
           current.paused = true;
           current.snapshotRevision += 1;
           this.scheduleResult(current, 1_000, retry);
+          this.updateListener?.(current.roomId);
         }
       }).catch(() => undefined);
     }));

@@ -5,7 +5,8 @@ import type { ClientSession, Db } from 'mongodb';
 import { AuthorityLease } from '../../authority/authorityLease';
 import { MONGO_DB, TRANSACTION_RUNNER } from '../../database/database.tokens';
 import { TransactionRunner } from '../../database/transactionRunner';
-import { SettlementError, type SettlementCandidate } from './settlement.service';
+import type { SettlementCandidate } from './settlement.service';
+import { SettlementError } from './settlement.error';
 
 type HandDocument = {
   _id: string; sessionId: string; roomId: string; handNumber: number;

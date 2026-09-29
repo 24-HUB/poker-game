@@ -9,7 +9,7 @@ import {
   SubscribeMessage,
   WebSocketGateway,
 } from '@nestjs/websockets';
-import type { Result, RoomCommand, RoomReply } from '@poker/contracts' with { 'resolution-mode': 'import' };
+import type { GameCommand, GameReply, Result, RoomCommand, RoomReply } from '@poker/contracts' with { 'resolution-mode': 'import' };
 import type { Server, Socket } from 'socket.io';
 import { z } from 'zod';
 
@@ -19,11 +19,14 @@ import { SocketSessionGuard, type AuthenticatedSocket } from '../common/socketSe
 import { ZodValidationPipe } from '../common/zodValidationPipe';
 import { IdentityService, toWebHeaders } from '../modules/identity/identity.service';
 import { RoomService } from '../modules/rooms/room.service';
+import { GameService } from '../modules/rooms/game.service';
 import { CommandRateLimiter } from './commandRateLimiter';
 import { RoomCommandPipe } from './roomCommandPipe';
+import { GameCommandPipe } from './gameCommandPipe';
 import { RoomPublisher } from './roomPublisher';
 
 type RoomAck = (result: Result<RoomReply>) => void;
+type GameAck = (result: Result<GameReply>) => void;
 type ConnectionCheckResult =
   | { data: { accountId: string }; error: null }
   | { data: null; error: { code: string; message: string } };
@@ -41,6 +44,7 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
   public constructor(
     private readonly identity: IdentityService,
     private readonly rooms: RoomService,
+    private readonly games: GameService,
     private readonly authority: AuthorityLease,
     private readonly rateLimiter: CommandRateLimiter,
     private readonly publisher: RoomPublisher,
@@ -146,6 +150,53 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     @MessageBody(new RoomCommandPipe('room:claimControl')) command: RoomCommand,
     @Ack() ack?: RoomAck,
   ) { return this.handle(socket, command, ack); }
+
+  @SubscribeMessage('session:start')
+  public startSession(@ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody(new GameCommandPipe('session:start')) command: GameCommand, @Ack() ack?: GameAck) {
+    return this.handleGame(socket, command, ack);
+  }
+
+  @SubscribeMessage('session:end')
+  public endSession(@ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody(new GameCommandPipe('session:end')) command: GameCommand, @Ack() ack?: GameAck) {
+    return this.handleGame(socket, command, ack);
+  }
+
+  @SubscribeMessage('game:action')
+  public action(@ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody(new GameCommandPipe('game:action')) command: GameCommand, @Ack() ack?: GameAck) {
+    return this.handleGame(socket, command, ack);
+  }
+
+  @SubscribeMessage('game:sync')
+  public syncGame(@ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody(new GameCommandPipe('game:sync')) command: GameCommand, @Ack() ack?: GameAck) {
+    return this.handleGame(socket, command, ack);
+  }
+
+  private handleGame(socket: AuthenticatedSocket, command: GameCommand, ack?: GameAck): Promise<void> {
+    if (this.shuttingDown) {
+      ack?.({ data: null, error: { code: 'SERVICE_UNAVAILABLE', message: 'Game service is shutting down.' } });
+      return Promise.resolve();
+    }
+    const identity = socket.data.verifiedIdentity;
+    if (!this.rateLimiter.registerSocket(identity.accountId, socket.id)
+      || !this.rateLimiter.allow(identity.accountId, command.type)) {
+      ack?.({ data: null, error: { code: 'RATE_LIMITED', message: 'Too many game commands.' } });
+      return Promise.resolve();
+    }
+    const operation = (async () => {
+      const result = await this.games.execute({ identity, connectionId: socket.id,
+        headers: toWebHeaders(socket.handshake.headers) }, command);
+      ack?.(result);
+      if (!result.error && command.type !== 'game:sync') {
+        try { await this.publisher.publish(command.roomId); } catch { /* The committed reply stands. */ }
+      }
+    })();
+    this.commandOperations.add(operation);
+    return operation.finally(() => this.commandOperations.delete(operation));
+  }
 
   private handle(socket: AuthenticatedSocket, command: RoomCommand, ack?: RoomAck): Promise<void> {
     if (this.shuttingDown) {

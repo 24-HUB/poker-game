@@ -460,6 +460,11 @@ export class RoomService implements OnApplicationShutdown {
 
   private async closeIfStillEmpty(roomId: string): Promise<void> {
     if (!this.registry.controller(roomId).isEmpty()) return;
+    const runtime = this.registry.controller(roomId).session;
+    if (runtime?.hand?.street === 'complete' && !runtime.committedHandResult) {
+      this.scheduleEmptyClosure(roomId);
+      return;
+    }
     const authority = this.authority.currentToken();
     if (!authority) {
       this.scheduleEmptyClosure(roomId);
@@ -467,6 +472,11 @@ export class RoomService implements OnApplicationShutdown {
     }
     await this.registry.enqueue(roomId, async () => {
       if (!this.registry.controller(roomId).isEmpty()) return;
+      const active = this.registry.controller(roomId).session;
+      if (active?.hand?.street === 'complete' && !active.committedHandResult) {
+        this.scheduleEmptyClosure(roomId);
+        return;
+      }
       await this.repository.closeEmpty(roomId, authority, new Date());
       this.registry.remove(roomId);
     });

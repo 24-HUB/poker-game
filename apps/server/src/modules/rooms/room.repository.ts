@@ -581,6 +581,19 @@ export class RoomRepository {
   public async closeEmpty(roomId: string, authority: AuthorityToken, now: Date): Promise<void> {
     await this.transactions.run(async (session) => {
       await this.authority.fence(session, authority);
+      const activeRoom = await this.db.collection<RoomDocument>('rooms').findOne({
+        _id: roomId, status: 'OPEN', authorityBootId: authority.bootId,
+        authorityEpoch: authority.epoch,
+      }, { session });
+      if (!activeRoom) return;
+      if (activeRoom.phase === 'playing' && activeRoom.sessionId) {
+        await this.db.collection('hands').updateMany({ sessionId: activeRoom.sessionId,
+          status: { $in: ['PENDING', 'SETTLING'] } },
+        { $set: { status: 'ABORTED', abortedAt: now } }, { session });
+        await this.db.collection<{ _id: string }>('gameSessions').updateOne({ _id: activeRoom.sessionId,
+          status: 'ACTIVE' }, { $set: { status: 'ABORTED', endedAt: now, abortReason: 'ABANDONED' } }, { session });
+        await this.db.collection('activeParticipants').deleteMany({ sessionId: activeRoom.sessionId }, { session });
+      }
       const closed = await this.db.collection<RoomDocument>('rooms').updateOne(
         {
           _id: roomId,
