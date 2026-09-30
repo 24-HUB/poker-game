@@ -103,7 +103,7 @@ Use disposable replica-set databases for all automated writes. Each code task: a
 - [x] Run `pnpm --filter @poker/web test` and `pnpm --filter @poker/web exec playwright test e2e/tickets.spec.ts`: two real accounts play qualifying hands, see correct awards, refresh/reconnect, sign out/in and retain balance. Inspect desktop and 360 px mobile layouts, focus and reduced motion.
 - [x] Run milestone aggregate checks, record evidence and remaining hosted recovery checks. Commit: `feat: show persistent tickets and reward outcomes`. Submit M3 PR to `dev` for manual merge.
 
-## ### M3 local execution evidence — 2026-09-30
+### M3 local execution evidence — 2026-09-30
 
 M3.1–M3.4 are implemented on `codex/m3-persistent-tickets`, PR #12 to `dev`.
 The planned commit splits were consolidated into task save points and a final
@@ -120,11 +120,14 @@ screenshots were inspected. Three final review findings were fixed with failing
 regressions: coherent wallet snapshot reads, server-disconnect auth refresh,
 and trusted client-IP rate limiting. Account cache clearing also has a regression.
 
-Final Linux CI/Worker packaging remains pending at this commit. Live Brevo setup,
+[Linux CI](https://github.com/24-HUB/poker-game/actions/runs/36706649965/job/109858354540?pr=12)
+passed on code commit `6c3b9493`, including migration idempotency, aggregate
+checks and Cloudflare Worker packaging. Live Brevo setup,
 delivery proof and hosted acceptance remain M5 authorization gates; no deployment
 or production database work occurred. Unknown future policy versions currently
 produce no reward; reject unsupported versions when introducing another policy.
-M4 — Cosmetic collection loop
+
+## M4 — Cosmetic collection loop
 
 ### M4.1 — Immutable catalogue and pure draw policy
 

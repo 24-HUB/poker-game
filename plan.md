@@ -509,8 +509,9 @@ identity or balances; no historical reward backfill occurs.
 18 engine tests, typechecks and production builds. Later focused settlement
 15/15 and recovery 8/8 passed. Full Chromium passed 13/13 with desktop/mobile
 checks. Final review fixes cover coherent wallet snapshots, revoked socket auth
-refresh, trusted client-IP limits and account cache clearing. Final Linux CI and
-Worker packaging are pending at this commit. Live Brevo delivery and hosted
+refresh, trusted client-IP limits and account cache clearing. [Linux CI](https://github.com/24-HUB/poker-game/actions/runs/36706649965/job/109858354540?pr=12)
+passed on code commit `6c3b9493`, including migrations, aggregate checks and
+Cloudflare Worker packaging. Live Brevo delivery and hosted
 acceptance require separate authorization in M5. No deployment or live database
 operation occurred. The user merges manually; M4 is the next implementation
 milestone after M3 review/merge. See `CHECKPOINT.md` for evidence and exact status.
