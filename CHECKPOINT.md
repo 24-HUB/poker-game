@@ -1,4 +1,19 @@
-# Checkpoint — M2 poker implementation
+# Checkpoint — Remaining phases through production
+
+Updated: 2026-09-30. Freshly fetched `origin/dev` at `d3aa002b` contains merged
+M2 PR #9. The documentation task branch is `codex/remaining-phase-plans`.
+The next implementation milestone is **M3 persistent tickets**, beginning with
+reward-policy and account-recovery decisions in M3.1 of the
+[remaining-phase plan](docs/superpowers/plans/2026-09-30-m3-through-production.md).
+That plan covers M3–M5 and proposed M6 production cutover/M7 operations, including
+verification, deployment authorization, backup/restore and rollback gates.
+
+This update changes documentation only; it does not implement tickets or deploy
+services. Historical test evidence below is retained and was not rerun for this
+planning task. M0–M2 hosted acceptance remains pending. All new plan execution
+checkboxes remain open. The user merges the planning PR manually into `dev`.
+
+## Historical M2 implementation handoff
 
 Updated: 2026-09-30. The active task branch is `codex/m2-poker`, tracking
 `origin/codex/m2-poker`. The user requested a save point; M2 Tasks 1–9 and the

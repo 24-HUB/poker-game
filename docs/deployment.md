@@ -1,5 +1,11 @@
 # M0/M1 deployment preparation
 
+For the complete remaining release sequence, see the
+[M3 through production plan](superpowers/plans/2026-09-30-m3-through-production.md),
+especially M5 hosted acceptance, M6 authorized production cutover, and M7
+operations. The steps below remain the original preparation baseline, not
+evidence of a live deployment. The actual frontend adapter is OpenNext.
+
 Deployment is intentionally manual. This repository prepares configuration and smoke checks but does not authorize creating provider resources, applying migrations to a live database, uploading secrets, or deploying either service.
 
 ## Provider layout
