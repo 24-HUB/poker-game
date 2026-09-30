@@ -498,13 +498,26 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ### Current handoff — 2026-09-30
 
+**Latest planning handoff:** M2 PR #9 is merged into freshly fetched
+`origin/dev` at `d3aa002b`. **M3 persistent tickets is next.** The
+[M3 through production plan](docs/superpowers/plans/2026-09-30-m3-through-production.md)
+now details M3 tickets, M4 collection, M5 hosted friends acceptance, and proposed
+M6 production cutover/M7 operations phases. M6/M7 expand the original release
+work; they add no gameplay scope. Reward, gacha, recovery and operating-policy
+proposals remain subject to the decision gates in that plan. Preparing it does
+not authorize deployment or mark any remaining milestone implemented.
+
+The implementation evidence below is historical; its former PR-review state
+is superseded by the merge above. No application checks were rerun for this
+documentation-only planning update. Deployed acceptance is still pending.
+
 M0/M1 local implementation and the recorded Linux CI verification are present on
 `origin/dev` at `4ccd2daf`; detailed execution evidence remains in `CHECKPOINT.md`
 and section 19. Deployed acceptance is **not run — deployment not authorized**.
 The historical planning checkpoint below describes the earlier design branch,
 not the current implementation status.
 
-**M2 — Poker sessions** is in review on `codex/m2-poker` in PR #9.
+**M2 — Poker sessions** was reviewed on `codex/m2-poker` in PR #9 (now merged).
 The user approved the [M2 Poker Sessions](docs/superpowers/plans/2026-09-29-m2-poker.md)
 plan and its gameplay defaults for this implementation. Contracts, the pure
 engine, session lifecycle, chip settlement, private delivery/recovery, and a
@@ -512,7 +525,7 @@ playable table are committed and pushed to the task branch. Three review
 regressions were reproduced in CI, fixed, and passed the follow-up CI run.
 The focused poker browser flow passed 1/1 and the full local Chromium suite
 passed 12/12 after Docker Desktop and the disposable MongoDB replica set were
-available. Final review remains with the user; see `CHECKPOINT.md` for evidence.
+available. See `CHECKPOINT.md` for the historical execution evidence.
 No M2 deployment is claimed. Tickets
 remain M3 and collection remains M4. Deployment and production database
 operations still require separate authorization.
