@@ -85,6 +85,40 @@ tickets and owned cosmetics persist. Cosmetics never affect poker strength.
   Deployment, production database operations, and paid upgrades require explicit
   user authorization; preparing code or migrations does not authorize applying them.
 
+## Usage limits and save points
+
+- Check Codex account usage at the start of each implementation session, including
+  resumed work, at task boundaries, and before substantial implementation or
+  expensive verification. Use `get_usage_limits` when available; avoid checking
+  after every small edit or tool call.
+- Inspect all applicable usage windows, including the five-hour and weekly
+  windows when reported. The tool reports **used** percent; remaining percent is
+  `100 - usedPercent`, clamped to 0–100. Prefer `rateLimitsByLimitId` when present.
+  Missing values mean unavailable, not zero remaining; report that limitation
+  rather than inventing a reading or treating zero credit balance as no usage.
+- When **any applicable window has less than 10% remaining**, tell the user and
+  assess whether the next bounded step can finish with enough capacity left to
+  verify and save the work. Prefer a save point before starting substantial new
+  work. A small step that safely completes the current task may finish first;
+  do not wait for exhaustion or abandon an in-flight operation without recording
+  its state. This supersedes older 5% or 6% thresholds in historical plans and
+  checkpoints; below 10% is a checkpoint decision trigger, not an automatic claim
+  that work is complete.
+- At a save point, update the existing `CHECKPOINT.md` and the `plan.md` checkpoint
+  with the task/branch/PR, last completed step and commit, pending changes, checks
+  actually run and their results, blockers, and the exact next step or command.
+  Record the observation time, remaining percentages and reset times if available;
+  omit account identifiers, credentials and reset-credit identifiers. Do not create
+  another checkpoint file or mark unchecked work verified.
+- Preserve task-owned work on its task branch. Commit/push and create or update
+  its PR targeting `dev` when possible; incomplete or unverified work stays in a
+  draft PR. If saving remotely is blocked, preserve local changes and explain the
+  blocker and resume instructions. Follow the existing Git workflow and never
+  include unrelated changes just to create a checkpoint.
+- Do not buy credits, redeem usage-reset credits, or change billing automatically.
+  On resumption, recheck usage and read the save point before continuing; do not
+  repeat completed work merely because the session changed.
+
 ## Setup and verification
 
 There is no runnable application or package manifest in the planning baseline.

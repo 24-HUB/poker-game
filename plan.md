@@ -498,6 +498,11 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ### Current handoff — 2026-09-30
 
+**Usage policy update:** Follow `AGENTS.md` for implementation usage checks.
+Less than 10% remaining in any applicable window triggers a save-point assessment,
+superseding the older 5%/6% thresholds in historical notes. Save resumable progress
+in the existing checkpoint files; never automatically redeem reset credits.
+
 **Latest planning handoff:** M2 PR #9 is merged into freshly fetched
 `origin/dev` at `d3aa002b`. **M3 persistent tickets is next.** The
 [M3 through production plan](docs/superpowers/plans/2026-09-30-m3-through-production.md)
