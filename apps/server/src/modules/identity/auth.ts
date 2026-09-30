@@ -9,6 +9,7 @@ import {
   loadBetterAuthMongoAdapter,
 } from '../../compatibility/better-auth-loader';
 import { accountEmailFromEnvironment } from './accountEmail.service';
+import { atomicPasswordResetPlugin } from './atomicPasswordReset';
 
 export const AUTH = Symbol('AUTH');
 
@@ -44,6 +45,7 @@ export async function createPokerAuth(db: Db, client: MongoClient): Promise<Poke
     secret,
     trustedOrigins: [publicOrigin],
     database: mongodbAdapter(db, { client, transaction: true }),
+    plugins: [await atomicPasswordResetPlugin()],
     rateLimit: {
       enabled: enforceRecovery, storage: 'database',
       // Browser fixtures share one loopback IP. Production retains provider defaults.

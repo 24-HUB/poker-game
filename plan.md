@@ -498,13 +498,29 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ### Current handoff — 2026-09-30
 
-****M3 local implementation verified — 2026-09-30:** Branch
+**M3 local implementation verified — 2026-09-30:** Branch
 `codex/m3-persistent-tickets`, PR [#12](https://github.com/24-HUB/poker-game/pull/12)
 to `dev`, implements verified accounts and password recovery, atomic versioned
 hand rewards, authenticated wallet reads and account invalidation, and wallet/
 hand-reward UI. Existing accounts verify their original email without changing
 identity or balances; no historical reward backfill occurs.
 
+PR #12 review follow-up wraps the provider's password-reset endpoint in one
+MongoDB transaction: token consumption, password change and prior-session
+deletion either commit together or roll back for a retry. Recovery integration
+passed 12/12 with real-write interruption and concurrent-token regressions.
+Frozen install, sequential `pnpm check` (136 server, 56 web, 12 contract and
+18 engine tests, script tests, typechecks and production builds), and mobile
+Chromium recovery 1/1 passed. A concurrent aggregate encountered the previously
+recorded authority startup timeout; focused authority 8/8 and sequential checks
+passed. This follow-up is being saved on the same branch after `1ed0a519`;
+new-head Linux CI and Worker packaging remain pending. Fresh `origin/dev` is
+`7dd93e3e` and is contained in the branch. Next: push, update PR #12, and inspect
+its new-head CI before manual merge. Usage observed 2026-09-30 12:26 UTC:
+five-hour 58% remaining (reset 2026-09-30 16:02:07 UTC), weekly 20% remaining
+(reset 2026-10-06 01:38:22 UTC). See `CHECKPOINT.md` for the follow-up evidence.
+
+Earlier M3 verification before this review follow-up:
 `pnpm check` passed with 129 server tests, 56 web tests, 12 contract tests,
 18 engine tests, typechecks and production builds. Later focused settlement
 15/15 and recovery 8/8 passed. Full Chromium passed 13/13 with desktop/mobile
@@ -515,7 +531,7 @@ Cloudflare Worker packaging. Live Brevo delivery and hosted
 acceptance require separate authorization in M5. No deployment or live database
 operation occurred. The user merges manually; M4 is the next implementation
 milestone after M3 review/merge. See `CHECKPOINT.md` for evidence and exact status.
-Usage policy update:** Follow `AGENTS.md` for implementation usage checks.
+**Usage policy update:** Follow `AGENTS.md` for implementation usage checks.
 Less than 10% remaining in any applicable window triggers a save-point assessment,
 superseding the older 5%/6% thresholds in historical notes. Save resumable progress
 in the existing checkpoint files; never automatically redeem reset credits.

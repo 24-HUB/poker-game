@@ -43,6 +43,12 @@ retains their account ID and balance. Wallets start at zero, with no historical 
 backfill. Reset links expire after one hour, can be consumed once, and revoke older
 sessions. Browser wallet reads recover missed hints on reconnect, focus and UTC midnight.
 
+Password reset wraps the pinned provider's reset endpoint in its MongoDB transaction
+context. Token consumption, password update and previous-session deletion commit
+together. An interruption rolls them all back, leaving the same unexpired link
+usable for a retry. The wrapper uses the provider's token checks and password hashing;
+it does not implement another token format or require additional configuration.
+
 Brevo setup and real verification/reset delivery remain pending separate authorization.
 Before rewards ship, prove delivery to the intended friends, including provider outage
 and retry behavior, using the approved sender. Tests use fake delivery only. Never set

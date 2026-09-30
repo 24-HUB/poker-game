@@ -1,5 +1,16 @@
 # Checkpoint — Remaining phases through production
 
+## M3 PR #12 review follow-up — 2026-09-30 12:26 UTC
+
+- Branch `codex/m3-persistent-tickets`, existing PR https://github.com/24-HUB/poker-game/pull/12 to `dev`. Previous completed remote commit: `1ed0a519`; this follow-up is being committed and pushed on the same branch. Fresh `origin/dev` is still `7dd93e3e` and is contained in the branch. The user merges manually.
+- Fixed the review's interrupted-password-reset finding: the pinned Better Auth endpoint now runs inside its adapter transaction context, so reset-token consumption, password update and prior-session deletion commit together. An aborted reset retains the previous password/sessions and permits retry with the same unexpired link. Added the matching pinned core dependency; no provider version upgrade or new configuration.
+- Evidence: regression tests first reproduced partial password changes before the fix. Recovery integration now passes 12/12, including failures after password update, before/after session deletion, and simultaneous token use. Independent review found no actionable issues. Frozen install passed. Sequential aggregate (`$env:npm_config_workspace_concurrency = '1'; pnpm check`) passed 136 server, 56 web, 12 contract and 18 engine tests, three replica/deployment script tests, workspace typechecks and production builds. Mobile Chromium recovery passed 1/1. No lint script exists. `git diff --check` passed.
+- The initial aggregate exposed the previously recorded authority child startup timeout; focused authority passed 8/8 and the sequential aggregate passed. The earlier typecheck failure from a test type import was corrected before these passing checks. Test fixtures used disposable local MongoDB; no live mail, deployment or production database operation occurred.
+- Next exact step: push this follow-up, update PR #12 with these results, and inspect Linux CI on the new head, including migration idempotency and Worker packaging. Those checks are pending on this follow-up; previous-head CI evidence below does not verify this code. Live Brevo and hosted acceptance remain separately authorized M5 gates; M4 has not started.
+- Usage observed 2026-09-30 12:26 UTC: five-hour 58% remaining, reset 2026-09-30 16:02:07 UTC; weekly 20% remaining, reset 2026-10-06 01:38:22 UTC. No reset credit used.
+
+---
+
 ## M3 local implementation handoff — 2026-09-30 11:05 UTC
 
 - Branch `codex/m3-persistent-tickets`, PR https://github.com/24-HUB/poker-game/pull/12 to `dev`. Code commit `6c3b9493` is pushed and [Linux CI](https://github.com/24-HUB/poker-game/actions/runs/36706649965/job/109858354540?pr=12) passed, including migrations, aggregate checks and Cloudflare Worker packaging. The follow-up commit records this evidence and repairs a Markdown heading. PR is being marked ready for code review. The user merges manually. Fresh `origin/dev` remains `7dd93e3e` and is contained in this branch.
