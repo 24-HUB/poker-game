@@ -1,21 +1,24 @@
 # Checkpoint — M2 poker implementation
 
-Updated: 2026-09-29. The active task branch is `codex/m2-poker`, tracking
+Updated: 2026-09-30. The active task branch is `codex/m2-poker`, tracking
 `origin/codex/m2-poker`. The user requested a save point; M2 Tasks 1–9 and the
 CI migration-test fix were committed and pushed. Draft PR [#9](https://github.com/24-HUB/poker-game/pull/9)
 targets `dev`; the user merges manually.
 
 ## Current M2 save point
 
-- PR #9 review follow-up is in progress for three findings: old start retries
+- PR #9 review follow-up addressed three findings: old start retries
   replacing a newer session, publication clearing a pending departure, and
   deadline-crossing commands failing to publish the timeout transition.
   Regression cases were added first. [RED CI](https://github.com/24-HUB/poker-game/actions/runs/36577570585/job/109437020317?pr=9)
   reproduced all three failures (3 failed, 99 passed). The fixes now preserve
   the newer controller session, use a read-only publication snapshot for
-  connected room sockets, and publish deadline-triggered transitions. Server
-  typecheck passed; GREEN CI is pending. Local database tests could not start
-  because Docker Desktop is not providing the disposable MongoDB replica set.
+  connected room sockets, and publish deadline-triggered transitions. The
+  [GREEN CI run](https://github.com/24-HUB/poker-game/actions/runs/36653145157/job/109691610304?pr=9)
+  passed frozen install, migration idempotency, `pnpm check`, and the Worker
+  build. Local database tests could not start because Docker Desktop is not
+  providing the disposable MongoDB replica set. The fixes are saved in
+  `a0c29b73`; PR #9 remains draft pending the browser rerun.
 
 - Plan: `docs/superpowers/plans/2026-09-29-m2-poker.md`; the ignored execution
   ledger is `.superpowers/sdd/2026-09-29-m2-poker/progress.md`.
