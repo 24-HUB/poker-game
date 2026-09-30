@@ -1,5 +1,73 @@
 # Checkpoint — Remaining phases through production
 
+## M3 PR #12 review follow-up — 2026-09-30 12:26 UTC
+
+- Branch `codex/m3-persistent-tickets`, existing PR https://github.com/24-HUB/poker-game/pull/12 to `dev`. Fix commit `727b1a71` is pushed; this documentation follow-up records its completed verification. Fresh `origin/dev` is still `7dd93e3e` and is contained in the branch. The user merges manually.
+- Fixed the review's interrupted-password-reset finding: the pinned Better Auth endpoint now runs inside its adapter transaction context, so reset-token consumption, password update and prior-session deletion commit together. An aborted reset retains the previous password/sessions and permits retry with the same unexpired link. Added the matching pinned core dependency; no provider version upgrade or new configuration.
+- Evidence: regression tests first reproduced partial password changes before the fix. Recovery integration now passes 12/12, including failures after password update, before/after session deletion, and simultaneous token use. Independent review found no actionable issues. Frozen install passed. Sequential aggregate (`$env:npm_config_workspace_concurrency = '1'; pnpm check`) passed 136 server, 56 web, 12 contract and 18 engine tests, three replica/deployment script tests, workspace typechecks and production builds. Mobile Chromium recovery passed 1/1. No lint script exists. `git diff --check` passed.
+- The initial aggregate exposed the previously recorded authority child startup timeout; focused authority passed 8/8 and the sequential aggregate passed. The earlier typecheck failure from a test type import was corrected before these passing checks. Test fixtures used disposable local MongoDB; no live mail, deployment or production database operation occurred.
+- [Linux CI on fix commit `727b1a71`](https://github.com/24-HUB/poker-game/actions/runs/36714901253/job/109885310270) passed, including migration idempotency, aggregate checks and Worker packaging. PR #12's description includes the fix and current verification. This documentation-only follow-up triggers another CI run; inspect the final head before manual merge. Next task after review/merge: fetch origin and start M4 from a clean `origin/dev`, resolving M4.1 proposals first. Live Brevo and hosted acceptance remain separately authorized M5 gates; M4 has not started.
+- Usage observed 2026-09-30 12:26 UTC: five-hour 58% remaining, reset 2026-09-30 16:02:07 UTC; weekly 20% remaining, reset 2026-10-06 01:38:22 UTC. No reset credit used.
+
+---
+
+## M3 local implementation handoff — 2026-09-30 11:05 UTC
+
+- Branch `codex/m3-persistent-tickets`, PR https://github.com/24-HUB/poker-game/pull/12 to `dev`. Code commit `6c3b9493` is pushed and [Linux CI](https://github.com/24-HUB/poker-game/actions/runs/36706649965/job/109858354540?pr=12) passed, including migrations, aggregate checks and Cloudflare Worker packaging. The follow-up commit records this evidence and repairs a Markdown heading. PR is being marked ready for code review. The user merges manually. Fresh `origin/dev` remains `7dd93e3e` and is contained in this branch.
+- Implemented: verified email/password recovery through Brevo adapter, one-hour single-use reset and older-session revocation; existing accounts verify without changing ID/balance; policy v1 1 participation +1 positive net, manual action, 20 earned/UTC day; atomic wallets/ledger/daily/receipts in chip settlement; private API/events; real wallet and per-hand reward UI; focus/reconnect/midnight recovery and account cache clearing. No historical rewards. Test mail capture uses memory plus IPC, with a loopback harness endpoint only.
+- Evidence: `pnpm check` passed 129 server, 56 web, 12 contracts, 18 engine tests, typechecks, replica init/deployment script tests and Nest/Next builds. Later focused settlement 15/15 and account recovery 8/8 passed. Wallet 4/4 includes consistent snapshot, privacy, revocation and midnight. Full Chromium 13/13 passed after review fixes; 360px recovery/wallet and desktop reward screenshots inspected. A prior concurrent aggregate failed a pre-existing authority process startup timeout; focused authority 8/8 and sequential aggregate passed. No lint script exists. No live provider mail or hosted acceptance ran.
+- Final fresh-context review: fixed coherent wallet reads, server-disconnect authentication recovery, and client IP rate buckets; reviewer confirmed fixes. Additional redirect allowlist test exposed an external callback acceptance and now passes with explicit public-origin checks. Optional unsupported future policy rejection is deferred until another policy is introduced; current session creation only emits v1.
+- Next task after manual review/merge: fetch origin, start a clean M4 branch from `origin/dev`, and resolve the catalogue/economy proposals in M4.1 before implementation. Live Brevo setup/delivery and hosted acceptance stay separately authorized M5 gates; M4 has not started. This documentation-only follow-up triggers another CI run; inspect it before merge.
+- Usage observed 2026-09-30 11:05 UTC: five-hour 98% remaining, reset 2026-09-30 16:02:07 UTC; weekly 26% remaining, reset 2026-10-06 01:38:22 UTC. No reset credit used.
+
+---
+
+
+## M3 pause requested by user — 2026-09-30 06:50 UTC
+
+- Task branch: `codex/m3-persistent-tickets`; draft PR: https://github.com/24-HUB/poker-game/pull/12 (base `dev`). Last completed remote commit before this save point: `84fd2831`. The changes described below are being saved as the next task-branch commit; no merge or deployment is authorized.
+- Implemented locally since that commit: Better Auth email verification, password reset, session revocation and a test-only memory email adapter; recovery UI; versioned M3 reward policy; migration 004 for wallets, daily earnings, ledger and receipts; reward writes within the existing hand transaction; account-scoped wallet API and invalidation event; wallet and hand-reward UI. Reward receipts are filtered for each game-snapshot recipient. Existing unverified accounts must verify their email to regain access when deployed. Live Brevo delivery remains unconfigured and unproven.
+- Verification: `pnpm check` passed after correcting two stale migration-count expectations: workspace typechecks, 116 server tests, 51 web tests, 12 contract tests, 18 poker-engine tests, and production Nest/Next builds. Focused recovery integration 5/5, wallet integration 1/1, settlement integration 6/6, poker integration 15/15, and migration integration 5/5 also passed. The earlier aggregate run failed on only those two stale expectations. M3 browser tests, account-event transport/revocation cases, full UI flows, Worker build and live Brevo delivery have not been verified. Keep PR #12 draft.
+- Next exact action on resume: check usage; inspect `git status --short --branch` and branch; run `git fetch origin --prune` and stop if it fails. Update the Playwright account helper and `session.spec.ts` for verification, add isolated test mail capture for the browser recovery flow, then run focused and full Playwright suites. Add wallet event revocation/reconnect and UTC midnight cases, review the full M3 diff, and update this checkpoint before marking the PR ready. Do not merge or deploy.
+- Usage observed 2026-09-30 06:50 UTC: five-hour window 57% remaining, resets 2026-09-30 11:01:45 UTC; weekly window 31% remaining, resets 2026-10-06 01:38:22 UTC. No reset credit was used.
+
+---
+
+## Active M3 implementation save point — 2026-09-30
+
+- Branch: `codex/m3-persistent-tickets`, created from freshly fetched
+  `origin/dev` at `7dd93e3e` after the user authorized removal of untracked
+  `apps/`, `packages/`, and `node_modules/` from the stale local `dev` checkout.
+- Scope: M3 persistent tickets only. The user confirmed 1 participation ticket,
+  1 positive-net bonus, a manual-action requirement, a 20-ticket UTC daily cap,
+  and participation-first cap allocation. The user selected email verification
+  and password reset with Brevo Free using an address they control, without an
+  owned sending domain. No provider account, secrets, deployment or production
+  database work has been performed.
+- Implemented so far: `RewardPolicy`, `RewardReceipt`, and `WalletView` schemas;
+  a server-only Brevo email adapter that validates recipients and public-origin
+  links, bounds provider calls, and hides provider error details. The adapter is
+  not yet wired into Better Auth and no ticket is awarded yet.
+- Verification actually run: `pnpm install --frozen-lockfile` passed; focused
+  contract tests passed 2/2 after a failing schema run; focused adapter tests
+  passed 2/2 after a failing no-send run; `pnpm check` passed, including
+  workspace typechecks, 104 server tests, 48 web tests and production builds.
+  The first aggregate run timed out in the pre-existing standalone MongoDB
+  comparison because its disposable service was stopped. Starting that
+  service made the focused test and full rerun pass. M3 browser tests and the
+  Worker build have not run on this branch.
+- Next step: resume M3.1 in `docs/superpowers/plans/2026-09-30-m3-through-production.md`.
+  Write failing account-recovery integration tests against real Better Auth and
+  the disposable replica set, then wire the email adapter, safe generic reset
+  response, session revocation, sign-in/recovery UI, and local browser tests.
+  Continue M3.2–M3.4 only after M3.1 is verified. Do not infer that this save
+  point is a completed M3 milestone.
+- Usage observation at 2026-09-30 03:06 UTC: five-hour window 7% remaining,
+  resetting 2026-09-30 05:56:49 UTC; weekly window 39% remaining. No reset
+  credit was used. Recheck both windows when resuming.
+
+---
+
 Updated: 2026-09-30. Freshly fetched `origin/dev` at `d3aa002b` contains merged
 M2 PR #9. The documentation task branch is `codex/remaining-phase-plans`.
 The next implementation milestone is **M3 persistent tickets**, beginning with

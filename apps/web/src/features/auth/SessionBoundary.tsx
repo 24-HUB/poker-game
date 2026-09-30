@@ -29,9 +29,15 @@ export function SessionProvider({
   const session = query.data ?? { status: 'loading' };
 
   useEffect(() => {
+    if (session.status === 'authenticated' || session.status === 'unauthenticated') {
+      const currentAccountId = session.status === 'authenticated' ? session.account.accountId : null;
+      const oldWallets = { queryKey: ['wallet'], predicate: (entry: { queryKey: readonly unknown[] }) => entry.queryKey[1] !== currentAccountId };
+      void queryClient.cancelQueries(oldWallets);
+      queryClient.removeQueries(oldWallets);
+    }
     if (session.status === 'authenticated') roomStore.getState().setAccount(session.account.accountId);
     else if (session.status === 'unauthenticated') roomStore.getState().setAccount(null);
-  }, [session]);
+  }, [session, queryClient]);
 
   const value: SessionContextValue = {
     session,
@@ -40,6 +46,7 @@ export function SessionProvider({
       await signOutAction();
       clearPendingInvitation(sessionStorage);
       roomStore.getState().setAccount(null);
+      queryClient.removeQueries({ queryKey: ['wallet'] });
       queryClient.setQueryData(['session'], { status: 'unauthenticated' } satisfies SessionState);
     },
   };

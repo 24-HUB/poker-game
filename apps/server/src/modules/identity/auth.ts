@@ -8,6 +8,8 @@ import {
   loadBetterAuthApi,
   loadBetterAuthMongoAdapter,
 } from '../../compatibility/better-auth-loader';
+import { accountEmailFromEnvironment } from './accountEmail.service';
+import { atomicPasswordResetPlugin } from './atomicPasswordReset';
 
 export const AUTH = Symbol('AUTH');
 
@@ -19,7 +21,7 @@ export type PokerAuth = {
       query: { disableCookieCache: boolean; disableRefresh: boolean };
     }) => Promise<{
       session: { id: string; expiresAt: Date };
-      user: { id: string; name: string };
+      user: { id: string; name: string; emailVerified: boolean };
     } | null>;
   };
 };
@@ -31,6 +33,8 @@ export async function createPokerAuth(db: Db, client: MongoClient): Promise<Poke
   if (secret.length < 32) throw new Error('BETTER_AUTH_SECRET must contain at least 32 characters');
 
   const expectedInviteDigest = parseInviteDigest(requireEnvironmentValue('REGISTRATION_INVITE_CODE_SHA256'));
+  const accountEmail = accountEmailFromEnvironment(publicOrigin);
+  const enforceRecovery = recoveryEnforced();
   const { betterAuth } = await loadBetterAuth();
   const { createAuthMiddleware, APIError } = await loadBetterAuthApi();
   const { mongodbAdapter } = await loadBetterAuthMongoAdapter();
@@ -41,14 +45,31 @@ export async function createPokerAuth(db: Db, client: MongoClient): Promise<Poke
     secret,
     trustedOrigins: [publicOrigin],
     database: mongodbAdapter(db, { client, transaction: true }),
+    plugins: [await atomicPasswordResetPlugin()],
+    rateLimit: {
+      enabled: enforceRecovery, storage: 'database',
+      // Browser fixtures share one loopback IP. Production retains provider defaults.
+      ...(process.env.NODE_ENV === 'test' && process.env.ACCOUNT_EMAIL_TEST_IPC === 'true'
+        ? { customRules: { '/sign-up/email': { window: 10, max: 100 }, '/sign-in/email': { window: 10, max: 100 } } } : {}),
+    },
     emailAndPassword: {
       enabled: true,
       minPasswordLength: 8,
       maxPasswordLength: 128,
-      requireEmailVerification: false,
+      requireEmailVerification: enforceRecovery,
+      autoSignIn: !enforceRecovery,
+      revokeSessionsOnPasswordReset: true,
+      resetPasswordTokenExpiresIn: 3600,
+      sendResetPassword: async ({ user, url }) => accountEmail.sendPasswordReset(user.email, url),
+    },
+    emailVerification: {
+      sendOnSignUp: true,
+      expiresIn: 3600,
+      sendVerificationEmail: async ({ user, url }) => accountEmail.sendVerification(user.email, url),
     },
     session: { cookieCache: { enabled: false } },
     advanced: {
+      ipAddress: { ipAddressHeaders: ['x-poker-client-ip'] },
       useSecureCookies: secureCookies,
       crossSubDomainCookies: { enabled: false },
       defaultCookieAttributes: {
@@ -61,6 +82,12 @@ export async function createPokerAuth(db: Db, client: MongoClient): Promise<Poke
     logger: { disabled: true },
     hooks: {
       before: createAuthMiddleware(async (context) => {
+        const redirectField = context.path === '/request-password-reset' ? 'redirectTo'
+          : ['/send-verification-email', '/sign-up/email', '/sign-in/email'].includes(context.path) ? 'callbackURL' : null;
+        const redirect = redirectField ? context.body?.[redirectField] : undefined;
+        if (redirect !== undefined && !isPublicRedirect(redirect, publicOrigin)) {
+          throw APIError.from('BAD_REQUEST', { code: 'INVALID_REDIRECT', message: 'The recovery redirect is invalid.' });
+        }
         if (context.path !== '/sign-up/email') return;
 
         const submittedCode = context.body?.registrationCode;
@@ -75,6 +102,18 @@ export async function createPokerAuth(db: Db, client: MongoClient): Promise<Poke
       }),
     },
   });
+}
+
+export function recoveryEnforced(): boolean {
+  return process.env.NODE_ENV !== 'test' || process.env.ACCOUNT_RECOVERY_ENFORCED === 'true';
+}
+
+function isPublicRedirect(value: unknown, publicOrigin: string): boolean {
+  if (typeof value !== 'string') return false;
+  try {
+    const url = new URL(value, publicOrigin);
+    return url.origin === new URL(publicOrigin).origin && !url.username && !url.password;
+  } catch { return false; }
 }
 
 function inviteCodeMatches(code: string, expectedDigest: Buffer): boolean {

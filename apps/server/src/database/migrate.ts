@@ -3,12 +3,14 @@ import { Db } from 'mongodb';
 import { applyFoundationMigration } from './migrations/001-foundation';
 import { applyRoomCommandsMigration } from './migrations/002-room-commands';
 import { applyPokerMigration } from './migrations/003-poker';
+import { applyTicketsMigration } from './migrations/004-tickets';
 import { createMongoClient } from './mongoClientFactory';
 
 const migrations = [
   { version: 1, apply: applyFoundationMigration },
   { version: 2, apply: applyRoomCommandsMigration },
   { version: 3, apply: applyPokerMigration },
+  { version: 4, apply: applyTicketsMigration },
 ] as const;
 
 export async function applyMigrations(db: Db): Promise<void> {

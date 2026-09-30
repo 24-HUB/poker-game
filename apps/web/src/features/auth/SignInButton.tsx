@@ -4,15 +4,16 @@ import { KeyRound, X } from 'lucide-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
 
 import { Icon } from '../../components/ui/Icon';
-import { AuthRequestError, signIn, signUp } from '../../lib/auth-client';
+import { AuthRequestError, requestPasswordReset, resendVerification, signIn, signUp } from '../../lib/auth-client';
 
-type AuthMode = 'sign-in' | 'sign-up';
+type AuthMode = 'sign-in' | 'sign-up' | 'reset' | 'verify';
 
 export function SignInButton({ onAuthenticated }: { onAuthenticated: () => void }) {
   const [open, setOpen] = useState(false);
   const [mode, setMode] = useState<AuthMode>('sign-in');
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
   const trigger = useRef<HTMLButtonElement>(null);
   const emailInput = useRef<HTMLInputElement>(null);
   const dialog = useRef<HTMLElement>(null);
@@ -25,6 +26,7 @@ export function SignInButton({ onAuthenticated }: { onAuthenticated: () => void 
     setOpen(false);
     setPending(false);
     setError(null);
+    setNotice(null);
     requestAnimationFrame(() => trigger.current?.focus());
   }
 
@@ -32,23 +34,32 @@ export function SignInButton({ onAuthenticated }: { onAuthenticated: () => void 
     event.preventDefault();
     setPending(true);
     setError(null);
+    setNotice(null);
     const form = new FormData(event.currentTarget);
     const email = String(form.get('email') ?? '');
     const password = String(form.get('password') ?? '');
 
     try {
-      if (mode === 'sign-up') {
+      if (mode === 'reset') {
+        await requestPasswordReset(email);
+        setNotice('If that address has an account, a reset link is on its way.');
+      } else if (mode === 'verify') {
+        await resendVerification(email);
+        setNotice('If that address needs verification, a new link is on its way.');
+      } else if (mode === 'sign-up') {
         await signUp({
           name: String(form.get('name') ?? ''),
           email,
           password,
           registrationCode: String(form.get('registrationCode') ?? ''),
         });
+        setMode('verify');
+        setNotice('Account created. Check your email to verify it before signing in.');
       } else {
         await signIn({ email, password });
+        close();
+        onAuthenticated();
       }
-      close();
-      onAuthenticated();
     } catch (cause) {
       setError(cause instanceof AuthRequestError ? cause.message : 'Sign-in could not be completed. Try again.');
     } finally {
@@ -100,21 +111,21 @@ export function SignInButton({ onAuthenticated }: { onAuthenticated: () => void 
                 <Icon icon={X} />
               </button>
             </div>
-            <h2 id="auth-title">{mode === 'sign-in' ? 'Welcome back' : 'Join the private playtest'}</h2>
-            <p>{mode === 'sign-in' ? 'Return to your private tables.' : 'Your host will share the registration code.'}</p>
+            <h2 id="auth-title">{{ 'sign-in': 'Welcome back', 'sign-up': 'Join the private playtest', reset: 'Reset your password', verify: 'Verify your email' }[mode]}</h2>
+            <p>{mode === 'sign-up' ? 'Your host will share the registration code.' : mode === 'sign-in' ? 'Return to your private tables.' : 'We will send a secure link to your account email.'}</p>
 
             <div className="auth-mode" aria-label="Account action">
               <button
                 type="button"
                 aria-pressed={mode === 'sign-in'}
-                onClick={() => { setMode('sign-in'); setError(null); }}
+                onClick={() => { setMode('sign-in'); setError(null); setNotice(null); }}
               >
                 Sign in
               </button>
               <button
                 type="button"
                 aria-pressed={mode === 'sign-up'}
-                onClick={() => { setMode('sign-up'); setError(null); }}
+                onClick={() => { setMode('sign-up'); setError(null); setNotice(null); }}
               >
                 Create account
               </button>
@@ -131,7 +142,7 @@ export function SignInButton({ onAuthenticated }: { onAuthenticated: () => void 
                 <span>Email</span>
                 <input ref={emailInput} name="email" type="email" autoComplete="email" required />
               </label>
-              <label>
+              {mode === 'sign-in' || mode === 'sign-up' ? <label>
                 <span>Password</span>
                 <input
                   name="password"
@@ -141,7 +152,7 @@ export function SignInButton({ onAuthenticated }: { onAuthenticated: () => void 
                   maxLength={128}
                   required
                 />
-              </label>
+              </label> : null}
               {mode === 'sign-up' ? (
                 <label>
                   <span>Registration code</span>
@@ -150,15 +161,26 @@ export function SignInButton({ onAuthenticated }: { onAuthenticated: () => void 
               ) : null}
 
               {error ? <p className="auth-error" role="alert">{error}</p> : null}
+              {notice ? <p className="auth-recovery" role="status">{notice}</p> : null}
               <button className="primary-button" type="submit" disabled={pending}>
                 {pending
                   ? 'Checking…'
                   : mode === 'sign-in'
                     ? 'Sign in to your club'
-                    : 'Create private account'}
+                    : mode === 'sign-up' ? 'Create private account' : mode === 'reset' ? 'Send reset link' : 'Send verification link'}
               </button>
             </form>
-            <p className="auth-recovery">Lost access? Password reset is not available in M1—contact the host.</p>
+            <p className="auth-recovery">
+              {mode === 'reset' || mode === 'verify' ? (
+                <button type="button" onClick={() => { setMode('sign-in'); setError(null); setNotice(null); }}>Back to sign in</button>
+              ) : (
+                <>
+                  <button type="button" onClick={() => { setMode('reset'); setError(null); setNotice(null); }}>Forgot password?</button>
+                  {' · '}
+                  <button type="button" onClick={() => { setMode('verify'); setError(null); setNotice(null); }}>Resend verification</button>
+                </>
+              )}
+            </p>
           </section>
         </div>
       ) : null}

@@ -8,9 +8,11 @@ import { CommandRateLimiter } from './commandRateLimiter';
 import { ConnectionGateway } from './connection.gateway';
 import { GameGateway } from './game.gateway';
 import { RoomPublisher } from './roomPublisher';
+import { AccountPublisher } from './accountPublisher';
+import { TicketsModule } from '../modules/tickets/tickets.module';
 
 @Module({
-  imports: [AuthorityModule, IdentityModule, RoomsModule],
-  providers: [ConnectionGateway, GameGateway, SocketSessionGuard, CommandRateLimiter, RoomPublisher],
+  imports: [AuthorityModule, IdentityModule, RoomsModule, TicketsModule],
+  providers: [ConnectionGateway, GameGateway, SocketSessionGuard, CommandRateLimiter, RoomPublisher, AccountPublisher],
 })
 export class RealtimeModule {}

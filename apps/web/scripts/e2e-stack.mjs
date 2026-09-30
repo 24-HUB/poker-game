@@ -24,6 +24,7 @@ const pnpmCommand = pnpmCli
     ? { command: process.env.ComSpec ?? 'cmd.exe', args: ['/d', '/s', '/c', 'pnpm'] }
     : { command: 'pnpm', args: [] };
 const children = new Set();
+const accountEmails = [];
 
 const backendEnvironment = {
   ...process.env,
@@ -34,6 +35,9 @@ const backendEnvironment = {
   MONGODB_URI: 'mongodb://127.0.0.1:27018/?replicaSet=rs0&directConnection=true',
   MONGODB_DATABASE: databaseName,
   BETTER_AUTH_SECRET: 'e2e-only-better-auth-secret-with-32-characters',
+  ACCOUNT_EMAIL_TRANSPORT: 'memory',
+  ACCOUNT_EMAIL_TEST_IPC: 'true',
+  ACCOUNT_RECOVERY_ENFORCED: 'true',
   REGISTRATION_INVITE_CODE_SHA256: createHash('sha256').update(registrationCode).digest('hex'),
 };
 
@@ -58,6 +62,14 @@ proxy.on('error', (_error, _request, response) => {
 });
 
 const gateway = createServer((request, response) => {
+  const requestedUrl = new URL(request.url ?? '/', publicOrigin);
+  if (requestedUrl.pathname === '/__e2e/account-email') {
+    const email = accountEmails.findLast((entry) => entry.recipient === requestedUrl.searchParams.get('recipient')
+      && entry.kind === requestedUrl.searchParams.get('kind'));
+    response.writeHead(email ? 200 : 404, { 'cache-control': 'no-store', 'content-type': 'application/json' });
+    response.end(JSON.stringify(email ? { url: email.url } : {}));
+    return;
+  }
   if (new URL(request.url ?? '/', publicOrigin).pathname === '/__e2e/restart-backend') {
     void handleBackendRestart(request, response);
     return;
@@ -99,6 +111,9 @@ let restartDelayMs = null;
 
 function launchBackend() {
   const child = start(process.execPath, ['apps/server/dist/main.js'], backendEnvironment);
+  child.on('message', (message) => {
+    if (message?.type === 'account-email') accountEmails.push(message.email);
+  });
   child.once('exit', (code) => {
     if (stopping) return;
     if (restartDelayMs === null) {
@@ -164,7 +179,7 @@ function start(command, args, environment = process.env) {
   const child = spawn(command, args, {
     cwd: workspaceRoot,
     env: environment,
-    stdio: 'inherit',
+    stdio: ['inherit', 'inherit', 'inherit', 'ipc'],
     windowsHide: true,
   });
   children.add(child);

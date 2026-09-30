@@ -7,6 +7,7 @@ import { MONGO_DB, TRANSACTION_RUNNER } from '../../database/database.tokens';
 import { TransactionRunner } from '../../database/transactionRunner';
 import type { SettlementCandidate } from './settlement.service';
 import { SettlementError } from './settlement.error';
+import { TicketsRepository } from '../tickets/tickets.repository';
 
 type HandDocument = {
   _id: string; sessionId: string; roomId: string; handNumber: number;
@@ -21,6 +22,7 @@ export class SettlementRepository {
     @Inject(MONGO_DB) private readonly db: Db,
     @Inject(TRANSACTION_RUNNER) private readonly transactions: TransactionRunner,
     private readonly authority: AuthorityLease,
+    private readonly tickets: TicketsRepository,
   ) {}
 
   public async findCommitted(handId: string): Promise<{ candidateHash: string; result: CommittedHandResult } | null> {
@@ -34,6 +36,11 @@ export class SettlementRepository {
 
   public async commit(candidate: SettlementCandidate, hash: string,
     result: CommittedHandResult): Promise<CommittedHandResult> {
+    if (candidate.rewardPolicyVersion !== undefined) {
+      for (const participant of [...candidate.participants].sort((a, b) => a.accountId.localeCompare(b.accountId))) {
+        await this.tickets.ensureWallet(participant.accountId);
+      }
+    }
     return this.transactions.run(async (session) => this.commitTransaction(candidate, hash, result, session));
   }
 
@@ -48,11 +55,13 @@ export class SettlementRepository {
       return existing.result;
     }
     await this.authority.fence(session, candidate.authority);
+    const rewardReceipts = await this.tickets.awardHand(candidate, session);
+    const committedResult = rewardReceipts.length ? { ...result, rewardReceipts } : result;
     const updated = await this.db.collection<HandDocument>('hands').updateOne({
       _id: candidate.handId, sessionId: candidate.sessionId, roomId: candidate.roomId,
       handNumber: candidate.handNumber, revision: candidate.expectedRevision,
       status: { $in: ['PENDING', 'SETTLING'] },
-    }, { $set: { status: 'COMPLETED', candidateHash: hash, result, completedAt: candidate.completedAt },
+    }, { $set: { status: 'COMPLETED', candidateHash: hash, result: committedResult, completedAt: candidate.completedAt },
       $inc: { revision: 1 } }, { session });
     if (updated.matchedCount !== 1) throw new SettlementError('STALE_STATE', 'The hand changed before settlement.');
     const stacks = candidate.participants.map((participant, index) => ({
@@ -62,6 +71,6 @@ export class SettlementRepository {
       _id: candidate.sessionId, roomId: candidate.roomId, status: 'ACTIVE', handNumber: candidate.handNumber,
     }, { $set: { stacks: stacks.map(({ amount }) => amount!) } }, { session });
     if (sessionUpdate.matchedCount !== 1) throw new SettlementError('SESSION_NOT_ACTIVE', 'The session changed before settlement.');
-    return result;
+    return committedResult;
   }
 }

@@ -39,6 +39,8 @@ export async function proxyBackend(request: Request, env: BackendEnv): Promise<R
   headers.set('x-forwarded-host', publicOrigin.host);
   headers.set('x-forwarded-proto', publicOrigin.protocol.slice(0, -1));
   headers.set(proxySecretHeader, env.PROXY_SECRET);
+  const clientIp = request.headers.get('cf-connecting-ip');
+  if (clientIp) headers.set('x-poker-client-ip', clientIp);
 
   const isUpgrade = request.headers.get('upgrade')?.toLowerCase() === 'websocket';
   const forwarded = new Request(new Request(upstreamUrl, request), {
@@ -95,7 +97,7 @@ function parseConfiguredOrigin(value: string, name: string): URL {
 function sanitizedHeaders(source: Headers): Headers {
   const headers = new Headers(source);
   for (const name of [...headers.keys()]) {
-    if (name === 'forwarded' || name === 'x-real-ip' || name.startsWith('x-forwarded-') || name === proxySecretHeader) {
+    if (name === 'forwarded' || name === 'x-real-ip' || name.startsWith('x-forwarded-') || name === proxySecretHeader || name === 'x-poker-client-ip') {
       headers.delete(name);
     }
   }

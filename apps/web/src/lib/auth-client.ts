@@ -43,6 +43,18 @@ export async function signUp(input: SignUpInput, fetcher: Fetcher = fetch): Prom
   await submitAuth('/api/auth/sign-up/email', input, fetcher);
 }
 
+export async function requestPasswordReset(email: string, fetcher: Fetcher = fetch): Promise<void> {
+  await submitRecovery('/api/auth/request-password-reset', { email, redirectTo: `${location.origin}/reset-password` }, fetcher);
+}
+
+export async function resendVerification(email: string, fetcher: Fetcher = fetch): Promise<void> {
+  await submitRecovery('/api/auth/send-verification-email', { email, callbackURL: location.origin }, fetcher);
+}
+
+export async function resetPassword(token: string, newPassword: string, fetcher: Fetcher = fetch): Promise<void> {
+  await submitRecovery('/api/auth/reset-password', { token, newPassword }, fetcher);
+}
+
 export async function signOut(fetcher: Fetcher = fetch): Promise<void> {
   try {
     const response = await fetcher('/api/auth/sign-out', {
@@ -77,12 +89,34 @@ async function submitAuth(path: string, input: SignInInput | SignUpInput, fetche
     throw new AuthRequestError('INVALID_CREDENTIALS', 'That email and password did not match.');
   }
   if (response.status === 403) {
+    if (providerError.code === 'EMAIL_NOT_VERIFIED') {
+      throw new AuthRequestError('EMAIL_NOT_VERIFIED', 'Verify your email before signing in. You can resend the verification link below.');
+    }
     throw new AuthRequestError('INVALID_REGISTRATION_CODE', 'That registration code is not valid.');
   }
   if (response.status === 422) {
     throw new AuthRequestError(providerError.code, providerError.message);
   }
   throw new AuthRequestError('SERVICE_UNAVAILABLE', 'The server could not complete sign-in. Try again shortly.');
+}
+
+async function submitRecovery(path: string, input: object, fetcher: Fetcher): Promise<void> {
+  let response: Response;
+  try {
+    response = await fetcher(path, {
+      method: 'POST', credentials: 'include', cache: 'no-store',
+      headers: { accept: 'application/json', 'content-type': 'application/json' },
+      body: JSON.stringify(input),
+    });
+  } catch {
+    throw new AuthRequestError('SERVICE_UNAVAILABLE', 'The server is unavailable. Try again shortly.');
+  }
+  if (response.ok) return;
+  if (response.status === 429) throw new AuthRequestError('RATE_LIMITED', 'Please wait a minute before trying again.');
+  if (path === '/api/auth/reset-password' && response.status === 400) {
+    throw new AuthRequestError('INVALID_TOKEN', 'This reset link has expired or was already used. Request a new one.');
+  }
+  throw new AuthRequestError('SERVICE_UNAVAILABLE', 'The request could not be completed. Try again shortly.');
 }
 
 async function readProviderError(response: Response): Promise<{ code: string; message: string }> {

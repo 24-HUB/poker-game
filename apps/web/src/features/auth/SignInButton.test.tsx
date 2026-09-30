@@ -32,7 +32,8 @@ describe('SignInButton', () => {
     const dialog = screen.getByRole('dialog', { name: 'Welcome back' });
     expect(within(dialog).getByLabelText('Email')).toHaveAttribute('type', 'email');
     expect(within(dialog).getByLabelText('Password')).toHaveAttribute('minlength', '8');
-    expect(within(dialog).getByText(/contact the host/i)).toBeVisible();
+    expect(within(dialog).getByRole('button', { name: 'Forgot password?' })).toBeVisible();
+    expect(within(dialog).getByRole('button', { name: 'Resend verification' })).toBeVisible();
   });
 
   it('submits invite-only account creation and never stores the code in browser state', async () => {
@@ -56,6 +57,7 @@ describe('SignInButton', () => {
       password: 'correct-horse-battery-staple',
       registrationCode: 'private-code',
     });
-    expect(onAuthenticated).toHaveBeenCalledOnce();
+    expect(onAuthenticated).not.toHaveBeenCalled();
+    expect(within(dialog).getByRole('status')).toHaveTextContent('Check your email to verify it');
   });
 });

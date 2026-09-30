@@ -6,3 +6,4 @@ process.env.BETTER_AUTH_SECRET ??= 'test-better-auth-secret-with-32-characters';
 process.env.REGISTRATION_INVITE_CODE_SHA256 ??= createHash('sha256')
   .update('test-registration-code')
   .digest('hex');
+process.env.ACCOUNT_EMAIL_TRANSPORT ??= 'memory';

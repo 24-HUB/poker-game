@@ -15,13 +15,13 @@ test('a confirmed signed-out response opens the accessible account dialog', asyn
   const dialog = page.getByRole('dialog', { name: 'Welcome back' });
   await expect(dialog).toBeVisible();
   await expect(dialog.getByLabel('Email')).toBeFocused();
-  await expect(dialog.getByText(/contact the host/i)).toBeVisible();
+  await expect(dialog.getByRole('button', { name: 'Forgot password?' })).toBeVisible();
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
 
   const closeButton = dialog.getByRole('button', { name: 'Close sign-in' });
   await closeButton.focus();
   await page.keyboard.press('Shift+Tab');
-  await expect(dialog.getByRole('button', { name: 'Sign in to your club' })).toBeFocused();
+  await expect(dialog.getByRole('button', { name: 'Resend verification' })).toBeFocused();
 
   await page.keyboard.press('Escape');
   await expect(dialog).toBeHidden();

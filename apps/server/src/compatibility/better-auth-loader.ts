@@ -6,6 +6,10 @@ export async function loadBetterAuthApi() {
   return import('better-auth/api');
 }
 
+export async function loadBetterAuthContext() {
+  return import('@better-auth/core/context');
+}
+
 export async function loadBetterAuthMongoAdapter() {
   return import('@better-auth/mongo-adapter');
 }

@@ -12,6 +12,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@better-auth/core": "1.7.6",
     "@better-auth/mongo-adapter": "1.7.6",
     "@nestjs/common": "11.2.6",
     "@nestjs/core": "11.2.6",

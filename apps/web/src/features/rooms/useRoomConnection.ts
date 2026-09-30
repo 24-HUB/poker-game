@@ -3,6 +3,7 @@
 import type { GameCommand, GameMutationCommand, GameReply, Result, RoomCommand, RoomMutationCommand, RoomReply } from '@poker/contracts';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from 'zustand';
+import { useQueryClient } from '@tanstack/react-query';
 
 import { createGameSocket, type GameSocket } from '../../lib/socket';
 import { useSession } from '../auth/SessionBoundary';
@@ -20,6 +21,7 @@ const uncertainReply: Result<RoomReply> = {
 const uncertainGameReply: Result<GameReply> = { data: null, error: uncertainReply.error };
 
 export function useRoomConnection(roomId: string | null) {
+  const queryClient = useQueryClient();
   const { session, refresh: refreshSession } = useSession();
   const room = useStore(roomStore, (state) => state.room);
   const pendingCommand = useStore(roomStore, (state) => state.pendingCommand);
@@ -52,6 +54,7 @@ export function useRoomConnection(roomId: string | null) {
     setStatus('connecting');
 
     socket.on('connection:ready', ({ authorityBootId: nextBootId }) => {
+      void queryClient.invalidateQueries({ queryKey: ['wallet', accountId] });
       bootIdRef.current = nextBootId;
       setAuthorityBootId(nextBootId);
       setStatus('connected');
@@ -85,6 +88,7 @@ export function useRoomConnection(roomId: string | null) {
         view.sessionId ?? (previous.roomId === roomId ? previous.sessionId : null), bootIdRef.current);
     });
     socket.on('game:snapshot', (view) => gameStore.getState().applySnapshot(view));
+    socket.on('account:changed', () => { void queryClient.invalidateQueries({ queryKey: ['wallet', accountId] }); });
     socket.on('room:closed', ({ roomId: closedRoomId, reason }) => {
       if (roomStore.getState().room?.roomId === closedRoomId || roomId === closedRoomId) {
         roomStore.getState().close(reason);
@@ -96,6 +100,13 @@ export function useRoomConnection(roomId: string | null) {
     });
     socket.on('disconnect', (reason) => {
       gameStore.getState().clear();
+      if (reason === 'io server disconnect') {
+        roomStore.getState().clear();
+        setPendingGameCommand(null);
+        setStatus('closed');
+        void refreshSession();
+        return;
+      }
       setStatus(reason === 'io client disconnect' ? 'closed' : 'reconnecting');
     });
     socket.on('connect_error', () => setStatus('unavailable'));
@@ -107,7 +118,7 @@ export function useRoomConnection(roomId: string | null) {
       gameStore.getState().clear();
       socket.close();
     };
-  }, [accountId, roomId]);
+  }, [accountId, roomId, queryClient]);
 
   const send = useCallback(async (command: RoomCommand): Promise<Result<RoomReply>> => {
     const socket = socketRef.current;

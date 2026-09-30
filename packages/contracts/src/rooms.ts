@@ -120,6 +120,7 @@ export interface ClientToServerEvents {
 }
 
 export interface ServerToClientEvents {
+  'account:changed': (payload: { revision: number }) => void;
   'game:snapshot': (view: GameView) => void;
   'session:ended': (result: SessionResult) => void;
   'connection:ready': (payload: { authorityBootId: string }) => void;

@@ -20,6 +20,17 @@ describe('backend Worker proxy', () => {
     expect(isBackendPath('/')).toBe(false);
   });
 
+  it('replaces spoofed client IP headers with the Cloudflare supplied address', async () => {
+    let forwarded: Request | undefined;
+    vi.stubGlobal('fetch', vi.fn(async (request: Request) => { forwarded = request; return new Response('{}'); }));
+    await proxyBackend(new Request('https://play.example/api/me', { headers: {
+      'cf-connecting-ip': '203.0.113.7', 'x-poker-client-ip': '198.51.100.9',
+      'x-forwarded-for': '198.51.100.10',
+    } }), env);
+    expect(forwarded!.headers.get('x-poker-client-ip')).toBe('203.0.113.7');
+    expect(forwarded!.headers.has('x-forwarded-for')).toBe(false);
+  });
+
   it('delegatesNonBackendPathsToTheFrontendWorker', async () => {
     const frontendResponse = new Response('frontend shell');
 

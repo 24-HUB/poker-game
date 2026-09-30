@@ -85,7 +85,7 @@ A session contains multiple hands. Stacks carry between those hands but never co
 
 Restart recovery is intentionally limited to ending interrupted sessions cleanly for the first private release. Durable restoration of an in-progress hand is a later enhancement. Do not award rewards for aborted hands.
 
-## 4. Proposed ticket economy — review required
+## 4. M3 ticket economy — values confirmed 2026-09-30
 
 Use whole tickets to keep the first version understandable:
 
@@ -99,7 +99,7 @@ Use whole tickets to keep the first version understandable:
 
 Example: participating in five qualifying hands and having a positive net result in two earns seven tickets before the cap: one pull plus two tickets remaining. Losing players still make collection progress.
 
-These are initial tuning values, not established balance results. Evaluate the pace during a friends playtest. The cap and authenticated, once-only rewards limit casual farming; coordinated collusion is outside the first private release's protection goals.
+The user confirmed the 1-ticket participation reward, 1-ticket positive-net bonus, manual-action qualification, 20-ticket UTC daily earning cap, and participation-first cap allocation for M3 on 2026-09-30. These are launch values, not established balance results. Evaluate the pace during a friends playtest. The cap and authenticated, once-only rewards limit casual farming; coordinated collusion is outside the first private release's protection goals.
 
 ## 5. Proposed gacha and cosmetics — review required
 
@@ -168,7 +168,7 @@ Next.js, NestJS with its default Express adapter, MongoDB, and the Cloudflare/Re
 | Verification | Vitest for shared/web code; Jest with `@nestjs/testing` for backend; real MongoDB replica set; Playwright | Pure rules, Nest dependency wiring and gateways, transactions, and independent browser accounts |
 | Hosting | Cloudflare Workers Free + Render Free web service + MongoDB Atlas Free | Target $0 playtest hosting; one game authority with idle sleep and restart recovery |
 
-Invite-only email/password sign-in is confirmed for M0/M1. A shared registration code is checked against a server-held SHA-256 digest; room invitations remain separate from registration access. Email verification, outbound email, and password reset are deferred, and must be resolved before persistent rewards ship in M3. Hosting providers and a $0 free-tier target are confirmed; region and capacity are selected during setup and measurement. Use provider subdomains initially, with no paid domain or paid service required by this plan.
+Invite-only email/password sign-in is confirmed for M0/M1. A shared registration code is checked against a server-held SHA-256 digest; room invitations remain separate from registration access. For M3 the user approved email verification and password reset links via Brevo Free, configured with an existing sender address. Live delivery and the existing-account rollout must be verified before persistent rewards ship. Hosting providers and a $0 free-tier target are confirmed; region and capacity are selected during setup and measurement. Use provider subdomains initially, with no paid domain or paid service required by this plan.
 
 NestJS supplies a Socket.IO gateway adapter, with gateways sharing the HTTP server port by default. Register the gateway once as a provider and let Nest own its Socket.IO lifecycle. See [NestJS gateways](https://docs.nestjs.com/websockets/gateways).
 
@@ -488,7 +488,7 @@ Use isolated test data and test credentials. An authentication mock may support 
 
 The user accepted the overall system-design direction and requested this consolidated, single-file planning branch. Next.js, NestJS with the default Express adapter, MongoDB, and Cloudflare Workers Free + Render Free + Atlas Free are selected. Frontend and backend remain separate applications in one future workspace. Backend domain modules remain in one process.
 
-Preserve the distinction between approved direction and proposed tuning. Sections 2–5 and explicitly identified behavioral defaults remain documented proposals: starting chips/blinds, bust-out policy, seat locking, ticket amounts/cap, prices, catalogue, duplicate policy, and guarantees. Invite-only email/password sign-in, participant-only room access, and explicit control takeover are confirmed for M1; one active game session per account and the hand-result interval remain later defaults. Resolve relevant product choices before implementing the milestone that depends on them; do not reopen the selected stack or hosting without new evidence or user direction.
+Preserve the distinction between approved direction and proposed tuning. The section 4 M3 reward values were confirmed on 2026-09-30. Other explicitly identified defaults remain proposals, including starting chips/blinds, bust-out policy, seat locking, pull prices, catalogue, duplicate policy, and guarantees. Invite-only email/password sign-in, participant-only room access, and explicit control takeover are confirmed for M1; one active game session per account and the hand-result interval remain later defaults. Resolve relevant product choices before implementing the milestone that depends on them; do not reopen the selected stack or hosting without new evidence or user direction.
 
 Implementation prerequisites are concrete: prove the Cloudflare frontend/runtime and API/WebSocket proxy, choose compatible dependency versions, verify replica-set transactions, and exercise local ownership overlap recovery. Provider regions, free-tier wake-up behavior, and the live public-origin flow remain deployed M0 acceptance checks after separate deployment authorization.
 
@@ -498,6 +498,41 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ### Current handoff — 2026-09-30
 
+**M3 local implementation verified — 2026-09-30:** Branch
+`codex/m3-persistent-tickets`, PR [#12](https://github.com/24-HUB/poker-game/pull/12)
+to `dev`, implements verified accounts and password recovery, atomic versioned
+hand rewards, authenticated wallet reads and account invalidation, and wallet/
+hand-reward UI. Existing accounts verify their original email without changing
+identity or balances; no historical reward backfill occurs.
+
+PR #12 review follow-up wraps the provider's password-reset endpoint in one
+MongoDB transaction: token consumption, password change and prior-session
+deletion either commit together or roll back for a retry. Recovery integration
+passed 12/12 with real-write interruption and concurrent-token regressions.
+Frozen install, sequential `pnpm check` (136 server, 56 web, 12 contract and
+18 engine tests, script tests, typechecks and production builds), and mobile
+Chromium recovery 1/1 passed. A concurrent aggregate encountered the previously
+recorded authority startup timeout; focused authority 8/8 and sequential checks
+passed. Fix commit `727b1a71` is pushed and [Linux CI](https://github.com/24-HUB/poker-game/actions/runs/36714901253/job/109885310270)
+passed, including migration idempotency and Worker packaging. PR #12 includes
+the fix and verification results. This documentation follow-up triggers another
+CI run; inspect its final head before manual merge. Fresh `origin/dev` is
+`7dd93e3e` and is contained in the branch. M4 follows review/merge of M3.
+Usage observed 2026-09-30 12:26 UTC:
+five-hour 58% remaining (reset 2026-09-30 16:02:07 UTC), weekly 20% remaining
+(reset 2026-10-06 01:38:22 UTC). See `CHECKPOINT.md` for the follow-up evidence.
+
+Earlier M3 verification before this review follow-up:
+`pnpm check` passed with 129 server tests, 56 web tests, 12 contract tests,
+18 engine tests, typechecks and production builds. Later focused settlement
+15/15 and recovery 8/8 passed. Full Chromium passed 13/13 with desktop/mobile
+checks. Final review fixes cover coherent wallet snapshots, revoked socket auth
+refresh, trusted client-IP limits and account cache clearing. [Linux CI](https://github.com/24-HUB/poker-game/actions/runs/36706649965/job/109858354540?pr=12)
+passed on code commit `6c3b9493`, including migrations, aggregate checks and
+Cloudflare Worker packaging. Live Brevo delivery and hosted
+acceptance require separate authorization in M5. No deployment or live database
+operation occurred. The user merges manually; M4 is the next implementation
+milestone after M3 review/merge. See `CHECKPOINT.md` for evidence and exact status.
 **Usage policy update:** Follow `AGENTS.md` for implementation usage checks.
 Less than 10% remaining in any applicable window triggers a save-point assessment,
 superseding the older 5%/6% thresholds in historical notes. Save resumable progress

@@ -50,6 +50,10 @@ export function projectGame(runtime: SessionRuntime, room: InternalRoom, control
       : null,
     revealedCards: runtime.committedHandResult?.handId === runtime.handId ? runtime.committedHandResult.revealedCards : [], legalActions: legal,
     control: { isController, epoch: control?.epoch ?? member?.controllerEpoch ?? 0 },
-    handResult: runtime.committedHandResult, sessionResult: runtime.sessionResult,
+    handResult: runtime.committedHandResult ? {
+      ...runtime.committedHandResult,
+      rewardReceipts: runtime.committedHandResult.rewardReceipts?.filter((receipt) => receipt.accountId === accountId),
+    } : null,
+    sessionResult: runtime.sessionResult,
   };
 }

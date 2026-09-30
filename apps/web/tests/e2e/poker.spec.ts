@@ -31,6 +31,10 @@ test('heads-up hands carry chips and the host ends after a committed hand', asyn
     await expect(guest.getByLabel('Your cards')).toBeVisible();
     await host.getByRole('button', { name: 'Fold' }).click();
     await expect(host.getByRole('heading', { name: 'Hand result' })).toBeVisible();
+    await expect(host.getByText('+1 ticket earned', { exact: true })).toBeVisible();
+    await expect(host.getByLabel('1 tickets, 19 can be earned today')).toBeVisible();
+    await host.screenshot({ path: 'test-results/m3-desktop-hand-reward.png', fullPage: true });
+    await expect(guest.getByLabel('0 tickets, 20 can be earned today')).toBeVisible();
     await expect(host.getByText('Winner: Poker Guest')).toBeVisible();
     await expect(host.getByText('1010 chips · bet 20')).toHaveCount(1);
     await expect(host.getByText(/Turn: Poker Guest/)).toBeVisible({ timeout: 10_000 });
@@ -44,6 +48,8 @@ test('heads-up hands carry chips and the host ends after a committed hand', asyn
     await expect(host.getByRole('heading', { name: 'Session standings' })).toBeVisible({ timeout: 10_000 });
     await host.reload();
     await expect(host.getByRole('heading', { name: 'Session standings' })).toBeVisible();
+    await expect(host.getByLabel('1 tickets, 19 can be earned today')).toBeVisible();
+    await expect(guest.getByLabel('1 tickets, 19 can be earned today')).toBeVisible();
   } finally {
     await hostContext.close();
     await guestContext.close();

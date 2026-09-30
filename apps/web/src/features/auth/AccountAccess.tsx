@@ -9,6 +9,7 @@ import { clearPendingInvitation } from '../rooms/invitation';
 import { roomStore } from '../rooms/roomStore';
 import { SignInButton } from './SignInButton';
 import { useOptionalSession } from './SessionBoundary';
+import { WalletSummary } from '../wallet/WalletSummary';
 
 export function AccountAccess({
   sessionReader = readSession,
@@ -54,6 +55,7 @@ export function AccountAccess({
   }
   return (
     <span className="authenticated-access">
+      {sharedSession ? <WalletSummary accountId={visibleSession.account.accountId} /> : null}
       <span className="account-chip" title={visibleSession.account.displayName}>
         <Icon icon={UserRound} />
         <span>{visibleSession.account.displayName}</span>
