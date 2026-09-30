@@ -48,9 +48,10 @@ describe('database persistence', () => {
     try {
       await applyMigrations(testDatabase.db);
       await applyMigrations(testDatabase.db);
-      await expect(testDatabase.db.collection('schemaMigrations').countDocuments()).resolves.toBe(2);
+      await expect(testDatabase.db.collection('schemaMigrations').countDocuments()).resolves.toBe(3);
       await expect(testDatabase.db.listCollections({ name: 'roomCommands' }).hasNext()).resolves.toBe(true);
       await expect(testDatabase.db.listCollections({ name: 'activeRoomMemberships' }).hasNext()).resolves.toBe(true);
+      await expect(testDatabase.db.listCollections({ name: 'gameSessions' }).hasNext()).resolves.toBe(true);
     } finally {
       await testDatabase.dispose();
     }
@@ -66,8 +67,9 @@ describe('database persistence', () => {
 
       await applyMigrations(testDatabase.db);
 
-      await expect(testDatabase.db.collection('schemaMigrations').countDocuments()).resolves.toBe(2);
+      await expect(testDatabase.db.collection('schemaMigrations').countDocuments()).resolves.toBe(3);
       await expect(testDatabase.db.listCollections({ name: 'roomCommands' }).hasNext()).resolves.toBe(true);
+      await expect(testDatabase.db.listCollections({ name: 'gameSessions' }).hasNext()).resolves.toBe(true);
     } finally {
       await testDatabase.dispose();
     }

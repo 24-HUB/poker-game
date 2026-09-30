@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import type { RoomCommandType } from '@poker/contracts' with { 'resolution-mode': 'import' };
+import type { GameCommand, RoomCommandType } from '@poker/contracts' with { 'resolution-mode': 'import' };
 
 type Counter = { startedAt: number; count: number };
 
@@ -27,8 +27,8 @@ export class CommandRateLimiter {
     if (sockets?.size === 0) this.socketsByAccount.delete(accountId);
   }
 
-  public allow(accountId: string, type: RoomCommandType, now = Date.now()): boolean {
-    if (type === 'room:sync') return this.consume(`${accountId}:sync`, 10, 10_000, now);
+  public allow(accountId: string, type: RoomCommandType | GameCommand['type'], now = Date.now()): boolean {
+    if (type === 'room:sync' || type === 'game:sync') return this.consume(`${accountId}:sync`, 10, 10_000, now);
     if (!this.consume(`${accountId}:mutation`, 20, 10_000, now)) return false;
     if (type === 'room:create' || type === 'room:join') {
       return this.consume(`${accountId}:admission`, 5, 60_000, now);

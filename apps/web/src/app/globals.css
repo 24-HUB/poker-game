@@ -140,6 +140,36 @@ main { min-width: 0; padding: 37px 42px 22px; }
 .secondary-button { border: 1px solid #7799c3; color: var(--brand); background: var(--surface); }
 .text-button { border: 0; color: var(--muted); background: transparent; }
 .room-control-message { margin: 0; padding: 10px; border-radius: var(--radius-sm); background: var(--surface-soft); }
+.poker-table { display: grid; gap: 20px; max-width: 1100px; margin-inline: auto; }
+.poker-table__header { display: flex; justify-content: space-between; gap: 24px; align-items: start; }
+.poker-table__header h1 { margin: 0 0 6px; font-size: clamp(25px, 3vw, 34px); }
+.poker-table__header p { margin: 0; color: var(--muted); }
+.poker-table__session-actions { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.poker-table__session-actions button { width: auto; min-width: 116px; }
+.poker-table__felt { display: grid; gap: 24px; padding: clamp(18px, 3vw, 32px); border: 2px solid #1e725e; border-radius: 24px; color: #f5fff9; background: radial-gradient(circle at 50% 30%, #258b70, #125947 75%); box-shadow: inset 0 0 0 6px rgb(255 255 255 / 10%); }
+.poker-table__board, .poker-seat__cards { display: flex; gap: 6px; justify-content: center; }
+.poker-card { display: inline-grid; place-items: center; width: 46px; height: 64px; border: 1px solid #d3dce5; border-radius: 6px; color: #162238; background: #fff; font: 700 22px Georgia, serif; box-shadow: 0 2px 4px rgb(0 0 0 / 15%); }
+.poker-card--red { color: #bb2f44; }
+.poker-card--back { border-color: #a3b9e8; color: #dbe7ff; background: #264c99; }
+.poker-table__pot { margin: 0; text-align: center; font-weight: 700; }
+.poker-table__seats { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; margin: 0; padding: 0; list-style: none; }
+.poker-seat { display: grid; gap: 5px; justify-items: center; min-width: 0; padding: 12px 8px; border: 1px solid rgb(255 255 255 / 30%); border-radius: 12px; background: rgb(0 0 0 / 16%); text-align: center; }
+.poker-seat--acting { border-color: #ffd67d; box-shadow: 0 0 0 2px rgb(255 214 125 / 30%); }
+.poker-seat strong { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.poker-seat span, .poker-seat small { font-size: 12px; }
+.poker-seat__cards { margin-top: 5px; }
+.poker-seat__cards .poker-card { width: 35px; height: 48px; font-size: 17px; }
+.poker-table__action-panel, .poker-table__result { padding: 20px; border: 1px solid var(--line); border-radius: var(--radius-md); background: var(--surface); }
+.poker-table__action-panel > p:first-child { margin: 0 0 12px; font-weight: 650; }
+.poker-table__actions { display: flex; align-items: end; flex-wrap: wrap; gap: 9px; }
+.poker-table__actions button { min-height: 44px; padding: 8px 18px; border: 1px solid var(--brand); border-radius: var(--radius-sm); color: var(--brand); background: var(--surface); font-weight: 700; }
+.poker-table__actions button:disabled { opacity: .45; cursor: not-allowed; }
+.poker-table__actions label { display: grid; grid-template-columns: 100px auto; align-items: center; gap: 4px 8px; font-size: 13px; }
+.poker-table__actions input { width: 100px; min-height: 44px; padding: 8px; border: 1px solid var(--line); border-radius: var(--radius-sm); font-size: 16px; }
+.poker-table__actions label span { grid-column: 1 / -1; color: var(--muted); font-size: 11px; }
+.poker-table__result h2 { margin: 0 0 8px; font-size: 19px; }
+.poker-table__result p { margin: 0; }
+.poker-table__result li { padding-block: 3px; }
 @media (max-width: 1100px) {
   .app-shell { grid-template-columns: 88px minmax(0, 1fr); }
   .sidebar { padding: 24px 8px; }
@@ -152,6 +182,11 @@ main { min-width: 0; padding: 37px 42px 22px; }
   .room-seats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 @media (max-width: 767px) {
+  .poker-table__header { display: grid; }
+  .poker-table__session-actions { justify-content: start; }
+  .poker-table__felt { padding: 16px 10px; }
+  .poker-table__seats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .poker-card { width: 39px; height: 56px; font-size: 19px; }
   .app-shell { display: block; }
   .topbar { height: 78px; padding: 0 20px; }
   .brand { gap: 10px; font-size: 20px; }

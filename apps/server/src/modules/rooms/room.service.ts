@@ -172,12 +172,25 @@ export class RoomService implements OnApplicationShutdown {
       } else {
         await this.repository.touchConnection(roomId, authority);
       }
+      this.bumpGameSnapshot(roomId);
       if (disconnected.roomEmpty) this.scheduleEmptyClosure(roomId);
     })));
   }
 
   public closedReason(roomId: string): Promise<'LEFT' | 'EMPTY' | 'RESTARTED' | null> {
     return this.repository.closedReason(roomId);
+  }
+
+  public async snapshotForPublication(context: RoomContext, roomId: string): Promise<Result<RoomReply>> {
+    if (!this.authority.currentToken()) {
+      return failure('SERVICE_UNAVAILABLE', 'Room authority is temporarily unavailable.');
+    }
+    const projected = await this.projectForMember(roomId, context, false);
+    if (projected.error) return projected;
+    if (!this.registry.roomsForConnection(context.connectionId).includes(roomId)) {
+      return failure('FORBIDDEN', 'This socket is no longer in the room.');
+    }
+    return projected;
   }
 
   public dispose(): void {
@@ -257,7 +270,10 @@ export class RoomService implements OnApplicationShutdown {
       );
     } else {
       const connected = this.registry.connect(roomId, context.identity.accountId, context.connectionId);
-      if (connected) await this.repository.touchConnection(roomId, authority);
+      if (connected) {
+        await this.repository.touchConnection(roomId, authority, context.identity.accountId);
+        this.bumpGameSnapshot(roomId);
+      }
     }
     this.cancelEmptyClosure(roomId);
     return this.projectForMember(roomId, context, false);
@@ -333,6 +349,7 @@ export class RoomService implements OnApplicationShutdown {
     }
     if (!outcome.ok) return failure(outcome.code, outcome.message);
     if (command.type === 'room:leave') {
+      this.bumpGameSnapshot(command.roomId);
       this.registry.removeAccount(command.roomId, context.identity.accountId);
       if (this.registry.controller(command.roomId).isEmpty()) this.scheduleEmptyClosure(command.roomId);
       return success({ room: null });
@@ -344,6 +361,7 @@ export class RoomService implements OnApplicationShutdown {
         context.connectionId,
         outcome.controllerEpoch ?? 1,
       );
+      this.bumpGameSnapshot(command.roomId);
     }
     const projected = await this.projectForMember(command.roomId, context, false);
     if (projected.error || !invitation) return projected;
@@ -378,7 +396,7 @@ export class RoomService implements OnApplicationShutdown {
         }
         let touched: boolean;
         try {
-          touched = await this.repository.touchConnection(roomId, authority);
+          touched = await this.repository.touchConnection(roomId, authority, context.identity.accountId);
         } catch (error) {
           this.registry.disconnect(roomId, context.connectionId);
           throw error;
@@ -389,6 +407,7 @@ export class RoomService implements OnApplicationShutdown {
         }
         room = await this.repository.load(roomId);
         if (!room) return failure('ROOM_CLOSED', 'The room is no longer available.');
+        this.bumpGameSnapshot(roomId);
       }
     }
     const controller = this.registry.controller(roomId);
@@ -430,6 +449,11 @@ export class RoomService implements OnApplicationShutdown {
     });
   }
 
+  private bumpGameSnapshot(roomId: string): void {
+    const runtime = this.registry.controller(roomId).session;
+    if (runtime) runtime.snapshotRevision += 1;
+  }
+
   private scheduleEmptyClosure(roomId: string): void {
     if (this.disposed || this.emptyTimers.has(roomId)) return;
     const timer = setTimeout(() => {
@@ -448,6 +472,11 @@ export class RoomService implements OnApplicationShutdown {
 
   private async closeIfStillEmpty(roomId: string): Promise<void> {
     if (!this.registry.controller(roomId).isEmpty()) return;
+    const runtime = this.registry.controller(roomId).session;
+    if (runtime?.hand?.street === 'complete' && !runtime.committedHandResult) {
+      this.scheduleEmptyClosure(roomId);
+      return;
+    }
     const authority = this.authority.currentToken();
     if (!authority) {
       this.scheduleEmptyClosure(roomId);
@@ -455,6 +484,11 @@ export class RoomService implements OnApplicationShutdown {
     }
     await this.registry.enqueue(roomId, async () => {
       if (!this.registry.controller(roomId).isEmpty()) return;
+      const active = this.registry.controller(roomId).session;
+      if (active?.hand?.street === 'complete' && !active.committedHandResult) {
+        this.scheduleEmptyClosure(roomId);
+        return;
+      }
       await this.repository.closeEmpty(roomId, authority, new Date());
       this.registry.remove(roomId);
     });

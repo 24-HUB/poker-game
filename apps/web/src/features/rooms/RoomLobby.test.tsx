@@ -9,7 +9,7 @@ import { describe, expect, it, vi } from 'vitest';
 import { RoomLobby } from './RoomLobby';
 
 describe('RoomLobby', () => {
-  it('renders six seats and host-only invitation controls without a poker start action', () => {
+  it('renders six seats and a host start action', () => {
     render(createElement(RoomLobby, {
       accountId: 'account-a',
       room: {
@@ -17,6 +17,8 @@ describe('RoomLobby', () => {
         title: 'Friday table',
         revision: 4,
         hostAccountId: 'account-a',
+        phase: 'waiting',
+        sessionId: null,
         members: [{ accountId: 'account-a', displayName: 'Alice', seat: 0, connected: true }],
         control: { isController: true, epoch: 2 },
       },
@@ -30,11 +32,12 @@ describe('RoomLobby', () => {
       onClaimControl: vi.fn(),
       onLeave: vi.fn(),
       onRetryPending: vi.fn(),
+      onStart: vi.fn(),
     }));
 
     expect(screen.getAllByRole('listitem')).toHaveLength(6);
     expect(screen.getByRole('button', { name: 'Rotate room invitation' })).toBeVisible();
-    expect(screen.queryByRole('button', { name: /start/i })).not.toBeInTheDocument();
-    expect(screen.getByText(/Poker starts in M2/i)).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Start poker session' })).toBeDisabled();
+    expect(screen.getByText(/chips reset with each session/i)).toBeVisible();
   });
 });

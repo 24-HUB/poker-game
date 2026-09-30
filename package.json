@@ -14,7 +14,7 @@
     "test": "pnpm test:db:init && pnpm test:deployment && pnpm -r --if-present test",
     "test:db:init": "node --test scripts/init-replica-set.test.mjs",
     "test:deployment": "node --test scripts/smoke-deployment.test.mjs",
-    "typecheck": "pnpm --filter @poker/contracts build && pnpm -r --if-present typecheck"
+    "typecheck": "pnpm --filter @poker/contracts --filter @poker/poker-engine build && pnpm -r --if-present typecheck"
   },
   "devDependencies": {
     "mongodb": "7.6.0",

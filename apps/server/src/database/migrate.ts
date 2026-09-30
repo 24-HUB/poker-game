@@ -2,11 +2,13 @@ import { Db } from 'mongodb';
 
 import { applyFoundationMigration } from './migrations/001-foundation';
 import { applyRoomCommandsMigration } from './migrations/002-room-commands';
+import { applyPokerMigration } from './migrations/003-poker';
 import { createMongoClient } from './mongoClientFactory';
 
 const migrations = [
   { version: 1, apply: applyFoundationMigration },
   { version: 2, apply: applyRoomCommandsMigration },
+  { version: 3, apply: applyPokerMigration },
 ] as const;
 
 export async function applyMigrations(db: Db): Promise<void> {

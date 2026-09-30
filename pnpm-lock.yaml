@@ -38,6 +38,9 @@ importers:
       '@poker/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@poker/poker-engine':
+        specifier: workspace:*
+        version: link:../../packages/poker-engine
       better-auth:
         specifier: 1.7.6
         version: 1.7.6(mongodb@7.6.0)(next@16.3.6(@babel/core@7.29.7)(@playwright/test@1.63.0)(@types/node@22.18.6)(react-dom@19.3.0(react@19.3.0))(react@19.3.0))(react-dom@19.3.0(react@19.3.0))(react@19.3.0)(vitest@5.0.2(@types/node@22.18.6)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@22.18.6)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1)))
@@ -181,6 +184,15 @@ importers:
       zod:
         specifier: 4.6.5
         version: 4.6.5
+    devDependencies:
+      typescript:
+        specifier: 5.9.3
+        version: 5.9.3
+      vitest:
+        specifier: 5.0.2
+        version: 5.0.2(@types/node@22.18.6)(jsdom@30.1.1(@noble/hashes@2.4.0))(vite@8.3.1(@types/node@22.18.6)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.51.2)(yaml@2.9.1))
+
+  packages/poker-engine:
     devDependencies:
       typescript:
         specifier: 5.9.3

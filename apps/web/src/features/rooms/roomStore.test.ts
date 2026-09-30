@@ -10,6 +10,8 @@ function room(revision: number, roomId = 'room-a'): RoomView {
     title: 'Private table',
     revision,
     hostAccountId: 'account-a',
+    phase: 'waiting',
+    sessionId: null,
     members: [],
     control: { isController: true, epoch: 1 },
   };

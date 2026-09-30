@@ -19,6 +19,7 @@ export type RoomLobbyProps = {
   onClaimControl: () => void;
   onLeave: () => void;
   onRetryPending: () => void;
+  onStart: () => void;
 };
 
 export function RoomLobby({
@@ -34,6 +35,7 @@ export function RoomLobby({
   onClaimControl,
   onLeave,
   onRetryPending,
+  onStart,
 }: RoomLobbyProps) {
   const isHost = room.hostAccountId === accountId;
 
@@ -77,7 +79,7 @@ export function RoomLobby({
               );
             })}
           </ul>
-          <p className="room-milestone"><ShieldCheck aria-hidden="true" /> Poker starts in M2. This room is for gathering the table securely.</p>
+          <p className="room-milestone"><ShieldCheck aria-hidden="true" /> Private table · chips reset with each session. Cosmetics do not affect cards.</p>
         </div>
 
         <aside className="room-controls" aria-label="Room controls">
@@ -89,6 +91,11 @@ export function RoomLobby({
           {invitationUrl ? (
             <button className="primary-button" type="button" disabled={pending} onClick={() => void copyInvitation()}>
               <Icon icon={Copy} /> Copy room link
+            </button>
+          ) : null}
+          {isHost ? (
+            <button className="primary-button" type="button" disabled={pending || status !== 'connected' || !room.control.isController || room.members.filter((member) => member.seat !== null).length < 2} onClick={onStart}>
+              Start poker session
             </button>
           ) : null}
           {isHost ? (
