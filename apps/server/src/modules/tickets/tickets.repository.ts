@@ -22,10 +22,14 @@ export class TicketsRepository {
   }
 
   public async readWallet(accountId: string, utcDate: string): Promise<[WalletDocument, number]> {
-    const wallet = await this.db.collection<WalletDocument>('ticketWallets').findOne({ _id: accountId });
-    if (!wallet) throw new Error('Ticket wallet is missing');
-    const daily = await this.db.collection<DailyDocument>('dailyEarnings').findOne({ accountId, utcDate });
-    return [wallet, daily?.earned ?? 0];
+    const row = await this.db.collection<WalletDocument>('ticketWallets')
+      .aggregate<WalletDocument & { daily: DailyDocument[] }>([
+        { $match: { _id: accountId } },
+        { $lookup: { from: 'dailyEarnings', pipeline: [{ $match: { accountId, utcDate } }], as: 'daily' } },
+      ], { readConcern: { level: 'snapshot' } }).next();
+    if (!row) throw new Error('Ticket wallet is missing');
+    const { daily, ...wallet } = row;
+    return [wallet, daily[0]?.earned ?? 0];
   }
 
   public async walletRevision(accountId: string): Promise<number | null> {

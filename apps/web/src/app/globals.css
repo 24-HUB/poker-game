@@ -191,14 +191,14 @@ main { min-width: 0; padding: 37px 42px 22px; }
   .poker-table__seats { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .poker-card { width: 39px; height: 56px; font-size: 19px; }
   .app-shell { display: block; }
-  .topbar { height: 78px; padding: 0 20px; }
+  .topbar { min-height: 78px; height: auto; padding: 12px 20px; flex-wrap: wrap; gap: 12px; }
   .brand { gap: 10px; font-size: 20px; }
   .brand__mark { width: 31px; padding-right: 10px; }
   .brand__mark svg { width: 24px; }
   .brand small { font-size: 8px; letter-spacing: 3px; }
   .access-badge { padding: 6px 8px; font-size: 10px; }
   .account-chip { max-width: 138px; }
-  .account-chip span, .wallet-summary small { display: none; }
+  .wallet-summary small { display: none; }
   .account-chip { padding-inline: 10px; }
   .wallet-summary { margin-right: 2px; padding-inline: 7px; font-size: 11px; }
   .sign-out-button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }

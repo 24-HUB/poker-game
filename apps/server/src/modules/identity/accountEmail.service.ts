@@ -59,14 +59,17 @@ export class AccountEmailService {
 export function accountEmailFromEnvironment(publicOrigin: string): AccountEmailDelivery {
   if (process.env.ACCOUNT_EMAIL_TRANSPORT === 'memory') {
     if (process.env.NODE_ENV !== 'test') throw new Error('Memory account email is test-only');
+    const deliver = (email: typeof testAccountEmailInbox[number]) => {
+      if (process.env.ACCOUNT_EMAIL_FAIL_TEST === 'true') throw new Error('Account email delivery is unavailable');
+      testAccountEmailInbox.push(email);
+      if (process.env.ACCOUNT_EMAIL_TEST_IPC === 'true') process.send?.({ type: 'account-email', email });
+    };
     return {
       async sendVerification(recipient, url) {
-        if (process.env.ACCOUNT_EMAIL_FAIL_TEST === 'true') throw new Error('Account email delivery is unavailable');
-        testAccountEmailInbox.push({ kind: 'verification', recipient, url });
+        deliver({ kind: 'verification', recipient, url });
       },
       async sendPasswordReset(recipient, url) {
-        if (process.env.ACCOUNT_EMAIL_FAIL_TEST === 'true') throw new Error('Account email delivery is unavailable');
-        testAccountEmailInbox.push({ kind: 'reset', recipient, url });
+        deliver({ kind: 'reset', recipient, url });
       },
     };
   }

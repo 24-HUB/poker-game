@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 
 import type { INestApplication } from '@nestjs/common';
 import request from 'supertest';
+import { io } from 'socket.io-client';
 
 import { applyMigrations } from '../src/database/migrate';
 import { createApplication } from '../src/main';
@@ -103,6 +104,14 @@ describe('account recovery', () => {
     const cookie = signin.headers['set-cookie']?.[0]?.split(';', 1)[0] ?? '';
     expect((await request(app.getHttpServer()).get('/api/me').set('cookie', cookie)
       .set('x-poker-proxy-secret', proxySecret)).status).toBe(200);
+    const address = app.getHttpServer().address() as { port: number };
+    const socket = io(`http://127.0.0.1:${address.port}`, { transports: ['websocket'], autoConnect: false,
+      reconnection: false, extraHeaders: { origin, cookie, 'x-poker-proxy-secret': proxySecret } });
+    await new Promise<void>((resolve, reject) => {
+      socket.once('connection:ready', resolve);
+      socket.once('connect_error', reject);
+      socket.connect();
+    });
     testAccountEmailInbox.length = 0;
     await post('/api/auth/request-password-reset', { email: 'friend@example.com', redirectTo: `${origin}/reset-password` });
     const resetLink = new URL(testAccountEmailInbox[0]!.url);
@@ -112,7 +121,35 @@ describe('account recovery', () => {
     expect((await post('/api/auth/reset-password', { token, newPassword: 'new-correct-password-123' })).status).toBe(200);
     expect((await request(app.getHttpServer()).get('/api/me').set('cookie', cookie)
       .set('x-poker-proxy-secret', proxySecret)).status).toBe(401);
+    try {
+      const reply = await new Promise<unknown>((resolve) => socket.emit('connection:check', {}, resolve));
+      expect(reply).toMatchObject({ error: { code: 'UNAUTHENTICATED' } });
+    } finally { socket.close(); }
     expect((await post('/api/auth/sign-in/email', { email: 'friend@example.com', password: 'new-correct-password-123' })).status).toBe(200);
+  });
+
+  it('requires existing unverified accounts to verify while keeping their identity and balance', async () => {
+    const signup = await post('/api/auth/sign-up/email', {
+      name: 'Legacy friend', email: 'legacy@example.com', password, registrationCode,
+    });
+    const initial = new URL(testAccountEmailInbox[0]!.url);
+    await request(app.getHttpServer()).get(initial.pathname + initial.search).set('x-poker-proxy-secret', proxySecret);
+    const signin = await post('/api/auth/sign-in/email', { email: 'legacy@example.com', password });
+    const cookie = signin.headers['set-cookie']?.[0]?.split(';', 1)[0] ?? '';
+    await database.db.collection('user').updateOne({ email: 'legacy@example.com' }, { $set: { emailVerified: false } });
+    await database.db.collection<{ _id: string; balance: number; revision: number; createdAt: Date; updatedAt: Date }>('ticketWallets')
+      .insertOne({ _id: signup.body.user.id as string, balance: 7, revision: 1, createdAt: new Date(), updatedAt: new Date() });
+    expect((await request(app.getHttpServer()).get('/api/wallet').set('cookie', cookie)
+      .set('x-poker-proxy-secret', proxySecret)).status).toBe(401);
+    testAccountEmailInbox.length = 0;
+    expect((await post('/api/auth/send-verification-email', { email: 'legacy@example.com', callbackURL: origin })).status).toBe(200);
+    const link = new URL(testAccountEmailInbox[0]!.url);
+    await request(app.getHttpServer()).get(link.pathname + link.search).set('x-poker-proxy-secret', proxySecret);
+    const recovered = await request(app.getHttpServer()).get('/api/wallet').set('cookie', cookie)
+      .set('x-poker-proxy-secret', proxySecret);
+    expect(recovered.status).toBe(200);
+    expect(recovered.body.data.balance).toBe(7);
+    expect(await database.db.collection('user').countDocuments({ email: 'legacy@example.com' })).toBe(1);
   });
 
   it('rejects an expired token and limits reset requests', async () => {
@@ -132,6 +169,23 @@ describe('account recovery', () => {
     );
     const expired = await post('/api/auth/reset-password', { token, newPassword: 'new-correct-password-123' });
     expect(expired.status).not.toBe(200);
+  });
+
+  it('limits recovery by trusted client IP without exhausting another friend allowance', async () => {
+    const body = { email: 'unknown@example.com', redirectTo: `${origin}/reset-password` };
+    for (let index = 0; index < 3; index += 1) {
+      expect((await post('/api/auth/request-password-reset', body).set('x-poker-client-ip', '203.0.113.7')).status).toBe(200);
+    }
+    expect((await post('/api/auth/request-password-reset', body).set('x-poker-client-ip', '203.0.113.7')).status).toBe(429);
+    expect((await post('/api/auth/request-password-reset', body).set('x-poker-client-ip', '203.0.113.8')).status).toBe(200);
+  });
+
+  it('rejects recovery redirects outside the public origin without sending a link', async () => {
+    await post('/api/auth/sign-up/email', { name: 'Friend', email: 'friend@example.com', password, registrationCode });
+    testAccountEmailInbox.length = 0;
+    expect((await post('/api/auth/request-password-reset', { email: 'friend@example.com', redirectTo: 'https://evil.example/reset' })).status).not.toBe(200);
+    expect((await post('/api/auth/send-verification-email', { email: 'friend@example.com', callbackURL: 'https://evil.example' })).status).not.toBe(200);
+    expect(testAccountEmailInbox).toHaveLength(0);
   });
 
   it('reports delivery failure safely and lets a later request retry', async () => {

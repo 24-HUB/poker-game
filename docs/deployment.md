@@ -29,8 +29,33 @@ Configure these values in provider dashboards; never commit their live values.
 | Render | `MONGODB_DATABASE` | Dedicated playtest database name |
 | Render | `BETTER_AUTH_SECRET` | At least 32 random characters |
 | Render | `REGISTRATION_INVITE_CODE_SHA256` | Lowercase SHA-256 hex digest of the temporary registration code |
+| Render secret | `BREVO_API_KEY` | Transactional email API credential |
+| Render | `BREVO_SENDER_EMAIL` | Sender address controlled and verified by the release operator |
+| Render | `BREVO_SENDER_NAME` | Sender display name; defaults to Looking Glass Club |
 
 Wrangler keeps dashboard-defined variables during builds. The repository contains no deploy workflow and no Cloudflare or Render credentials. When deployment is separately authorized, scope provider tokens to the single service and run migrations as a controlled step before the manual Render deploy; the free Render plan does not provide a pre-deploy migration step.
+
+## M3 account recovery and tickets
+
+Production requires verified email before account, room or wallet access. Existing
+unverified accounts use **Resend verification** with their original email; verification
+retains their account ID and balance. Wallets start at zero, with no historical reward
+backfill. Reset links expire after one hour, can be consumed once, and revoke older
+sessions. Browser wallet reads recover missed hints on reconnect, focus and UTC midnight.
+
+Brevo setup and real verification/reset delivery remain pending separate authorization.
+Before rewards ship, prove delivery to the intended friends, including provider outage
+and retry behavior, using the approved sender. Tests use fake delivery only. Never set
+`ACCOUNT_EMAIL_TRANSPORT=memory`, `ACCOUNT_EMAIL_TEST_IPC` or `ACCOUNT_RECOVERY_ENFORCED`
+in a deployed environment; these are test fixtures and production always enforces recovery.
+
+The Worker replaces incoming `x-poker-client-ip` with Cloudflare's visitor address;
+Better Auth uses that header for recovery limits only after the proxy-secret guard.
+Keep visitor IP headers enabled and verify separate clients have separate limits in
+hosted acceptance. Cloudflare documents this address in its
+[HTTP header reference](https://developers.cloudflare.com/fundamentals/reference/http-headers/#cf-connecting-ip).
+Clients sharing an IP still share provider rate limits. Do not trust a caller's
+`x-forwarded-for` or expose the backend without its proxy guard.
 
 ## Local acceptance
 

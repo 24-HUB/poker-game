@@ -62,12 +62,12 @@ Use disposable replica-set databases for all automated writes. Each code task: a
 
 **Interfaces:** Define `RewardPolicy` with version, participation, winBonus, dailyCap and eligibility values. Define `RewardReceipt` with hand/account IDs, policy version, UTC date, qualification/reason, requested/granted participation and bonus; `WalletView` with balance, revision, utcDate, earnedToday, dailyCap, remainingToday. Transport dates are ISO strings and counts safe nonnegative integers. Recovery delivery consumes provider-generated link/token and a validated recipient in `AccountEmailService`; never construct tokens independently or log links.
 
-- [ ] Record approval of economy values and the recovery/provider decision; define account verification rollout for existing accounts without changing account IDs or balances.
-- [ ] Write `rejectsUnsafeTicketCounts` and `rewardReceiptExplainsZeroAward`; assert invalid fractions/negative counts fail schema parsing and explicit ineligible/capped reasons survive serialization.
-- [ ] Write recovery tests: expired/reused token rejected; generic response for unknown address; rate limits; reset invalidates prior sessions/socket access; verification keeps account identity; provider outage gives safe retry behavior. Observe failure before implementing.
-- [ ] Implement auth integration with the pinned provider's supported API after checking its official docs. Add server-only configuration validation, redirect allowlist and a fake email delivery adapter for isolated tests; no live email is sent by tests.
-- [ ] Run `pnpm --filter @poker/contracts test` and `pnpm --filter @poker/server test -- account-recovery.e2e-spec`; run the new recovery browser case with actual local auth and test mail capture. Record any live-provider verification still pending M5.
-- [ ] Commit: `feat: define ticket policy and recoverable accounts`.
+- [x] Record approval of economy values and the recovery/provider decision; define account verification rollout for existing accounts without changing account IDs or balances.
+- [x] Write `rejectsUnsafeTicketCounts` and `rewardReceiptExplainsZeroAward`; assert invalid fractions/negative counts fail schema parsing and explicit ineligible/capped reasons survive serialization.
+- [x] Write recovery tests: expired/reused token rejected; generic response for unknown address; rate limits; reset invalidates prior sessions/socket access; verification keeps account identity; provider outage gives safe retry behavior. Observe failure before implementing.
+- [x] Implement auth integration with the pinned provider's supported API after checking its official docs. Add server-only configuration validation, redirect allowlist and a fake email delivery adapter for isolated tests; no live email is sent by tests.
+- [x] Run `pnpm --filter @poker/contracts test` and `pnpm --filter @poker/server test -- account-recovery.e2e-spec`; run the new recovery browser case with actual local auth and test mail capture. Record any live-provider verification still pending M5.
+- [x] Commit: `feat: define ticket policy and recoverable accounts`.
 
 ### M3.2 — Extend the existing hand transaction with rewards
 
@@ -75,12 +75,12 @@ Use disposable replica-set databases for all automated writes. Each code task: a
 
 **Interfaces:** Pure `calculateReward(input: { dealtIn: boolean; manualAction: boolean; netChips: number; earnedToday: number }, policy: RewardPolicy)` returns qualification, requested amounts and granted amounts. `TicketsRepository.ensureWallet(accountId: string): Promise<void>` is idempotent setup. `awardHand(candidate: SettlementCandidate, session: ClientSession): Promise<RewardReceipt[]>` operates inside the existing settlement transaction, after wallet setup and before commitment. Extend committed results with a versioned optional reward summary; old M2 results remain readable with no retroactive awards. Pin reward policy at session start and include its version in the frozen settlement candidate/hash; update session creation and repository types accordingly.
 
-- [ ] Write policy cases: qualifying positive net yields 2, qualifying loss/manual fold yields 1, no manual action yields 0, earned 19 yields participation 1/bonus 0, earned 20 yields 0. Tie payout without positive net gets no bonus. Confirm failures.
-- [ ] Add collection validators and unique keys from plan section 11 for `ticketWallets`, `ticketLedger`, `dailyEarnings`, `rewardReceipts`; run migration twice locally. Keep receipt retention permanent for idempotency; record policy version in durable results.
-- [ ] Initialize participant wallets before settlement using verified account IDs. Within one transaction, claim hand revision, touch involved wallets in ascending account-ID order including zero awards, apply daily cap, write receipts/credits/counters, and update completed hand/session stacks. No second transaction after hand completion and no nested transaction runner.
-- [ ] Write real replica-set cases: duplicate candidate credits once; changed candidate conflicts; concurrent hands for one account never exceed cap; frozen 23:59:59 UTC candidate retries after midnight without changing its reward date; fault after each write rolls back all effects; uncertain commit reconciles once. Assert wallet equals ledger sum and each hand/account has exactly one receipt, including zero awards.
-- [ ] Test aborted hands, stale authority and existing M2 completed results create no rewards. Restart after commit retains rewards; restart before commit aborts the unsettled hand. Preserve the settlement pause until commitment resolves.
-- [ ] Run `pnpm --filter @poker/server test -- tickets.e2e-spec settlement.e2e-spec database.e2e-spec` and policy unit tests. Commit: `feat: settle hand rewards atomically`.
+- [x] Write policy cases: qualifying positive net yields 2, qualifying loss/manual fold yields 1, no manual action yields 0, earned 19 yields participation 1/bonus 0, earned 20 yields 0. Tie payout without positive net gets no bonus. Confirm failures.
+- [x] Add collection validators and unique keys from plan section 11 for `ticketWallets`, `ticketLedger`, `dailyEarnings`, `rewardReceipts`; run migration twice locally. Keep receipt retention permanent for idempotency; record policy version in durable results.
+- [x] Initialize participant wallets before settlement using verified account IDs. Within one transaction, claim hand revision, touch involved wallets in ascending account-ID order including zero awards, apply daily cap, write receipts/credits/counters, and update completed hand/session stacks. No second transaction after hand completion and no nested transaction runner.
+- [x] Write real replica-set cases: duplicate candidate credits once; changed candidate conflicts; concurrent hands for one account never exceed cap; frozen 23:59:59 UTC candidate retries after midnight without changing its reward date; fault after each write rolls back all effects; uncertain commit reconciles once. Assert wallet equals ledger sum and each hand/account has exactly one receipt, including zero awards.
+- [x] Test aborted hands, stale authority and existing M2 completed results create no rewards. Restart after commit retains rewards; restart before commit aborts the unsettled hand. Preserve the settlement pause until commitment resolves.
+- [x] Run `pnpm --filter @poker/server test -- tickets.e2e-spec settlement.e2e-spec database.e2e-spec` and policy unit tests. Commit: `feat: settle hand rewards atomically`.
 
 ### M3.3 — Authenticated wallet reads and post-commit invalidation
 
@@ -88,9 +88,9 @@ Use disposable replica-set databases for all automated writes. Each code task: a
 
 **Interfaces:** `TicketsService.getWallet(accountId: string, now: Date): Promise<WalletView>`; `GET /api/wallet` uses authenticated identity and the existing response envelope. `AccountPublisher.changed(accountId: string, revision: number): Promise<void>` emits `account:changed` only to current authorized sessions for that account. The notification is an invalidation hint, never the new balance authority.
 
-- [ ] Write `walletCannotReadOtherAccount`, `newAccountStartsAtZero`, `midnightReadResetsAllowanceNotBalance`, `revokedSocketReceivesNoAccountEvent`, and `commitWithoutNotificationStillRefetches`; observe failures.
-- [ ] Implement uncached reads, current-day allowance, auth/proxy checks, and private post-commit invalidation. Missed notifications do not change settlement success; no socket effects enter retryable callbacks.
-- [ ] Run `pnpm --filter @poker/server test -- wallet.e2e-spec` with real HTTP sessions and Socket.IO clients. Commit: `feat: expose authenticated ticket balances`.
+- [x] Write `walletCannotReadOtherAccount`, `newAccountStartsAtZero`, `midnightReadResetsAllowanceNotBalance`, `revokedSocketReceivesNoAccountEvent`, and `commitWithoutNotificationStillRefetches`; observe failures.
+- [x] Implement uncached reads, current-day allowance, auth/proxy checks, and private post-commit invalidation. Missed notifications do not change settlement success; no socket effects enter retryable callbacks.
+- [x] Run `pnpm --filter @poker/server test -- wallet.e2e-spec` with real HTTP sessions and Socket.IO clients. Commit: `feat: expose authenticated ticket balances`.
 
 ### M3.4 — Wallet and hand reward UX
 
@@ -98,12 +98,33 @@ Use disposable replica-set databases for all automated writes. Each code task: a
 
 **Interfaces:** `useWallet()` returns the authenticated `WalletView` query using existing API envelope/schema validation. `HandReward` receives only the viewer's committed receipt. Missing receipt means unconfirmed or legacy/no-rewards, never an optimistic award.
 
-- [ ] Write cases for loading versus zero balance, capped/ineligible explanation, pending settlement, lost event followed by focus/reconnect refetch, UTC day rollover, and account-switch cache clearing. Observe failures before wiring UI.
-- [ ] Render real balance, remaining daily allowance and per-hand award. Schedule/refetch allowance across UTC midnight while visible. Preserve uncertain operation messaging and keep betting controls usable.
-- [ ] Run `pnpm --filter @poker/web test` and `pnpm --filter @poker/web exec playwright test e2e/tickets.spec.ts`: two real accounts play qualifying hands, see correct awards, refresh/reconnect, sign out/in and retain balance. Inspect desktop and 360 px mobile layouts, focus and reduced motion.
-- [ ] Run milestone aggregate checks, record evidence and remaining hosted recovery checks. Commit: `feat: show persistent tickets and reward outcomes`. Submit M3 PR to `dev` for manual merge.
+- [x] Write cases for loading versus zero balance, capped/ineligible explanation, pending settlement, lost event followed by focus/reconnect refetch, UTC day rollover, and account-switch cache clearing. Observe failures before wiring UI.
+- [x] Render real balance, remaining daily allowance and per-hand award. Schedule/refetch allowance across UTC midnight while visible. Preserve uncertain operation messaging and keep betting controls usable.
+- [x] Run `pnpm --filter @poker/web test` and `pnpm --filter @poker/web exec playwright test e2e/tickets.spec.ts`: two real accounts play qualifying hands, see correct awards, refresh/reconnect, sign out/in and retain balance. Inspect desktop and 360 px mobile layouts, focus and reduced motion.
+- [x] Run milestone aggregate checks, record evidence and remaining hosted recovery checks. Commit: `feat: show persistent tickets and reward outcomes`. Submit M3 PR to `dev` for manual merge.
 
-## M4 — Cosmetic collection loop
+## ### M3 local execution evidence — 2026-09-30
+
+M3.1–M3.4 are implemented on `codex/m3-persistent-tickets`, PR #12 to `dev`.
+The planned commit splits were consolidated into task save points and a final
+verification commit. Actual browser paths are `apps/web/tests/e2e`; settlement
+and wallet cases use the existing integration suites instead of a separate
+`tickets.e2e-spec.ts`. These path changes reuse the established test harness.
+
+`pnpm check` passed with 129 server tests, 56 web tests, 12 contract tests,
+18 engine tests, typechecks and production builds. Subsequent focused checks
+passed 15 settlement cases (including replacement before/after commitment) and
+8 recovery cases (including explicit redirect rejection). Full Chromium passed
+13/13 after the review fixes; desktop hand reward and 360px recovery/wallet
+screenshots were inspected. Three final review findings were fixed with failing
+regressions: coherent wallet snapshot reads, server-disconnect auth refresh,
+and trusted client-IP rate limiting. Account cache clearing also has a regression.
+
+Final Linux CI/Worker packaging remains pending at this commit. Live Brevo setup,
+delivery proof and hosted acceptance remain M5 authorization gates; no deployment
+or production database work occurred. Unknown future policy versions currently
+produce no reward; reject unsupported versions when introducing another policy.
+M4 — Cosmetic collection loop
 
 ### M4.1 — Immutable catalogue and pure draw policy
 

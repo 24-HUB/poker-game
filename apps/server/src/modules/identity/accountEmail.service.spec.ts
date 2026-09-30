@@ -1,4 +1,4 @@
-import { AccountEmailService } from './accountEmail.service';
+import { AccountEmailService, accountEmailFromEnvironment } from './accountEmail.service';
 
 const options = {
   apiKey: 'test-api-key', senderEmail: 'club@example.com', senderName: 'Looking Glass Club',
@@ -6,6 +6,25 @@ const options = {
 };
 
 describe('AccountEmailService', () => {
+  it('passes fake delivery to the browser harness through test-only IPC', async () => {
+    const previous = process.env.ACCOUNT_EMAIL_TEST_IPC;
+    const previousTransport = process.env.ACCOUNT_EMAIL_TRANSPORT;
+    const send = jest.fn();
+    const previousSend = process.send;
+    process.send = send;
+    process.env.ACCOUNT_EMAIL_TRANSPORT = 'memory';
+    process.env.ACCOUNT_EMAIL_TEST_IPC = 'true';
+    try {
+      await accountEmailFromEnvironment(options.publicOrigin).sendVerification('friend@example.net', `${options.publicOrigin}/verify`);
+      expect(send).toHaveBeenCalledWith({ type: 'account-email', email: { kind: 'verification', recipient: 'friend@example.net', url: `${options.publicOrigin}/verify` } });
+    } finally {
+      process.send = previousSend;
+      if (previous === undefined) delete process.env.ACCOUNT_EMAIL_TEST_IPC;
+      else process.env.ACCOUNT_EMAIL_TEST_IPC = previous;
+      if (previousTransport === undefined) delete process.env.ACCOUNT_EMAIL_TRANSPORT;
+      else process.env.ACCOUNT_EMAIL_TRANSPORT = previousTransport;
+    }
+  });
   it('sends only provider links on the public origin to the intended recipient', async () => {
     const requests: Array<{ url: string; body: unknown }> = [];
     const send = async (input: string | URL | Request, init?: RequestInit) => {

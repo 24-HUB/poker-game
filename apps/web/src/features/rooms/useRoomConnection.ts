@@ -100,6 +100,13 @@ export function useRoomConnection(roomId: string | null) {
     });
     socket.on('disconnect', (reason) => {
       gameStore.getState().clear();
+      if (reason === 'io server disconnect') {
+        roomStore.getState().clear();
+        setPendingGameCommand(null);
+        setStatus('closed');
+        void refreshSession();
+        return;
+      }
       setStatus(reason === 'io client disconnect' ? 'closed' : 'reconnecting');
     });
     socket.on('connect_error', () => setStatus('unavailable'));

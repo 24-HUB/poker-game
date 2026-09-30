@@ -498,28 +498,23 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ### Current handoff — 2026-09-30
 
-**M3 user-requested pause at 06:50 UTC:** Work continues on `codex/m3-persistent-tickets` in draft PR [#12](https://github.com/24-HUB/poker-game/pull/12), targeting `dev`. Core recovery, atomic rewards, wallet API and UI are implemented locally. After correcting two stale migration-count assertions, `pnpm check` passed with 116 server tests, 51 web tests, contract/engine tests, typechecks and production builds. Browser recovery/game wallet flows, account-event revocation, Worker build and live Brevo delivery are unverified. The PR remains draft. See `CHECKPOINT.md` for usage, evidence and the next commands. No deployment or production database action occurred.
+****M3 local implementation verified — 2026-09-30:** Branch
+`codex/m3-persistent-tickets`, PR [#12](https://github.com/24-HUB/poker-game/pull/12)
+to `dev`, implements verified accounts and password recovery, atomic versioned
+hand rewards, authenticated wallet reads and account invalidation, and wallet/
+hand-reward UI. Existing accounts verify their original email without changing
+identity or balances; no historical reward backfill occurs.
 
-**M3 implementation save point — 2026-09-30:** Branch
-`codex/m3-persistent-tickets` started from fetched `origin/dev` at `7dd93e3e`.
-The user approved the section 4 reward values and email verification/password
-reset through Brevo Free with an existing address and no owned domain. Live
-provider account setup, delivery testing and deployment remain unauthorized;
-Brevo may rewrite a free-address sender, so actual delivery must be proven
-before rewards ship. M3.1 has ticket contract schemas and a server-only Brevo
-delivery adapter with focused tests. Better Auth verification/reset wiring,
-recovery UI and browser coverage remain next; M3.2–M3.4 have not begun.
-`pnpm install --frozen-lockfile`, focused contract tests (2/2), focused email
-adapter tests (2/2), and `pnpm check` passed (including 104 server tests,
-48 web tests, and production builds). An initial aggregate run timed out in
-the pre-existing standalone MongoDB comparison because its disposable service
-was stopped; after starting that service, the focused case and full rerun
-passed. Browser M3 tests have not been added or run. The implementation is
-partial and the PR must remain draft. At the save point the five-hour window
-had 7% remaining and the weekly window 39%; no reset credit was used. See
-`CHECKPOINT.md` for the exact next action.
-
-**Usage policy update:** Follow `AGENTS.md` for implementation usage checks.
+`pnpm check` passed with 129 server tests, 56 web tests, 12 contract tests,
+18 engine tests, typechecks and production builds. Later focused settlement
+15/15 and recovery 8/8 passed. Full Chromium passed 13/13 with desktop/mobile
+checks. Final review fixes cover coherent wallet snapshots, revoked socket auth
+refresh, trusted client-IP limits and account cache clearing. Final Linux CI and
+Worker packaging are pending at this commit. Live Brevo delivery and hosted
+acceptance require separate authorization in M5. No deployment or live database
+operation occurred. The user merges manually; M4 is the next implementation
+milestone after M3 review/merge. See `CHECKPOINT.md` for evidence and exact status.
+Usage policy update:** Follow `AGENTS.md` for implementation usage checks.
 Less than 10% remaining in any applicable window triggers a save-point assessment,
 superseding the older 5%/6% thresholds in historical notes. Save resumable progress
 in the existing checkpoint files; never automatically redeem reset credits.
