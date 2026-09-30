@@ -181,6 +181,18 @@ export class RoomService implements OnApplicationShutdown {
     return this.repository.closedReason(roomId);
   }
 
+  public async snapshotForPublication(context: RoomContext, roomId: string): Promise<Result<RoomReply>> {
+    if (!this.authority.currentToken()) {
+      return failure('SERVICE_UNAVAILABLE', 'Room authority is temporarily unavailable.');
+    }
+    const projected = await this.projectForMember(roomId, context, false);
+    if (projected.error) return projected;
+    if (!this.registry.roomsForConnection(context.connectionId).includes(roomId)) {
+      return failure('FORBIDDEN', 'This socket is no longer in the room.');
+    }
+    return projected;
+  }
+
   public dispose(): void {
     this.disposed = true;
     for (const timer of this.emptyTimers.values()) clearTimeout(timer);

@@ -93,8 +93,9 @@ export class GameService implements OnApplicationShutdown {
     const controller = this.registry.controller(command.roomId);
     if (command.type === 'session:start') {
       const runtime = await this.sessions.startInQueue({ identity: verified, connectionId: context.connectionId }, command);
-      if (!runtime.hand) await this.dealFirstHand(runtime);
-      return this.reply(runtime, command.roomId, verified.accountId, context.connectionId,
+      const active = controller.session;
+      if (active?.sessionId === runtime.sessionId && !active.hand) await this.dealFirstHand(active);
+      return this.reply(active ?? runtime, command.roomId, verified.accountId, context.connectionId,
         { commandId: command.commandId, sessionId: runtime.sessionId,
           handId: runtime.firstHandId, acceptedGameVersion: 0 });
     }
@@ -129,6 +130,7 @@ export class GameService implements OnApplicationShutdown {
     if (!runtime.hand || runtime.hand.street === 'complete') return fail('HAND_SETTLING', 'The hand is settling.');
     if (runtime.deadline !== null && this.clock.now() >= runtime.deadline) {
       await this.applyTimeout(runtime);
+      this.updateListener?.(runtime.roomId);
       return fail('STALE_STATE', 'The turn deadline has passed.');
     }
     if (command.expectedGameVersion !== runtime.gameVersion) return fail('STALE_STATE', 'The game state changed.');

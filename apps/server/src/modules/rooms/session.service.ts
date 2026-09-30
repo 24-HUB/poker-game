@@ -77,6 +77,7 @@ export class SessionService {
     });
     const controller = this.registry.controller(command.roomId);
     if (controller.session?.sessionId === document._id) return controller.session;
+    if (document.status !== 'ACTIVE') return runtime(document);
     controller.session = runtime(document);
     return controller.session;
   }

@@ -35,9 +35,8 @@ export class RoomPublisher {
         socket.disconnect(true);
         return;
       }
-      const result = await this.rooms.execute(
-        { identity: resolved, connectionId: socket.id },
-        { type: 'room:sync', roomId },
+      const result = await this.rooms.snapshotForPublication(
+        { identity: resolved, connectionId: socket.id }, roomId,
       );
       if (result.data?.room) {
         socket.emit('room:snapshot', result.data.room);

@@ -10,9 +10,12 @@ targets `dev`; the user merges manually.
 - PR #9 review follow-up is in progress for three findings: old start retries
   replacing a newer session, publication clearing a pending departure, and
   deadline-crossing commands failing to publish the timeout transition.
-  Regression cases were added first. Local RED execution is blocked because
-  Docker Desktop is not yet providing the disposable MongoDB replica set;
-  do not treat the resulting setup timeouts as a code test result.
+  Regression cases were added first. [RED CI](https://github.com/24-HUB/poker-game/actions/runs/36577570585/job/109437020317?pr=9)
+  reproduced all three failures (3 failed, 99 passed). The fixes now preserve
+  the newer controller session, use a read-only publication snapshot for
+  connected room sockets, and publish deadline-triggered transitions. Server
+  typecheck passed; GREEN CI is pending. Local database tests could not start
+  because Docker Desktop is not providing the disposable MongoDB replica set.
 
 - Plan: `docs/superpowers/plans/2026-09-29-m2-poker.md`; the ignored execution
   ledger is `.superpowers/sdd/2026-09-29-m2-poker/progress.md`.
