@@ -30,6 +30,7 @@ export type SessionRuntime = {
   committedHandResult: CommittedHandResult | null;
   sessionResult: SessionResult | null;
   paused: boolean;
+  rewardPolicyVersion?: number;
 };
 
 function runtime(document: StoredGameSession): SessionRuntime {
@@ -40,6 +41,7 @@ function runtime(document: StoredGameSession): SessionRuntime {
     ending: document.endingRequested, hand: null, handId: document.firstHandId,
     gameVersion: 0, snapshotRevision: 0, deadline: null, settlement: null, previousHandId: null,
     committedHandResult: null, sessionResult: document.result ?? null, paused: false,
+    rewardPolicyVersion: document.rewardPolicyVersion,
   };
 }
 

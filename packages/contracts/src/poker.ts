@@ -1,6 +1,7 @@
 import { z } from 'zod';
 
 import type { Result } from './common.js';
+import { rewardReceiptSchema } from './tickets.js';
 
 const id = z.string().min(1).max(128);
 const chips = z.number().int().nonnegative().safe();
@@ -57,6 +58,7 @@ export const committedHandResultSchema = z.object({
   manualActionAccountIds: z.array(id).max(6),
   winners: z.array(id).min(1).max(6),
   revealedCards: z.array(z.object({ accountId: id, cards: z.tuple([card, card]) }).strict()).max(6),
+  rewardReceipts: z.array(rewardReceiptSchema).max(6).optional(),
 }).strict();
 export type CommittedHandResult = z.infer<typeof committedHandResultSchema>;
 

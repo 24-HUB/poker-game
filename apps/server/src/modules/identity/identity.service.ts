@@ -1,7 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { IncomingHttpHeaders } from 'node:http';
 
-import { AUTH, type PokerAuth } from './auth';
+import { AUTH, recoveryEnforced, type PokerAuth } from './auth';
 
 export type VerifiedIdentity = {
   accountId: string;
@@ -20,7 +20,7 @@ export class IdentityService {
       headers,
       query: { disableCookieCache: true, disableRefresh: true },
     });
-    if (!resolved) return null;
+    if (!resolved || (recoveryEnforced() && !resolved.user.emailVerified)) return null;
 
     return {
       accountId: resolved.user.id,

@@ -8,6 +8,7 @@ import {
   loadBetterAuthApi,
   loadBetterAuthMongoAdapter,
 } from '../../compatibility/better-auth-loader';
+import { accountEmailFromEnvironment } from './accountEmail.service';
 
 export const AUTH = Symbol('AUTH');
 
@@ -19,7 +20,7 @@ export type PokerAuth = {
       query: { disableCookieCache: boolean; disableRefresh: boolean };
     }) => Promise<{
       session: { id: string; expiresAt: Date };
-      user: { id: string; name: string };
+      user: { id: string; name: string; emailVerified: boolean };
     } | null>;
   };
 };
@@ -31,6 +32,8 @@ export async function createPokerAuth(db: Db, client: MongoClient): Promise<Poke
   if (secret.length < 32) throw new Error('BETTER_AUTH_SECRET must contain at least 32 characters');
 
   const expectedInviteDigest = parseInviteDigest(requireEnvironmentValue('REGISTRATION_INVITE_CODE_SHA256'));
+  const accountEmail = accountEmailFromEnvironment(publicOrigin);
+  const enforceRecovery = recoveryEnforced();
   const { betterAuth } = await loadBetterAuth();
   const { createAuthMiddleware, APIError } = await loadBetterAuthApi();
   const { mongodbAdapter } = await loadBetterAuthMongoAdapter();
@@ -41,11 +44,21 @@ export async function createPokerAuth(db: Db, client: MongoClient): Promise<Poke
     secret,
     trustedOrigins: [publicOrigin],
     database: mongodbAdapter(db, { client, transaction: true }),
+    rateLimit: { enabled: enforceRecovery, storage: 'database' },
     emailAndPassword: {
       enabled: true,
       minPasswordLength: 8,
       maxPasswordLength: 128,
-      requireEmailVerification: false,
+      requireEmailVerification: enforceRecovery,
+      autoSignIn: !enforceRecovery,
+      revokeSessionsOnPasswordReset: true,
+      resetPasswordTokenExpiresIn: 3600,
+      sendResetPassword: async ({ user, url }) => accountEmail.sendPasswordReset(user.email, url),
+    },
+    emailVerification: {
+      sendOnSignUp: true,
+      expiresIn: 3600,
+      sendVerificationEmail: async ({ user, url }) => accountEmail.sendVerification(user.email, url),
     },
     session: { cookieCache: { enabled: false } },
     advanced: {
@@ -75,6 +88,10 @@ export async function createPokerAuth(db: Db, client: MongoClient): Promise<Poke
       }),
     },
   });
+}
+
+export function recoveryEnforced(): boolean {
+  return process.env.NODE_ENV !== 'test' || process.env.ACCOUNT_RECOVERY_ENFORCED === 'true';
 }
 
 function inviteCodeMatches(code: string, expectedDigest: Buffer): boolean {

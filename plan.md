@@ -498,6 +498,8 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ### Current handoff — 2026-09-30
 
+**M3 user-requested pause at 06:50 UTC:** Work continues on `codex/m3-persistent-tickets` in draft PR [#12](https://github.com/24-HUB/poker-game/pull/12), targeting `dev`. Core recovery, atomic rewards, wallet API and UI are implemented locally. After correcting two stale migration-count assertions, `pnpm check` passed with 116 server tests, 51 web tests, contract/engine tests, typechecks and production builds. Browser recovery/game wallet flows, account-event revocation, Worker build and live Brevo delivery are unverified. The PR remains draft. See `CHECKPOINT.md` for usage, evidence and the next commands. No deployment or production database action occurred.
+
 **M3 implementation save point — 2026-09-30:** Branch
 `codex/m3-persistent-tickets` started from fetched `origin/dev` at `7dd93e3e`.
 The user approved the section 4 reward values and email verification/password

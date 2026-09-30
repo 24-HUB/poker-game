@@ -5,6 +5,7 @@ import { AuthorityLease, type AuthorityToken } from '../../authority/authorityLe
 import { MONGO_DB, TRANSACTION_RUNNER } from '../../database/database.tokens';
 import { TransactionRunner } from '../../database/transactionRunner';
 import type { SessionResult } from '@poker/contracts' with { 'resolution-mode': 'import' };
+import { M3_REWARD_POLICY } from '../tickets/rewardPolicy';
 
 export type SessionParticipant = { accountId: string; displayName: string; seat: number };
 export type StoredGameSession = {
@@ -23,6 +24,7 @@ export type StoredGameSession = {
   buttonSeat: number;
   startedAt: Date;
   endingRequested: boolean;
+  rewardPolicyVersion?: number;
   result?: SessionResult;
 };
 
@@ -113,6 +115,7 @@ export class SessionRepository {
       authorityEpoch: input.authority.epoch, participants, stacks: participants.map(() => 1_000),
       firstHandId: input.firstHandId, handNumber: 1, buttonSeat: participants[0]!.seat,
       startedAt: input.startedAt, endingRequested: false,
+      rewardPolicyVersion: M3_REWARD_POLICY.version,
     };
     for (const participant of participants) {
       await this.db.collection<{ _id: string; accountId: string; roomId: string; sessionId: string; joinedAt: Date }>('activeParticipants').insertOne({

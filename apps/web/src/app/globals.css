@@ -21,6 +21,9 @@ h1, h2, p { margin-top: 0; }
 .access-badge { padding: 7px 10px; border: 1px solid var(--line); border-radius: 5px; color: var(--muted); font-size: 12px; }
 .sign-in-trigger, .account-chip, .access-recovery { display: inline-flex; align-items: center; gap: 8px; min-height: 44px; }
 .authenticated-access { display: inline-flex; align-items: center; gap: 6px; min-width: 0; }
+.wallet-summary { display: inline-flex; align-items: baseline; gap: 5px; margin-right: 12px; padding: 7px 10px; border: 1px solid var(--line); border-radius: var(--radius-sm); color: var(--ink); background: var(--surface-soft); font-size: 13px; white-space: nowrap; }
+.wallet-summary strong { font-size: 18px; }
+.wallet-summary small { color: var(--muted); font-size: 11px; }
 .sign-in-trigger { padding: 9px 14px; border: 1px solid var(--brand); border-radius: var(--radius-sm); color: white; background: var(--brand); font-size: 14px; font-weight: 650; }
 .sign-in-trigger:hover { background: var(--brand-hover); }
 .sign-in-trigger svg, .account-chip svg, .access-recovery svg { width: 18px; height: 18px; }
@@ -195,6 +198,9 @@ main { min-width: 0; padding: 37px 42px 22px; }
   .brand small { font-size: 8px; letter-spacing: 3px; }
   .access-badge { padding: 6px 8px; font-size: 10px; }
   .account-chip { max-width: 138px; }
+  .account-chip span, .wallet-summary small { display: none; }
+  .account-chip { padding-inline: 10px; }
+  .wallet-summary { margin-right: 2px; padding-inline: 7px; font-size: 11px; }
   .sign-out-button span { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
   .access-recovery > span { display: none; }
   .sign-in-trigger { padding-inline: 11px; }

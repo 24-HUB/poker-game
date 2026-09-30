@@ -10,6 +10,8 @@ const optionsSchema = z.object({
 type AccountEmailOptions = z.infer<typeof optionsSchema>;
 
 export const ACCOUNT_EMAIL = Symbol('ACCOUNT_EMAIL');
+export type AccountEmailDelivery = Pick<AccountEmailService, 'sendVerification' | 'sendPasswordReset'>;
+export const testAccountEmailInbox: Array<{ kind: 'verification' | 'reset'; recipient: string; url: string }> = [];
 
 export class AccountEmailService {
   private readonly options: AccountEmailOptions;
@@ -54,7 +56,20 @@ export class AccountEmailService {
   }
 }
 
-export function accountEmailFromEnvironment(publicOrigin: string): AccountEmailService {
+export function accountEmailFromEnvironment(publicOrigin: string): AccountEmailDelivery {
+  if (process.env.ACCOUNT_EMAIL_TRANSPORT === 'memory') {
+    if (process.env.NODE_ENV !== 'test') throw new Error('Memory account email is test-only');
+    return {
+      async sendVerification(recipient, url) {
+        if (process.env.ACCOUNT_EMAIL_FAIL_TEST === 'true') throw new Error('Account email delivery is unavailable');
+        testAccountEmailInbox.push({ kind: 'verification', recipient, url });
+      },
+      async sendPasswordReset(recipient, url) {
+        if (process.env.ACCOUNT_EMAIL_FAIL_TEST === 'true') throw new Error('Account email delivery is unavailable');
+        testAccountEmailInbox.push({ kind: 'reset', recipient, url });
+      },
+    };
+  }
   return new AccountEmailService({
     apiKey: process.env.BREVO_API_KEY ?? '',
     senderEmail: process.env.BREVO_SENDER_EMAIL ?? '',

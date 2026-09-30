@@ -24,6 +24,7 @@ import { CommandRateLimiter } from './commandRateLimiter';
 import { RoomCommandPipe } from './roomCommandPipe';
 import { GameCommandPipe } from './gameCommandPipe';
 import { RoomPublisher } from './roomPublisher';
+import { AccountPublisher } from './accountPublisher';
 
 type RoomAck = (result: Result<RoomReply>) => void;
 type GameAck = (result: Result<GameReply>) => void;
@@ -48,10 +49,12 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     private readonly authority: AuthorityLease,
     private readonly rateLimiter: CommandRateLimiter,
     private readonly publisher: RoomPublisher,
+    private readonly accountPublisher: AccountPublisher,
   ) {}
 
   public afterInit(server: Server): void {
     this.publisher.attach(server);
+    this.accountPublisher.attach(server);
   }
 
   public async handleConnection(socket: Socket): Promise<void> {

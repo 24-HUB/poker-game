@@ -34,6 +34,7 @@ const backendEnvironment = {
   MONGODB_URI: 'mongodb://127.0.0.1:27018/?replicaSet=rs0&directConnection=true',
   MONGODB_DATABASE: databaseName,
   BETTER_AUTH_SECRET: 'e2e-only-better-auth-secret-with-32-characters',
+  ACCOUNT_EMAIL_TRANSPORT: 'memory',
   REGISTRATION_INVITE_CODE_SHA256: createHash('sha256').update(registrationCode).digest('hex'),
 };
 

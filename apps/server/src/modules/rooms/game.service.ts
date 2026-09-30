@@ -39,6 +39,7 @@ export class GameService implements OnApplicationShutdown {
   private readonly timers = new Map<string, CancelTimer>();
   private readonly resultTimers = new Map<string, CancelTimer>();
   private readonly candidates = new Map<string, SettlementCandidate>();
+  private rewardListener: ((accountIds: string[]) => void) | null = null;
   private updateListener: ((roomId: string) => void) | null = null;
   private disposed = false;
 
@@ -55,6 +56,7 @@ export class GameService implements OnApplicationShutdown {
   ) {}
 
   public subscribeUpdates(listener: (roomId: string) => void): void { this.updateListener = listener; }
+  public subscribeRewards(listener: (accountIds: string[]) => void): void { this.rewardListener = listener; }
 
   public async execute(context: GameContext, command: GameCommand): Promise<Result<GameReply>> {
     if (this.disposed) return fail('SERVICE_UNAVAILABLE', 'The game is shutting down.');
@@ -248,6 +250,8 @@ export class GameService implements OnApplicationShutdown {
       candidate = { roomId: runtime.roomId, sessionId: runtime.sessionId, handId: runtime.handId,
         handNumber: runtime.handNumber, authority, expectedRevision: 0, rulesVersion: 1,
         completedAt, completedDateUtc: completedAt.toISOString().slice(0, 10),
+        rewardPolicyVersion: runtime.rewardPolicyVersion,
+        dealtInAccountIds: runtime.hand?.seats.map((seat) => seat.accountId) ?? [],
         participants: runtime.participants,
         engine: { ...engine, finalStacks: runtime.participants.map((participant) => {
           const seatIndex = runtime.hand?.seats.findIndex((seat) => seat.accountId === participant.accountId) ?? -1;
@@ -259,6 +263,7 @@ export class GameService implements OnApplicationShutdown {
     try {
       const result = await this.settlements.commit(candidate);
       runtime.committedHandResult = result;
+      if (result.rewardReceipts?.length) this.rewardListener?.(result.rewardReceipts.map((receipt) => receipt.accountId));
       runtime.stacks = result.finalStacks.map((entry) => entry.amount);
       runtime.paused = false;
       runtime.snapshotRevision += 1;

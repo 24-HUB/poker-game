@@ -4,6 +4,7 @@ import type { GameView, PokerAction, RoomView } from '@poker/contracts';
 import { useEffect, useMemo, useState } from 'react';
 
 import type { RoomConnectionStatus } from './useRoomConnection';
+import { HandReward } from '../wallet/HandReward';
 
 const ranks = '23456789TJQKA';
 const suits = ['♣', '♦', '♥', '♠'] as const;
@@ -99,6 +100,7 @@ export function PokerTable({ room, game, accountId, status, pending, message,
       </div>
       {game.handResult ? <div className="poker-table__result"><h2>Hand result</h2>
         <p>Winner: {game.handResult.winners.map((id) => game.participants.find((player) => player.accountId === id)?.displayName ?? id).join(', ')}</p>
+        <HandReward receipt={game.handResult.rewardReceipts?.find((receipt) => receipt.accountId === accountId)} />
         {game.revealedCards.length ? <p>Showdown: {game.revealedCards.map((entry) => `${game.participants.find((player) => player.accountId === entry.accountId)?.displayName ?? entry.accountId} ${entry.cards.map(cardLabel).join(' ')}`).join(' · ')}</p> : null}
       </div> : null}
       {game.sessionResult ? <div className="poker-table__result"><h2>Session standings</h2>

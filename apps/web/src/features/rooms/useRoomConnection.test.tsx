@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 
 import { act, renderHook } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { createElement, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { roomStore } from './roomStore';
@@ -56,7 +58,9 @@ describe('useRoomConnection', () => {
   });
 
   it('retries an uncertain mutation with the exact same command identity', async () => {
-    const { result, unmount } = renderHook(() => useRoomConnection(null));
+    const queryClient = new QueryClient();
+    const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryClientProvider, { client: queryClient }, children);
+    const { result, unmount } = renderHook(() => useRoomConnection(null), { wrapper });
     const command = createMutationCommand('room:create', 'boot-a', { title: 'Friday table' });
     let firstReply: Awaited<ReturnType<typeof result.current.send>> | undefined;
 

@@ -20,6 +20,8 @@ export type SettlementCandidate = {
   rulesVersion: number;
   completedAt: Date;
   completedDateUtc: string;
+  rewardPolicyVersion?: number;
+  dealtInAccountIds?: string[];
   participants: SessionParticipant[];
   engine: EngineSettlement;
 };

@@ -40,6 +40,7 @@ export function SessionProvider({
       await signOutAction();
       clearPendingInvitation(sessionStorage);
       roomStore.getState().setAccount(null);
+      queryClient.removeQueries({ queryKey: ['wallet'] });
       queryClient.setQueryData(['session'], { status: 'unauthenticated' } satisfies SessionState);
     },
   };

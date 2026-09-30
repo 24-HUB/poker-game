@@ -18,6 +18,7 @@ import { SessionRepository } from '../src/modules/rooms/session.repository';
 import { SessionService } from '../src/modules/rooms/session.service';
 import { SettlementRepository } from '../src/modules/settlement/settlement.repository';
 import { SettlementService } from '../src/modules/settlement/settlement.service';
+import { TicketsRepository } from '../src/modules/tickets/tickets.repository';
 import { createTestDatabase, type TestDatabase } from './support/testDatabase';
 
 class FakeClock implements GameClock {
@@ -78,7 +79,8 @@ describe('authoritative poker actions', () => {
       const accountId = headers.get('x-test-account');
       return accountId ? identity(accountId) : null;
     } } as IdentityService;
-    settlement = new SettlementService(new SettlementRepository(database.db, new TransactionRunner(database.client), authority));
+    settlement = new SettlementService(new SettlementRepository(database.db, new TransactionRunner(database.client), authority,
+      new TicketsRepository(database.db)));
     game = new GameService(repository, sessions, registry, authority, identityService, clock, deckFactory,
       new GameCommandCache(), settlement);
     const created = await rooms.execute(roomContext('host'), {
@@ -150,6 +152,13 @@ describe('authoritative poker actions', () => {
     const first = await game.execute(gameContext('host'), command);
     expect(first.error).toBeNull();
     expect(first.data?.game?.handPhase).toBe('result');
+    expect(first.data?.game?.handResult?.rewardReceipts).toEqual([
+      expect.objectContaining({ accountId: 'host', grantedParticipation: 1, grantedBonus: 0 }),
+    ]);
+    const guestView = await game.execute(gameContext('guest'), { type: 'game:sync', roomId });
+    expect(guestView.data?.game?.handResult?.rewardReceipts).toEqual([
+      expect.objectContaining({ accountId: 'guest', reason: 'NO_MANUAL_ACTION', grantedParticipation: 0 }),
+    ]);
     const retry = await game.execute(gameContext('host'), command);
     expect(retry.error).toBeNull();
     expect(retry.data?.outcome).toEqual(first.data?.outcome);

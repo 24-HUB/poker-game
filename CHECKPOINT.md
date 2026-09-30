@@ -1,5 +1,15 @@
 # Checkpoint — Remaining phases through production
 
+## M3 pause requested by user — 2026-09-30 06:50 UTC
+
+- Task branch: `codex/m3-persistent-tickets`; draft PR: https://github.com/24-HUB/poker-game/pull/12 (base `dev`). Last completed remote commit before this save point: `84fd2831`. The changes described below are being saved as the next task-branch commit; no merge or deployment is authorized.
+- Implemented locally since that commit: Better Auth email verification, password reset, session revocation and a test-only memory email adapter; recovery UI; versioned M3 reward policy; migration 004 for wallets, daily earnings, ledger and receipts; reward writes within the existing hand transaction; account-scoped wallet API and invalidation event; wallet and hand-reward UI. Reward receipts are filtered for each game-snapshot recipient. Existing unverified accounts must verify their email to regain access when deployed. Live Brevo delivery remains unconfigured and unproven.
+- Verification: `pnpm check` passed after correcting two stale migration-count expectations: workspace typechecks, 116 server tests, 51 web tests, 12 contract tests, 18 poker-engine tests, and production Nest/Next builds. Focused recovery integration 5/5, wallet integration 1/1, settlement integration 6/6, poker integration 15/15, and migration integration 5/5 also passed. The earlier aggregate run failed on only those two stale expectations. M3 browser tests, account-event transport/revocation cases, full UI flows, Worker build and live Brevo delivery have not been verified. Keep PR #12 draft.
+- Next exact action on resume: check usage; inspect `git status --short --branch` and branch; run `git fetch origin --prune` and stop if it fails. Update the Playwright account helper and `session.spec.ts` for verification, add isolated test mail capture for the browser recovery flow, then run focused and full Playwright suites. Add wallet event revocation/reconnect and UTC midnight cases, review the full M3 diff, and update this checkpoint before marking the PR ready. Do not merge or deploy.
+- Usage observed 2026-09-30 06:50 UTC: five-hour window 57% remaining, resets 2026-09-30 11:01:45 UTC; weekly window 31% remaining, resets 2026-10-06 01:38:22 UTC. No reset credit was used.
+
+---
+
 ## Active M3 implementation save point — 2026-09-30
 
 - Branch: `codex/m3-persistent-tickets`, created from freshly fetched
