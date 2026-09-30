@@ -513,10 +513,12 @@ Frozen install, sequential `pnpm check` (136 server, 56 web, 12 contract and
 18 engine tests, script tests, typechecks and production builds), and mobile
 Chromium recovery 1/1 passed. A concurrent aggregate encountered the previously
 recorded authority startup timeout; focused authority 8/8 and sequential checks
-passed. This follow-up is being saved on the same branch after `1ed0a519`;
-new-head Linux CI and Worker packaging remain pending. Fresh `origin/dev` is
-`7dd93e3e` and is contained in the branch. Next: push, update PR #12, and inspect
-its new-head CI before manual merge. Usage observed 2026-09-30 12:26 UTC:
+passed. Fix commit `727b1a71` is pushed and [Linux CI](https://github.com/24-HUB/poker-game/actions/runs/36714901253/job/109885310270)
+passed, including migration idempotency and Worker packaging. PR #12 includes
+the fix and verification results. This documentation follow-up triggers another
+CI run; inspect its final head before manual merge. Fresh `origin/dev` is
+`7dd93e3e` and is contained in the branch. M4 follows review/merge of M3.
+Usage observed 2026-09-30 12:26 UTC:
 five-hour 58% remaining (reset 2026-09-30 16:02:07 UTC), weekly 20% remaining
 (reset 2026-10-06 01:38:22 UTC). See `CHECKPOINT.md` for the follow-up evidence.
 
