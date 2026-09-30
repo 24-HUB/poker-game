@@ -1,5 +1,40 @@
 # Checkpoint — Remaining phases through production
 
+## Active M3 implementation save point — 2026-09-30
+
+- Branch: `codex/m3-persistent-tickets`, created from freshly fetched
+  `origin/dev` at `7dd93e3e` after the user authorized removal of untracked
+  `apps/`, `packages/`, and `node_modules/` from the stale local `dev` checkout.
+- Scope: M3 persistent tickets only. The user confirmed 1 participation ticket,
+  1 positive-net bonus, a manual-action requirement, a 20-ticket UTC daily cap,
+  and participation-first cap allocation. The user selected email verification
+  and password reset with Brevo Free using an address they control, without an
+  owned sending domain. No provider account, secrets, deployment or production
+  database work has been performed.
+- Implemented so far: `RewardPolicy`, `RewardReceipt`, and `WalletView` schemas;
+  a server-only Brevo email adapter that validates recipients and public-origin
+  links, bounds provider calls, and hides provider error details. The adapter is
+  not yet wired into Better Auth and no ticket is awarded yet.
+- Verification actually run: `pnpm install --frozen-lockfile` passed; focused
+  contract tests passed 2/2 after a failing schema run; focused adapter tests
+  passed 2/2 after a failing no-send run; `pnpm check` passed, including
+  workspace typechecks, 104 server tests, 48 web tests and production builds.
+  The first aggregate run timed out in the pre-existing standalone MongoDB
+  comparison because its disposable service was stopped. Starting that
+  service made the focused test and full rerun pass. M3 browser tests and the
+  Worker build have not run on this branch.
+- Next step: resume M3.1 in `docs/superpowers/plans/2026-09-30-m3-through-production.md`.
+  Write failing account-recovery integration tests against real Better Auth and
+  the disposable replica set, then wire the email adapter, safe generic reset
+  response, session revocation, sign-in/recovery UI, and local browser tests.
+  Continue M3.2–M3.4 only after M3.1 is verified. Do not infer that this save
+  point is a completed M3 milestone.
+- Usage observation at 2026-09-30 03:06 UTC: five-hour window 7% remaining,
+  resetting 2026-09-30 05:56:49 UTC; weekly window 39% remaining. No reset
+  credit was used. Recheck both windows when resuming.
+
+---
+
 Updated: 2026-09-30. Freshly fetched `origin/dev` at `d3aa002b` contains merged
 M2 PR #9. The documentation task branch is `codex/remaining-phase-plans`.
 The next implementation milestone is **M3 persistent tickets**, beginning with
