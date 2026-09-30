@@ -504,14 +504,16 @@ and section 19. Deployed acceptance is **not run — deployment not authorized**
 The historical planning checkpoint below describes the earlier design branch,
 not the current implementation status.
 
-**M2 — Poker sessions** is in review on `codex/m2-poker` in draft PR #9.
+**M2 — Poker sessions** is in review on `codex/m2-poker` in PR #9.
 The user approved the [M2 Poker Sessions](docs/superpowers/plans/2026-09-29-m2-poker.md)
 plan and its gameplay defaults for this implementation. Contracts, the pure
 engine, session lifecycle, chip settlement, private delivery/recovery, and a
 playable table are committed and pushed to the task branch. Three review
 regressions were reproduced in CI, fixed, and passed the follow-up CI run.
-Browser acceptance and final review remain in progress; see `CHECKPOINT.md` for the current test
-boundary and blocker. No M2 deployment is claimed. Tickets
+The focused poker browser flow passed 1/1 and the full local Chromium suite
+passed 12/12 after Docker Desktop and the disposable MongoDB replica set were
+available. Final review remains with the user; see `CHECKPOINT.md` for evidence.
+No M2 deployment is claimed. Tickets
 remain M3 and collection remains M4. Deployment and production database
 operations still require separate authorization.
 

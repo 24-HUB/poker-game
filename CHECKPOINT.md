@@ -2,7 +2,7 @@
 
 Updated: 2026-09-30. The active task branch is `codex/m2-poker`, tracking
 `origin/codex/m2-poker`. The user requested a save point; M2 Tasks 1–9 and the
-CI migration-test fix were committed and pushed. Draft PR [#9](https://github.com/24-HUB/poker-game/pull/9)
+CI migration-test fix were committed and pushed. PR [#9](https://github.com/24-HUB/poker-game/pull/9)
 targets `dev`; the user merges manually.
 
 ## Current M2 save point
@@ -14,11 +14,11 @@ targets `dev`; the user merges manually.
   reproduced all three failures (3 failed, 99 passed). The fixes now preserve
   the newer controller session, use a read-only publication snapshot for
   connected room sockets, and publish deadline-triggered transitions. The
-  [GREEN CI run](https://github.com/24-HUB/poker-game/actions/runs/36653145157/job/109691610304?pr=9)
+  [GREEN CI run](https://github.com/24-HUB/poker-game/actions/runs/36653430633/job/109692481770?pr=9)
   passed frozen install, migration idempotency, `pnpm check`, and the Worker
-  build. Local database tests could not start because Docker Desktop is not
-  providing the disposable MongoDB replica set. The fixes are saved in
-  `a0c29b73`; PR #9 remains draft pending the browser rerun.
+  build on the final code. Docker Desktop recovered; `pnpm db:init` initialized
+  the disposable local replica set. The focused poker Chromium flow passed 1/1,
+  and the full Playwright suite passed 12/12. The fixes are saved in `a0c29b73`.
 
 - Plan: `docs/superpowers/plans/2026-09-29-m2-poker.md`; the ignored execution
   ledger is `.superpowers/sdd/2026-09-29-m2-poker/progress.md`.
@@ -28,27 +28,24 @@ targets `dev`; the user merges manually.
 - Task 8 verification: web typecheck, all 47 web unit tests, and the Next
   production build passed. Task 6 settlement/session/poker suites passed 25/25.
   Task 7 private gateway/recovery suites passed 2/2. The M2 aggregate check
-  passed in Linux CI; the complete browser suite has not yet run.
+  passed in Linux CI; the complete browser suite passed 12/12 locally on
+  2026-09-30.
 - Task 9 browser test reached room start, private cards, a committed fold
   result, carried stacks, and the next hand. It exposed that the table disabled
   actions during the host-requested `ending` phase. The table logic and a unit
-  regression test were saved in `1cdc72ba`, but the browser rerun has **not** run.
+  regression test were saved in `1cdc72ba`. The browser rerun passed.
 - The Task 9 browser test, E2E stack build launcher, final-stack projection
   correction, and ending-phase action fix are in `1cdc72ba`. The working tree
-  was clean at the save point. The regression test and browser flow remain
-  unverified after the last fix.
+  was clean at the save point. The browser flow and regression test are now
+  verified.
 - Draft PR #9 CI first run failed two existing migration assertions: M2 added
   version 3, while `database.e2e-spec.ts` still expected two applied versions.
   The assertions now expect three and check the new `gameSessions` collection;
   the follow-up CI run passed frozen install, two migrations, `pnpm check`, and
   the Cloudflare Worker build. See [CI run](https://github.com/24-HUB/poker-game/actions/runs/36574478478/job/109426440829?pr=9).
-- Automatic approval review rejected the next `pnpm --filter @poker/web
-  test:e2e -- poker.spec.ts` run because the workspace reported no credits.
-  The review could not complete; it did not identify the command as unsafe.
-  Do not bypass that approval gate. Once approvals are available, rerun the
-  browser flow and full Playwright suite locally. Keep PR #9 in draft while
-  required browser checks remain unavailable. The CI frozen install, migrations,
-  `pnpm check`, and Worker build have passed.
+- The earlier automatic approval review rejected a browser rerun while the
+  workspace reported no credits. The later approved runs completed both the
+  focused poker test and full Playwright suite without a bypass.
 - No deployment, provider provisioning, production migration, paid upgrade,
   reset-credit redemption, or M3 ticket reward was performed. M0/M1 deployed
   acceptance remains separately unauthorized.
