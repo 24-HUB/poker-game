@@ -45,6 +45,7 @@ await runPreparation(['--filter', '@poker/contracts', 'build']);
 await runPreparation(['--filter', '@poker/poker-engine', 'build']);
 await runPreparation(['--filter', '@poker/server', 'build']);
 await runPreparation(['--filter', '@poker/server', 'db:migrate'], backendEnvironment);
+await runPreparation(['--filter', '@poker/server', 'catalogue:publish'], backendEnvironment);
 
 let backend = launchBackend();
 const frontend = start(pnpmCommand.command, [...pnpmCommand.args, '--filter', '@poker/web', 'dev', '--hostname', '127.0.0.1', '--port', '3101']);

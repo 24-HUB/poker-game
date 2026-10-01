@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
 import { Injectable } from '@nestjs/common';
-import type { CommittedHandResult, GameCommand, SessionResult } from '@poker/contracts' with { 'resolution-mode': 'import' };
+import type { CommittedHandResult, GameCommand, HandEquipment, SessionResult } from '@poker/contracts' with { 'resolution-mode': 'import' };
 import type { EngineSettlement, HandState } from '@poker/poker-engine' with { 'resolution-mode': 'import' };
 
 import { AuthorityLease } from '../../authority/authorityLease';
@@ -31,6 +31,7 @@ export type SessionRuntime = {
   sessionResult: SessionResult | null;
   paused: boolean;
   rewardPolicyVersion?: number;
+  equipmentByAccount?: Record<string, HandEquipment>;
 };
 
 function runtime(document: StoredGameSession): SessionRuntime {
@@ -42,6 +43,7 @@ function runtime(document: StoredGameSession): SessionRuntime {
     gameVersion: 0, snapshotRevision: 0, deadline: null, settlement: null, previousHandId: null,
     committedHandResult: null, sessionResult: document.result ?? null, paused: false,
     rewardPolicyVersion: document.rewardPolicyVersion,
+    equipmentByAccount: document.equipmentByAccount,
   };
 }
 
@@ -99,7 +101,7 @@ export class SessionService {
   public async nextHandInQueue(runtime: SessionRuntime, handId: string, buttonSeat: number, createdAt: Date): Promise<void> {
     const authority = this.authority.currentToken();
     if (!authority) throw new SessionError('SERVICE_UNAVAILABLE', 'Room authority is unavailable.');
-    await this.repository.nextHand({ sessionId: runtime.sessionId, roomId: runtime.roomId,
+    runtime.equipmentByAccount = await this.repository.nextHand({ sessionId: runtime.sessionId, roomId: runtime.roomId,
       previousHandNumber: runtime.handNumber, handId, buttonSeat, createdAt, authority });
     runtime.previousHandId = runtime.handId;
     runtime.handId = handId;

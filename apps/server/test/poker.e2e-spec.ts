@@ -19,6 +19,8 @@ import { SessionService } from '../src/modules/rooms/session.service';
 import { SettlementRepository } from '../src/modules/settlement/settlement.repository';
 import { SettlementService } from '../src/modules/settlement/settlement.service';
 import { TicketsRepository } from '../src/modules/tickets/tickets.repository';
+import { CELESTIAL_BANNER, publishCatalogue } from '../src/modules/gacha/catalogue';
+import { CollectionRepository } from '../src/modules/collection/collection.repository';
 import { createTestDatabase, type TestDatabase } from './support/testDatabase';
 
 class FakeClock implements GameClock {
@@ -113,6 +115,35 @@ describe('authoritative poker actions', () => {
     expect(reply.error).toBeNull();
     expect(reply.data?.outcome?.acceptedGameVersion).toBe(1);
     expect(reply.data?.game?.gameVersion).toBe(1);
+  });
+
+  it('freezes equipment for all recipients until the durable next-hand boundary', async () => {
+    await publishCatalogue(database.db, CELESTIAL_BANNER);
+    const item = CELESTIAL_BANNER.items.find((candidate) => candidate.slot === 'avatar')!;
+    await database.db.collection('ownedCosmetics').insertOne({ accountId: 'host', itemId: item.id,
+      bannerVersion: CELESTIAL_BANNER.version, requestId: randomUUID(), acquiredAt: new Date() });
+    const collection = new CollectionRepository(database.db, new TransactionRunner(database.client));
+    await collection.equip('host', 'avatar', item.id, 0);
+    const before = await game.execute(gameContext('guest'), { type: 'game:sync', roomId });
+    expect(before.data?.game?.participants.find((player) => player.accountId === 'host')?.equipment?.avatar).toBeNull();
+    const version = before.data?.game?.gameVersion;
+    await game.execute(gameContext('host'), { ...action('host'), action: { type: 'fold' } });
+    const resultTimer = clock.callbacks.at(-1)!;
+    clock.current = resultTimer.at;
+    resultTimer.callback();
+    await registry.enqueue(roomId, async () => undefined);
+    const hostView = await game.execute(gameContext('host'), { type: 'game:sync', roomId });
+    const guestView = await game.execute(gameContext('guest'), { type: 'game:sync', roomId });
+    const selected = hostView.data?.game?.participants.find((player) => player.accountId === 'host')?.equipment;
+    expect(selected?.avatar).toEqual(item);
+    expect(guestView.data?.game?.participants.find((player) => player.accountId === 'host')?.equipment).toEqual(selected);
+    const hand = await database.db.collection('hands').findOne({ sessionId, handNumber: 2 });
+    expect(hand?.equipmentByAccount.host).toEqual(selected);
+    expect(version).toBe(0);
+    await collection.equip('host', 'avatar', null, 1);
+    const unchanged = await game.execute(gameContext('host'), { type: 'game:sync', roomId });
+    expect(unchanged.data?.game?.participants.find((player) => player.accountId === 'host')?.equipment).toEqual(selected);
+    expect(unchanged.data?.game?.gameVersion).toBe(hostView.data?.game?.gameVersion);
   });
 
   it('applies timeout first at the exact deadline even before the callback fires', async () => {

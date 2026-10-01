@@ -88,7 +88,9 @@ export function useRoomConnection(roomId: string | null) {
         view.sessionId ?? (previous.roomId === roomId ? previous.sessionId : null), bootIdRef.current);
     });
     socket.on('game:snapshot', (view) => gameStore.getState().applySnapshot(view));
-    socket.on('account:changed', () => { void queryClient.invalidateQueries({ queryKey: ['wallet', accountId] }); });
+    socket.on('account:changed', () => {
+      for (const scope of ['wallet', 'collection', 'equipment']) void queryClient.invalidateQueries({ queryKey: [scope, accountId] });
+    });
     socket.on('room:closed', ({ roomId: closedRoomId, reason }) => {
       if (roomStore.getState().room?.roomId === closedRoomId || roomId === closedRoomId) {
         roomStore.getState().close(reason);

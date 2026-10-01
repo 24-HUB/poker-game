@@ -4,6 +4,7 @@ import { applyFoundationMigration } from './migrations/001-foundation';
 import { applyRoomCommandsMigration } from './migrations/002-room-commands';
 import { applyPokerMigration } from './migrations/003-poker';
 import { applyTicketsMigration } from './migrations/004-tickets';
+import { applyCollectionMigration } from './migrations/005-collection';
 import { createMongoClient } from './mongoClientFactory';
 
 const migrations = [
@@ -11,6 +12,7 @@ const migrations = [
   { version: 2, apply: applyRoomCommandsMigration },
   { version: 3, apply: applyPokerMigration },
   { version: 4, apply: applyTicketsMigration },
+  { version: 5, apply: applyCollectionMigration },
 ] as const;
 
 export async function applyMigrations(db: Db): Promise<void> {

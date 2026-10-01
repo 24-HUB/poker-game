@@ -1,5 +1,18 @@
 # Checkpoint — Remaining phases through production
 
+## M4 local implementation verification - 2026-10-01 14:40 UTC
+
+- Branch `codex/m4-cosmetic-collection`, created clean from freshly fetched `origin/dev` at `a3cb9794` after M3 PR #12 merged. All current changes belong to M4 and are pending the first task commit/PR targeting `dev`. Last completed base commit is `a3cb9794`. The user merges manually.
+- User approved 5/50-ticket pulls, 70/25/5 R/SR/SSR odds, SR+10/SSR90 guarantees, unowned SSR exclusion until complete, no duplicate refunds, and twelve original celestial vectors plus free defaults. Each slot has three R, two SR and one SSR. Catalogue `celestial-v1` is explicitly published only in disposable tests; no live publication or deployment occurred.
+- Implemented contracts/migration 005, immutable publication command and deterministic draws; atomic wallet/debit/ledger/ownership/pity/receipt transactions with account-scoped recovery; reload-safe pending request identity, committed reveal and collection UI; ownership/slot/revision-checked equipment, coherent collection reads and durable per-hand equipment snapshots. Custom backs never replace visible private card fronts. Assets and provenance are repository-authored.
+- Verification: frozen install passed. Sequential `pnpm check` passed 168 server, 65 web, 15 contract and 18 engine tests, three script tests, typechecks and Nest/Next production builds. Later full server suite passed 169/169 including the competing collection snapshot regression; full web suite passed 68/68 including uncertain retries, stale-price review and account switching. Final workspace typecheck and backend build passed. No lint script exists.
+- Chromium M4 flow passed 1/1: five earned tickets, storage denied without charge, interrupted committed POST/reload/same receipt, equip, next session visuals, card-front secrecy and sign out/in persistence. Mobile overflow, preview reachability/focus and keyboard tabs passed; reduced-motion/skip are unit-tested. The prior full browser attempt passed 13/14; its M4 failure was capture-clock hydration control, subsequently fixed with the focused pass. The full Chromium rerun passed 14/14. Fresh UI finish verdict is **ship**, with all six material findings resolved; the built M4 surface record is finalized. Six desktop/mobile purchase/collection/reveal captures are saved outside the repository.
+- Earlier Docker checks were unavailable while its engine was stopped; after the user opened Docker, both disposable services and replica initialization succeeded. Earlier browser harness failures from actor-only controls, an ambiguous alert, transferred host control and premature login reads were corrected; none are claimed as passing runs. An initial aggregate test matcher type error was fixed before the passing aggregate.
+- Next exact step: review/stage the final documentation, commit and `git push -u origin codex/m4-cosmetic-collection`; create its PR with base `dev`, attach it and inspect Linux CI/Worker packaging. Fetch origin before handoff; report drift without integration. Keep the PR draft while required checks remain unresolved.
+- Usage observed 2026-10-01 14:40 UTC: five-hour 60% remaining, reset 2026-10-01 18:27:23 UTC; weekly 13% remaining, reset 2026-10-06 01:38:22 UTC. No reset credit used.
+
+---
+
 ## M3 PR #12 review follow-up — 2026-09-30 12:26 UTC
 
 - Branch `codex/m3-persistent-tickets`, existing PR https://github.com/24-HUB/poker-game/pull/12 to `dev`. Fix commit `727b1a71` is pushed; this documentation follow-up records its completed verification. Fresh `origin/dev` is still `7dd93e3e` and is contained in the branch. The user merges manually.

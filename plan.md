@@ -101,11 +101,11 @@ Example: participating in five qualifying hands and having a positive net result
 
 The user confirmed the 1-ticket participation reward, 1-ticket positive-net bonus, manual-action qualification, 20-ticket UTC daily earning cap, and participation-first cap allocation for M3 on 2026-09-30. These are launch values, not established balance results. Evaluate the pace during a friends playtest. The cap and authenticated, once-only rewards limit casual farming; coordinated collusion is outside the first private release's protection goals.
 
-## 5. Proposed gacha and cosmetics — review required
+## 5. Approved M4 gacha and cosmetics — 2026-10-01
 
-Start with one permanent catalogue of 12 original or appropriately licensed assets: six card backs and six avatars, distributed as six R, four SR, and two SSR items. Keep default cosmetics available without pulling. Higher rarity changes appearance only.
+The user approved one permanent original celestial vector catalogue of 12 assets: six card backs and six avatars, distributed as six R, four SR, and two SSR items. Each slot has Star Scout, Moon Courier and Solar Knight (R), Comet Mage and Eclipse Oracle (SR), and Astral Empress (SSR). Keep free default cosmetics outside the pull pool. Higher rarity changes appearance only.
 
-Proposed base rarity probabilities: R 70%, SR 25%, SSR 5%.
+Approved prices: 5 tickets per single pull and 50 per ten-pull. Base rarity probabilities: R 70%, SR 25%, SSR 5%. These are launch tuning values; evaluate pacing during M5.
 
 Specify guarantees precisely:
 
@@ -118,7 +118,7 @@ Specify guarantees precisely:
 - Equip at most one avatar and one card back. Ownership is validated by the server. Changes appear at the next hand boundary; table legibility and card secrecy remain unchanged.
 - Pull animation reveals an already committed result. Closing the animation cannot cancel a charge or lose the item. Retrying the same request returns the same result.
 
-The duplicate policy, starting catalogue, pity behavior, and prices above are proposals. The participation-plus-win reward model and separate currency choice are already agreed.
+The user approved the duplicate policy, celestial catalogue, pity behavior and prices on 2026-10-01. Selection within each eligible rarity pool is uniform. Published catalogue versions are immutable; changing these values requires a new approved version.
 
 ## 6. Architecture decision
 
@@ -496,7 +496,28 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
-### Current handoff — 2026-09-30
+### M4 local implementation verified - 2026-10-01
+
+M3 PR #12 is merged. Branch `codex/m4-cosmetic-collection` starts from fresh
+`origin/dev` at `a3cb9794`. M4 launch rules and the original twelve-asset celestial
+catalogue are approved (section 5). Local code implements immutable catalogue
+publication, migration 005, atomic idempotent pulls, saved pending identities,
+collection/equipment and durable next-hand cosmetic snapshots. No live catalogue
+publication or deployment occurred.
+
+Sequential `pnpm check` passed (168 server, 65 web, 15 contracts, 18 engine tests,
+script tests, typechecks and production builds). Later suites passed 169 server
+and 68 web tests; final typecheck/backend build passed. Chromium passed 14/14;
+the focused M4 capture flow passed 1/1. Fresh UI verdict is **ship**, all six
+findings resolved. Commit/PR and Linux Worker CI remain pending. See
+`CHECKPOINT.md` for precise evidence and next commands.
+
+Usage observed 2026-10-01 14:40 UTC: five-hour 60% remaining (reset 2026-10-01
+18:27:23 UTC), weekly 13% remaining (reset 2026-10-06 01:38:22 UTC). No reset
+credit used. The user merges manually. Hosted acceptance and live Brevo delivery
+remain separate M5 gates.
+
+### Historical M3 handoff - 2026-09-30
 
 **M3 local implementation verified — 2026-09-30:** Branch
 `codex/m3-persistent-tickets`, PR [#12](https://github.com/24-HUB/poker-game/pull/12)

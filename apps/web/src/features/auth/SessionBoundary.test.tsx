@@ -13,6 +13,8 @@ describe('SessionBoundary', () => {
   it('clears the previous wallet cache when a refreshed session switches accounts', async () => {
     const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
     client.setQueryData(['wallet', 'account-a'], { balance: 7 });
+    client.setQueryData(['collection', 'account-a'], { items: ['private-owned-item'] });
+    client.setQueryData(['equipment', 'account-a'], { avatar: 'private-owned-item' });
     const reader = vi.fn().mockResolvedValueOnce({ status: 'authenticated', account: { accountId: 'account-a', displayName: 'Alice' } })
       .mockResolvedValueOnce({ status: 'authenticated', account: { accountId: 'account-b', displayName: 'Bob' } });
     const wrapper = ({ children }: { children: React.ReactNode }) => createElement(QueryClientProvider, { client },
@@ -21,6 +23,8 @@ describe('SessionBoundary', () => {
     await waitFor(() => expect(view.result.current.session.status).toBe('authenticated'));
     await act(async () => { await view.result.current.refresh(); });
     await waitFor(() => expect(client.getQueryData(['wallet', 'account-a'])).toBeUndefined());
+    expect(client.getQueryData(['collection', 'account-a'])).toBeUndefined();
+    expect(client.getQueryData(['equipment', 'account-a'])).toBeUndefined();
     view.unmount();
     client.clear();
   });

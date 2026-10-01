@@ -70,13 +70,15 @@ export function PokerTable({ room, game, accountId, status, pending, message,
         <ul className="poker-table__seats" aria-label="Players">
           {game.participants.map((participant) => <li key={participant.accountId}
             className={participant.accountId === game.actorAccountId ? 'poker-seat poker-seat--acting' : 'poker-seat'}>
+            {participant.equipment?.avatar ? <img className="poker-seat__avatar" src={participant.equipment.avatar.assetUrl} alt={`${participant.displayName}'s ${participant.equipment.avatar.name} avatar`} width="48" height="48" /> : null}
             <strong>{participant.displayName}{participant.accountId === accountId ? ' (you)' : ''}</strong>
             <span>{participant.stack} chips · bet {participant.streetContribution}</span>
             <small>{participant.folded ? 'Folded' : participant.allIn ? 'All in' : participant.connected ? 'At table' : 'Reconnecting'}
               {participant.seat === game.buttonSeat ? ' · Button' : ''}</small>
             {participant.accountId === accountId && game.holeCards ? <span className="poker-seat__cards" aria-label="Your cards">
               {game.holeCards.map((card) => <span className={`poker-card poker-card--${cardColor(card)}`} key={card}>{cardLabel(card)}</span>)}
-            </span> : <span className="poker-seat__cards" aria-label="Hidden cards"><span className="poker-card poker-card--back">✦</span><span className="poker-card poker-card--back">✦</span></span>}
+            </span> : <span className="poker-seat__cards" aria-label="Hidden cards">{[0, 1].map((index) => <span className="poker-card poker-card--back" key={index}>
+              {participant.equipment?.cardBack ? <img src={participant.equipment.cardBack.assetUrl} alt="" width="35" height="48" /> : '✦'}</span>)}</span>}
           </li>)}
         </ul>
       </div>

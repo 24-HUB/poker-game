@@ -31,7 +31,7 @@ export function SessionProvider({
   useEffect(() => {
     if (session.status === 'authenticated' || session.status === 'unauthenticated') {
       const currentAccountId = session.status === 'authenticated' ? session.account.accountId : null;
-      const oldWallets = { queryKey: ['wallet'], predicate: (entry: { queryKey: readonly unknown[] }) => entry.queryKey[1] !== currentAccountId };
+      const oldWallets = { predicate: (entry: { queryKey: readonly unknown[] }) => ['wallet', 'collection', 'equipment'].includes(String(entry.queryKey[0])) && entry.queryKey[1] !== currentAccountId };
       void queryClient.cancelQueries(oldWallets);
       queryClient.removeQueries(oldWallets);
     }
@@ -47,6 +47,8 @@ export function SessionProvider({
       clearPendingInvitation(sessionStorage);
       roomStore.getState().setAccount(null);
       queryClient.removeQueries({ queryKey: ['wallet'] });
+      queryClient.removeQueries({ queryKey: ['collection'] });
+      queryClient.removeQueries({ queryKey: ['equipment'] });
       queryClient.setQueryData(['session'], { status: 'unauthenticated' } satisfies SessionState);
     },
   };
