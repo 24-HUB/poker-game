@@ -496,6 +496,22 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### M4 shutdown save point - 2026-10-01 14:48 UTC
+
+The user requested stop before closing the PC. M4 implementation commit
+`0b3ab8b3` is pushed on `codex/m4-cosmetic-collection`, draft PR
+[#13](https://github.com/24-HUB/poker-game/pull/13) targeting `dev`. Local checks
+and fresh UI verdict pass as detailed below; Linux CI/Worker packaging has not
+yet been inspected. Keep the PR draft. Fresh `origin/dev` remains `a3cb9794`
+and is contained in this branch. No task process is still running, no live
+publication/deployment occurred, and the user merges manually.
+
+Resume by checking usage/status/branch, fetching origin, then inspecting the
+final PR head's [checks](https://github.com/24-HUB/poker-game/pull/13/checks).
+Do not repeat completed M4 work. See CHECKPOINT.md for exact steps and evidence.
+Usage at 2026-10-01 14:47:52 UTC: five-hour 51% remaining (reset 2026-10-01
+18:27:23 UTC), weekly 12% remaining (reset 2026-10-06 01:38:22 UTC).
+
 ### M4 local implementation verified - 2026-10-01
 
 M3 PR #12 is merged. Branch `codex/m4-cosmetic-collection` starts from fresh

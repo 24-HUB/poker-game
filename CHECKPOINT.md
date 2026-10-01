@@ -1,5 +1,16 @@
 # Checkpoint — Remaining phases through production
 
+## M4 shutdown save point - user requested stop - 2026-10-01 14:48 UTC
+
+- Work stopped for the user to close the PC. Branch `codex/m4-cosmetic-collection`; draft PR [#13](https://github.com/24-HUB/poker-game/pull/13), base `dev`. Implementation commit `0b3ab8b3a621a4f8ad6b7010bc9094c018d4b633` is committed and pushed. This documentation save point follows it; no implementation changes remain pending locally. Leave the PR draft until Linux CI/Worker packaging and final review are inspected. The user merges manually.
+- Last completed step: approved M4 collection/pull/equipment loop, twelve original celestial vectors, fresh UI review disposition **ship** (six findings resolved), and scoped design documentation. Frozen install, sequential aggregate (168 server/65 web/15 contracts/18 engine plus script tests, typechecks and production builds), later full server 169/169 and web 68/68, final typecheck/backend build, focused captured M4 Chromium 1/1 and full Chromium 14/14 passed. `git diff --check` passed. No lint script exists. Detailed behavior and earlier failed harness runs are recorded in the entry below.
+- Fresh fetch at shutdown succeeded; `origin/dev` remains `a3cb9794` and is contained in the task branch. Only disposable Docker replica-set data was used. No deployment, live catalogue publication, production DB action or reset credit occurred.
+- Remaining: inspect the final PR head's Linux CI, including migration idempotency and Cloudflare Worker build. CI status has not yet been inspected; local passing checks do not establish its result. No additional UI polish is pending. No tests/processes are still running for this task.
+- Exact resume steps: check account usage; read this save point and plan.md; run `git status --short --branch`, `git branch --show-current`, then `git fetch origin --prune`. Continue this branch, do not recreate M4 or repeat passing checks without a new failure/change. Inspect [PR #13 checks](https://github.com/24-HUB/poker-game/pull/13/checks), fix any failure within M4, record CI evidence and mark ready only after required checks pass. Fetch before final handoff and report drift without merging/rebasing. M5 follows the user's manual M4 review/merge; deployment still needs separate authorization.
+- Usage observed 2026-10-01 14:47:52 UTC: five-hour 51% remaining, reset 2026-10-01 18:27:23 UTC; weekly 12% remaining, reset 2026-10-06 01:38:22 UTC. No reset credit used.
+
+---
+
 ## M4 local implementation verification - 2026-10-01 14:40 UTC
 
 - Branch `codex/m4-cosmetic-collection`, created clean from freshly fetched `origin/dev` at `a3cb9794` after M3 PR #12 merged. All current changes belong to M4 and are pending the first task commit/PR targeting `dev`. Last completed base commit is `a3cb9794`. The user merges manually.
