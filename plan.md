@@ -496,7 +496,27 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
-### Current handoff — 2026-09-30
+### Repository README task - 2026-10-02
+
+The documentation-only task is on `codex/repository-readme`, created clean from
+freshly fetched `origin/dev` at `a3cb9794` (merged M3). `README.md` now explains
+actual setup, package scripts, configuration and local verification. It clarifies
+that `next dev` serves only the frontend and the browser-test harness supplies
+the complete loopback stack. M4 remains implemented in open
+[PR #13](https://github.com/24-HUB/poker-game/pull/13), pending manual merge;
+hosted M5 acceptance and live email verification remain pending. The older
+handoffs below are historical.
+
+Next: validate documentation links/scripts, review the diff and run
+`git diff --check`; commit/push task-owned docs and create a separate PR to `dev`.
+No application checks, deployment or database operations are claimed for this
+task. Last completed base commit is `a3cb9794`; the PR is pending creation.
+Usage at 2026-10-02 14:17 UTC: five-hour 91% remaining (reset
+2026-10-02 19:02:07 UTC), weekly 10% remaining (reset
+2026-10-06 01:38:22 UTC). See `CHECKPOINT.md` for the task handoff. The user
+merges manually.
+
+### Historical M3 handoff — 2026-09-30
 
 **M3 local implementation verified — 2026-09-30:** Branch
 `codex/m3-persistent-tickets`, PR [#12](https://github.com/24-HUB/poker-game/pull/12)

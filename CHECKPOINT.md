@@ -1,5 +1,15 @@
 # Checkpoint — Remaining phases through production
 
+## Repository README handoff - 2026-10-02 14:17 UTC
+
+- Task: add the root README. Branch `codex/repository-readme` was created clean from freshly fetched `origin/dev` at `a3cb9794`, which includes merged M3. Last completed commit before this documentation task: `a3cb9794`. A separate PR targeting `dev` will be created after the documentation commit; the user merges manually.
+- Added `README.md` with the product overview, actual workspace structure, pinned tooling, disposable MongoDB setup, PowerShell migration environment, frontend preview, complete loopback test harness, verification commands, configuration, and documentation links. M4 is correctly described as implemented in open PR [#13](https://github.com/24-HUB/poker-game/pull/13), pending merge; M5, hosted acceptance and live email delivery remain pending.
+- Scope: documentation only. No application behavior, provider setup, deployment or database operation changed. Pending work: review all three documentation files, validate local links and package scripts, run `git diff --check`, commit/push only task-owned files, create the README PR, then fetch origin and confirm branch freshness.
+- Exact next step: `git diff --check`, inspect the complete task diff against `origin/dev`, then commit `README.md`, `CHECKPOINT.md`, and `plan.md` on this branch. Application checks are unnecessary for this docs-only task under `AGENTS.md`; no previous test results are claimed as rerun.
+- Usage observed 2026-10-02 14:17 UTC: five-hour 91% remaining, reset 2026-10-02 19:02:07 UTC; weekly 10% remaining, reset 2026-10-06 01:38:22 UTC. No reset credit used.
+
+---
+
 ## M3 PR #12 review follow-up — 2026-09-30 12:26 UTC
 
 - Branch `codex/m3-persistent-tickets`, existing PR https://github.com/24-HUB/poker-game/pull/12 to `dev`. Fix commit `727b1a71` is pushed; this documentation follow-up records its completed verification. Fresh `origin/dev` is still `7dd93e3e` and is contained in the branch. The user merges manually.
