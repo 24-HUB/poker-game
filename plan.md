@@ -496,6 +496,57 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### README conflict resolution - 2026-10-02 14:29 UTC
+
+The user requested resolution of PR [#14](https://github.com/24-HUB/poker-game/pull/14)
+on `codex/repository-readme` after M4 PR #13 merged. Fresh `origin/dev` is
+`1054e977`; its integration is resolved on this existing task branch. Both documentation
+histories are retained, including all M4 evidence and approved decisions.
+README.md now describes merged M0-M4 and local catalogue publication. M5,
+hosted acceptance and live email delivery verification remain pending.
+
+Last completed README handoff commit before this resolution: `c665de83`.
+Validation passed: ten local links, pinned versions, eleven package scripts,
+harness setup, conflict markers, Markdown fences and whitespace. All original
+dev checkpoint entries, handoffs and approved decisions are preserved exactly.
+Only the three Markdown files differ from dev; application files match it.
+The complete diff was reviewed and `git diff --check` passed. Application tests
+were not rerun locally for this docs-only resolution. No deployment or live
+database operation occurred. The merge commit containing this checkpoint saves
+the resolution. Next: commit/push, fetch and confirm PR #14 is mergeable, then
+review final-head CI before manual merge.
+Usage at 2026-10-02 14:29 UTC: five-hour 86% remaining (reset 2026-10-02
+19:02:07 UTC), weekly 9% remaining (reset 2026-10-06 01:38:22 UTC).
+Below-10% save-point assessment: finish this bounded verified resolution and
+remote save; begin no substantial new work. No reset credit used.
+See CHECKPOINT.md for verification and next steps. All older handoffs below are
+historical. The user merges manually.
+
+### Historical repository README task - 2026-10-02
+
+The documentation-only task is on `codex/repository-readme`, created clean from
+freshly fetched `origin/dev` at `a3cb9794` (merged M3). `README.md` now explains
+actual setup, package scripts, configuration and local verification. It clarifies
+that `next dev` serves only the frontend and the browser-test harness supplies
+the complete loopback stack. M4 remains implemented in open
+[PR #13](https://github.com/24-HUB/poker-game/pull/13), pending manual merge;
+hosted M5 acceptance and live email verification remain pending. The older
+handoffs below are historical.
+
+README commit `3aaf96ca` is pushed in
+[PR #14](https://github.com/24-HUB/poker-game/pull/14) targeting `dev`. All eight
+local links, pinned versions, ten package scripts, harness path, Markdown fences
+and whitespace checks passed; the complete diff was reviewed and
+`git diff --check` passed. Application checks were not rerun locally for this
+docs-only task. Handoff fetch succeeded; `origin/dev` remains `a3cb9794` and is
+contained in the branch. No implementation work or local blocker remains.
+Next: review PR #14 and its final-head CI before manual merge. This handoff
+update triggers CI again. No deployment or database operation occurred.
+Usage at 2026-10-02 14:20 UTC: five-hour 90% remaining (reset
+2026-10-02 19:02:07 UTC), weekly 10% remaining (reset
+2026-10-06 01:38:22 UTC). See `CHECKPOINT.md` for the task handoff. The user
+merges manually.
+
 ### M4 local implementation and CI verified - 2026-10-02
 
 M4 is implemented on `codex/m4-cosmetic-collection`, PR

@@ -1,5 +1,27 @@
 # Checkpoint — Remaining phases through production
 
+## README conflict resolution - 2026-10-02 14:29 UTC
+
+- Continuing `codex/repository-readme`, PR [#14](https://github.com/24-HUB/poker-game/pull/14), base `dev`. Last completed README handoff commit before this resolution: `c665de83`; the merge commit containing this checkpoint records the resolution. The user requested conflict resolution after M4 PR [#13](https://github.com/24-HUB/poker-game/pull/13) merged into `dev` at `1054e977`; this explicitly authorizes synchronizing the existing task branch.
+- Resolved integration of freshly fetched `origin/dev` into the README branch. Resolved the two documentation conflicts in `CHECKPOINT.md` and plan.md by retaining both the README history and all M4 verification/save-point entries. The README now reflects merged M0-M4, includes collection/pull/equipment status, and documents the local catalogue publication requirement. M5 and hosted/live email acceptance remain pending.
+- Verification passed: ten local README links with exact case, pinned versions, eleven package scripts, harness catalogue setup, conflict-marker scan, Markdown fences and whitespace. Confirmed every original dev checkpoint entry, plan handoff and approved decision is preserved exactly. No unresolved files remain; the staged diff against `origin/dev` contains only the three Markdown files and all application files match dev. Reviewed the complete diff and `git diff --check` passed. Application tests were not rerun locally for this docs-only resolution; no deployment or live database operation occurred.
+- Save-point next step: commit the staged merge, then `git push -u origin codex/repository-readme`. Fetch before final handoff, confirm the branch contains latest dev, and confirm GitHub reports PR #14 mergeable. After the push, review PR #14 and final-head CI before manual merge. No further implementation is pending; the user merges manually.
+- Usage observed 2026-10-02 14:29 UTC: five-hour 86% remaining, reset 2026-10-02 19:02:07 UTC; weekly 9% remaining, reset 2026-10-06 01:38:22 UTC. Below-10% save-point trigger assessed: finish this bounded verified resolution and remote save; start no substantial new work. No reset credit used.
+
+The dated handoffs below retain their original state and are historical.
+
+---
+
+## Historical repository README handoff - 2026-10-02 14:20 UTC
+
+- Task: add the root README. Branch `codex/repository-readme` was created clean from freshly fetched `origin/dev` at `a3cb9794`, which includes merged M3. README commit `3aaf96ca` is pushed. PR [#14](https://github.com/24-HUB/poker-game/pull/14) targets `dev` and is open for review; the user merges manually. The follow-up documentation commit records this completed handoff.
+- Added `README.md` with the product overview, actual workspace structure, pinned tooling, disposable MongoDB setup, PowerShell migration environment, frontend preview, complete loopback test harness, verification commands, configuration, and documentation links. M4 is correctly described as implemented in open PR [#13](https://github.com/24-HUB/poker-game/pull/13), pending merge; M5, hosted acceptance and live email delivery remain pending.
+- Verification: all eight local README links exist with exact filename case; pinned versions, ten package scripts, harness path, Markdown fences and whitespace checks passed. Reviewed the complete task diff against `origin/dev`; `git diff --check` passed. Scope is documentation only; application checks were not rerun locally under the docs-only rule in `AGENTS.md`. No application behavior, provider setup, deployment or database operation changed.
+- Freshness: handoff fetch succeeded and `origin/dev` remains `a3cb9794`, contained in the task branch. Only the three task-owned Markdown files changed. No local blocker or remaining README implementation work. Next action: review PR #14 and its final-head automated CI before manual merge; this handoff update triggers CI again. M4 review/merge stays in PR #13; M5 requires its own task and authorization gates.
+- Usage observed 2026-10-02 14:20 UTC: five-hour 90% remaining, reset 2026-10-02 19:02:07 UTC; weekly 10% remaining, reset 2026-10-06 01:38:22 UTC. No reset credit used.
+
+---
+
 ## M4 CI verification and review handoff - 2026-10-02 14:04 UTC
 
 - Resumed the existing clean branch `codex/m4-cosmetic-collection` and draft PR [#13](https://github.com/24-HUB/poker-game/pull/13), base `dev`. Implementation commit `0b3ab8b3` and shutdown checkpoint `c89772ee` are pushed. No implementation work remains from the M4 save point; this follow-up records CI evidence and completes the handoff. The user merges manually.
