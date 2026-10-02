@@ -63,6 +63,23 @@ hosted acceptance. Cloudflare documents this address in its
 Clients sharing an IP still share provider rate limits. Do not trust a caller's
 `x-forwarded-for` or expose the backend without its proxy guard.
 
+## M4 catalogue preparation
+
+Migration 005 adds collection, equipment, banner-progress and pull-receipt storage.
+The server never publishes catalogue data automatically at startup. After migrations,
+an operator publishes `celestial-v1` explicitly with:
+
+```powershell
+pnpm --filter @poker/server catalogue:publish
+```
+
+Both `MONGODB_URI` and `MONGODB_DATABASE` must be explicitly set for this command.
+It inserts the approved immutable version, accepts an identical replay and rejects
+changed content under the same version. The browser acceptance harness supplies
+its disposable database and publishes there. No playtest or production catalogue
+has been published; running this command against a live database requires separate
+authorization. An unpublished catalogue returns an actionable unavailable state.
+
 ## Local acceptance
 
 ```powershell

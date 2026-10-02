@@ -1,7 +1,7 @@
 # Anime Poker — Visual and Interaction Design
 
 Date: 2026-09-26  
-Status: **Visual direction approved. Detailed specifications below are design defaults for implementation review; no application has been built.**
+Status: **Visual direction approved. The local M0–M3 application is implemented; M4 extends this system with the approved celestial vector catalogue and collection/pull surfaces. Detailed specifications remain design defaults, with implementation evidence in plan.md and CHECKPOINT.md. Hosted acceptance is pending.**
 
 ## 1. Purpose and source of truth
 
@@ -283,4 +283,4 @@ Before accepting a future implementation:
 - Keyboard flow, reduced motion, text contrast, long names, and large amounts are checked on actual screens.
 - The working title and reference artwork are not misrepresented as final branding or production-ready assets.
 
-Next deliverable after this documentation task: a reviewable implementation plan or interactive screen prototype when requested. Application implementation has not started.
+The original design specification is preserved. M4 surface implementation and finish-review evidence are recorded in [docs/m4-ui-direction.md](docs/m4-ui-direction.md); current verification and remaining release gates are recorded in [plan.md](plan.md) and [CHECKPOINT.md](CHECKPOINT.md).

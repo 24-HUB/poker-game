@@ -4,8 +4,9 @@ import type { ClientSession, Db } from 'mongodb';
 import { AuthorityLease, type AuthorityToken } from '../../authority/authorityLease';
 import { MONGO_DB, TRANSACTION_RUNNER } from '../../database/database.tokens';
 import { TransactionRunner } from '../../database/transactionRunner';
-import type { SessionResult } from '@poker/contracts' with { 'resolution-mode': 'import' };
+import type { HandEquipment, SessionResult } from '@poker/contracts' with { 'resolution-mode': 'import' };
 import { M3_REWARD_POLICY } from '../tickets/rewardPolicy';
+import { snapshotEquipment } from '../collection/collection.repository';
 
 export type SessionParticipant = { accountId: string; displayName: string; seat: number };
 export type StoredGameSession = {
@@ -25,6 +26,7 @@ export type StoredGameSession = {
   startedAt: Date;
   endingRequested: boolean;
   rewardPolicyVersion?: number;
+  equipmentByAccount?: Record<string, HandEquipment>;
   result?: SessionResult;
 };
 
@@ -116,6 +118,7 @@ export class SessionRepository {
       firstHandId: input.firstHandId, handNumber: 1, buttonSeat: participants[0]!.seat,
       startedAt: input.startedAt, endingRequested: false,
       rewardPolicyVersion: M3_REWARD_POLICY.version,
+      equipmentByAccount: await snapshotEquipment(this.db, participants.map((participant) => participant.accountId), session),
     };
     for (const participant of participants) {
       await this.db.collection<{ _id: string; accountId: string; roomId: string; sessionId: string; joinedAt: Date }>('activeParticipants').insertOne({
@@ -124,9 +127,10 @@ export class SessionRepository {
       }, { session });
     }
     await this.db.collection<StoredGameSession>('gameSessions').insertOne(document, { session });
-    await this.db.collection<{ _id: string; sessionId: string; roomId: string; handNumber: number; status: string; revision: number; createdAt: Date }>('hands').insertOne({
+    await this.db.collection<{ _id: string; sessionId: string; roomId: string; handNumber: number; status: string; revision: number; createdAt: Date; equipmentByAccount?: Record<string, HandEquipment> }>('hands').insertOne({
       _id: input.firstHandId, sessionId: input.sessionId, roomId: input.roomId,
       handNumber: 1, status: 'PENDING', revision: 0, createdAt: input.startedAt,
+      equipmentByAccount: document.equipmentByAccount,
     }, { session });
     const updated = await this.db.collection<RoomDocument>('rooms').updateOne({
       _id: input.roomId, status: 'OPEN', phase: { $ne: 'playing' }, revision: room.revision,
@@ -169,8 +173,8 @@ export class SessionRepository {
   }
 
   public async nextHand(input: { sessionId: string; roomId: string; previousHandNumber: number;
-    handId: string; buttonSeat: number; createdAt: Date; authority: AuthorityToken }): Promise<void> {
-    await this.transactions.run(async (session) => {
+    handId: string; buttonSeat: number; createdAt: Date; authority: AuthorityToken }): Promise<Record<string, HandEquipment>> {
+    return this.transactions.run(async (session) => {
       await this.authority.fence(session, input.authority);
       const current = await this.db.collection<StoredGameSession>('gameSessions').findOne({
         _id: input.sessionId, roomId: input.roomId, status: 'ACTIVE', endingRequested: false,
@@ -181,14 +185,17 @@ export class SessionRepository {
         sessionId: input.sessionId, handNumber: input.previousHandNumber, status: 'COMPLETED',
       }, { session });
       if (!previous) throw new SessionError('HAND_SETTLING', 'The previous hand has not committed.');
-      await this.db.collection<{ _id: string; sessionId: string; roomId: string; handNumber: number; status: string; revision: number; createdAt: Date }>('hands').insertOne({
+      const equipmentByAccount = await snapshotEquipment(this.db, current.participants.map((participant) => participant.accountId), session);
+      await this.db.collection<{ _id: string; sessionId: string; roomId: string; handNumber: number; status: string; revision: number; createdAt: Date; equipmentByAccount: Record<string, HandEquipment> }>('hands').insertOne({
         _id: input.handId, sessionId: input.sessionId, roomId: input.roomId,
         handNumber: input.previousHandNumber + 1, status: 'PENDING', revision: 0, createdAt: input.createdAt,
+        equipmentByAccount,
       }, { session });
       const updated = await this.db.collection<StoredGameSession>('gameSessions').updateOne({
         _id: input.sessionId, status: 'ACTIVE', endingRequested: false, handNumber: input.previousHandNumber,
-      }, { $set: { handNumber: input.previousHandNumber + 1, buttonSeat: input.buttonSeat } }, { session });
+      }, { $set: { handNumber: input.previousHandNumber + 1, buttonSeat: input.buttonSeat, equipmentByAccount } }, { session });
       if (updated.matchedCount !== 1) throw new SessionError('STALE_STATE', 'The session changed before the next hand.');
+      return equipmentByAccount;
     });
   }
 

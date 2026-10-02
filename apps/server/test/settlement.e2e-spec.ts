@@ -14,6 +14,8 @@ import { SessionService } from '../src/modules/rooms/session.service';
 import { SettlementRepository } from '../src/modules/settlement/settlement.repository';
 import { SettlementService, type SettlementCandidate } from '../src/modules/settlement/settlement.service';
 import { TicketsRepository } from '../src/modules/tickets/tickets.repository';
+import { CELESTIAL_BANNER, publishCatalogue } from '../src/modules/gacha/catalogue';
+import { GachaRepository } from '../src/modules/gacha/gacha.repository';
 import { createTestDatabase, type TestDatabase } from './support/testDatabase';
 
 describe('atomic chip settlement', () => {
@@ -251,5 +253,24 @@ describe('atomic chip settlement', () => {
     const ledger = await database.db.collection<{ accountId: string; delta: number }>('ticketLedger').find({ accountId: 'guest' }).toArray();
     expect(ledger.reduce((sum, entry) => sum + entry.delta, 0)).toBe(20);
     expect(await database.db.collection('rewardReceipts').countDocuments({ accountId: 'guest' })).toBe(2);
+  });
+
+  it('serializes reward and pull changes on the wallet without restoring earning allowance', async () => {
+    await publishCatalogue(database.db, CELESTIAL_BANNER);
+    candidate.rewardPolicyVersion = 1;
+    candidate.dealtInAccountIds = ['host', 'guest'];
+    candidate.engine.manualActionAccountIds = ['guest'];
+    const now = candidate.completedAt;
+    await database.db.collection<StringIdDocument>('ticketWallets').insertOne({ _id: 'guest', balance: 19, revision: 0, createdAt: now, updatedAt: now });
+    await database.db.collection('dailyEarnings').insertOne({ accountId: 'guest', utcDate: candidate.completedDateUtc, earned: 19 });
+    await database.db.collection('ticketLedger').insertOne({ accountId: 'guest', delta: 19, reason: 'HAND_REWARD', sourceId: 'prior-hand', occurredAt: now });
+    const gacha = new GachaRepository(database.db, new TransactionRunner(database.client), new TicketsRepository(database.db));
+    const [hand, pull] = await Promise.all([settlement.commit(candidate), gacha.pull('guest', { requestId: randomUUID(), count: 1, bannerVersion: CELESTIAL_BANNER.version })]);
+    expect(hand.rewardReceipts?.find((receipt) => receipt.accountId === 'guest')?.grantedParticipation).toBe(1);
+    expect(pull.cost).toBe(5);
+    expect(await database.db.collection<StringIdDocument>('ticketWallets').findOne({ _id: 'guest' })).toMatchObject({ balance: 15, revision: 2 });
+    expect((await database.db.collection('dailyEarnings').findOne({ accountId: 'guest' }))?.earned).toBe(20);
+    const ledger = await database.db.collection<{ accountId: string; delta: number }>('ticketLedger').find({ accountId: 'guest' }).toArray();
+    expect(ledger.reduce((sum, row) => sum + row.delta, 0)).toBe(15);
   });
 });

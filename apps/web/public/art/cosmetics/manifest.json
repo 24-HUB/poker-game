@@ -1,0 +1,90 @@
+{
+  "version": "celestial-v1",
+  "provenance": "Original repository-authored SVG geometry; no third-party characters or artwork.",
+  "items": [
+    {
+      "id": "star-scout-avatar",
+      "name": "Star Scout",
+      "slot": "avatar",
+      "rarity": "R",
+      "assetUrl": "/art/cosmetics/star-scout-avatar.svg"
+    },
+    {
+      "id": "star-scout-cardBack",
+      "name": "Star Scout Card Back",
+      "slot": "cardBack",
+      "rarity": "R",
+      "assetUrl": "/art/cosmetics/star-scout-back.svg"
+    },
+    {
+      "id": "moon-courier-avatar",
+      "name": "Moon Courier",
+      "slot": "avatar",
+      "rarity": "R",
+      "assetUrl": "/art/cosmetics/moon-courier-avatar.svg"
+    },
+    {
+      "id": "moon-courier-cardBack",
+      "name": "Moon Courier Card Back",
+      "slot": "cardBack",
+      "rarity": "R",
+      "assetUrl": "/art/cosmetics/moon-courier-back.svg"
+    },
+    {
+      "id": "solar-knight-avatar",
+      "name": "Solar Knight",
+      "slot": "avatar",
+      "rarity": "R",
+      "assetUrl": "/art/cosmetics/solar-knight-avatar.svg"
+    },
+    {
+      "id": "solar-knight-cardBack",
+      "name": "Solar Knight Card Back",
+      "slot": "cardBack",
+      "rarity": "R",
+      "assetUrl": "/art/cosmetics/solar-knight-back.svg"
+    },
+    {
+      "id": "comet-mage-avatar",
+      "name": "Comet Mage",
+      "slot": "avatar",
+      "rarity": "SR",
+      "assetUrl": "/art/cosmetics/comet-mage-avatar.svg"
+    },
+    {
+      "id": "comet-mage-cardBack",
+      "name": "Comet Mage Card Back",
+      "slot": "cardBack",
+      "rarity": "SR",
+      "assetUrl": "/art/cosmetics/comet-mage-back.svg"
+    },
+    {
+      "id": "eclipse-oracle-avatar",
+      "name": "Eclipse Oracle",
+      "slot": "avatar",
+      "rarity": "SR",
+      "assetUrl": "/art/cosmetics/eclipse-oracle-avatar.svg"
+    },
+    {
+      "id": "eclipse-oracle-cardBack",
+      "name": "Eclipse Oracle Card Back",
+      "slot": "cardBack",
+      "rarity": "SR",
+      "assetUrl": "/art/cosmetics/eclipse-oracle-back.svg"
+    },
+    {
+      "id": "astral-empress-avatar",
+      "name": "Astral Empress",
+      "slot": "avatar",
+      "rarity": "SSR",
+      "assetUrl": "/art/cosmetics/astral-empress-avatar.svg"
+    },
+    {
+      "id": "astral-empress-cardBack",
+      "name": "Astral Empress Card Back",
+      "slot": "cardBack",
+      "rarity": "SSR",
+      "assetUrl": "/art/cosmetics/astral-empress-back.svg"
+    }
+  ]
+}

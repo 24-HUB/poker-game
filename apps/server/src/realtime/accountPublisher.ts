@@ -4,6 +4,7 @@ import type { Server } from 'socket.io';
 import { IdentityService, toWebHeaders } from '../modules/identity/identity.service';
 import { GameService } from '../modules/rooms/game.service';
 import { TicketsRepository } from '../modules/tickets/tickets.repository';
+import { AccountChanges } from '../modules/tickets/accountChanges';
 
 @Injectable()
 export class AccountPublisher {
@@ -13,8 +14,10 @@ export class AccountPublisher {
     private readonly identity: IdentityService,
     private readonly games: GameService,
     private readonly tickets: TicketsRepository,
+    changes: AccountChanges,
   ) {
     this.games.subscribeRewards((accountIds) => { void this.publishAfterCommit(accountIds).catch(() => undefined); });
+    changes.subscribe((accountId, revision) => this.changed(accountId, revision));
   }
 
   public attach(server: Server): void { this.server = server; }

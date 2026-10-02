@@ -40,6 +40,7 @@ export function projectGame(runtime: SessionRuntime, room: InternalRoom, control
         streetContribution: seat?.streetContribution ?? 0, totalContribution: seat?.totalContribution ?? 0,
         folded: seat?.folded ?? false, allIn: seat?.allIn ?? false,
         connected: controller.isConnected(participant.accountId),
+        equipment: runtime.equipmentByAccount?.[participant.accountId] ?? { avatar: null, cardBack: null },
       };
     }),
     board: [...(hand?.board ?? [])], pots: currentPots(runtime), buttonSeat: runtime.buttonSeat,
