@@ -129,16 +129,26 @@ produce no reward; reject unsupported versions when introducing another policy.
 
 ## M4 — Cosmetic collection loop
 
+Implementation evidence - 2026-10-01: user approved the launch rules and original
+celestial catalogue. Actual routes are `/pulls` and `/collection`; browser tests
+are in `apps/web/tests/e2e/collection.spec.ts`. Pure/transaction/API and both-slot
+snapshot tests, web recovery/account-switch/reduced-motion cases, and the real
+earn, interrupted pull, equip, next session and re-login flow pass.
+Full Chromium passed 14/14; workspace checks/builds passed, with later suites at
+169 server and 68 web tests. The per-step commit suggestions are consolidated
+into one M4 task PR targeting `dev`; exact commits/CI are in CHECKPOINT.md.
+All publication so far used disposable databases. M5 stays pending.
+
 ### M4.1 — Immutable catalogue and pure draw policy
 
 **Files:** Create `packages/contracts/src/{collection.ts,collection.test.ts}`, `apps/server/src/modules/gacha/{drawPolicy.ts,drawPolicy.spec.ts,catalogue.ts,gacha.module.ts}`, `apps/server/src/database/migrations/005-collection.ts`, `apps/server/scripts/publish-catalogue.ts`, `apps/web/public/art/cosmetics/manifest.json`, and twelve optimized licensed/original assets there. Modify migration registration, contracts exports and `apps/web/public/art/README.md` for provenance.
 
 **Interfaces:** `BannerVersion` fixes ID/version, prices, rarity weights, guarantees and item pools. `drawOne(config: BannerVersion, progress: BannerProgress, ownedIds: ReadonlySet<string>, randomInt: (maxExclusive: number) => number): DrawResult` returns item, rarity, duplicate and updated pity. `publishCatalogue(db: Db, config: BannerVersion): Promise<void>` inserts immutable versions and rejects changing existing content; execution against live data requires authorization.
 
-- [ ] Approve the M4 proposals and concrete asset catalogue; validate exactly 12 unique items, slot/rarity distribution, nonempty rarity pools and safe asset URLs. Record licensing and reserve built-in defaults outside pulls.
-- [ ] Write deterministic boundary cases: ninth failure followed by guaranteed SR+; 89 failures followed by SSR; SSR guarantee wins both thresholds; SR resets SR+ only, SSR resets both; SR guarantee retains base SSR chance; first SSR in a batch excludes it from the next draw until all SSR owned; complete pool permits duplicates. Observe failures.
-- [ ] Implement pure policy with injected unbiased integer randomness, uniform eligible item selection and no database/network calls. Add catalogue validation, indexes/validators for banner progress, receipts, ownership and equipment as specified in plan section 11.
-- [ ] Verify migrations twice, catalogue immutability and deterministic policy tests using `pnpm --filter @poker/server test -- drawPolicy` and database tests. Commit: `feat: define versioned cosmetic catalogue and draw rules`.
+- [x] Approve the M4 proposals and concrete asset catalogue; validate exactly 12 unique items, slot/rarity distribution, nonempty rarity pools and safe asset URLs. Record licensing and reserve built-in defaults outside pulls.
+- [x] Write deterministic boundary cases: ninth failure followed by guaranteed SR+; 89 failures followed by SSR; SSR guarantee wins both thresholds; SR resets SR+ only, SSR resets both; SR guarantee retains base SSR chance; first SSR in a batch excludes it from the next draw until all SSR owned; complete pool permits duplicates. Observe failures.
+- [x] Implement pure policy with injected unbiased integer randomness, uniform eligible item selection and no database/network calls. Add catalogue validation, indexes/validators for banner progress, receipts, ownership and equipment as specified in plan section 11.
+- [x] Verify migrations twice, catalogue immutability and deterministic policy tests using `pnpm --filter @poker/server test --runTestsByPath src/modules/gacha/drawPolicy.spec.ts` and database tests. Commit: `feat: define versioned cosmetic catalogue and draw rules`.
 
 ### M4.2 — Atomic pull purchase and receipt recovery
 
@@ -146,10 +156,10 @@ produce no reward; reject unsupported versions when introducing another policy.
 
 **Interfaces:** `PullRequest = { requestId: string; bannerVersion: string; count: 1 | 10 }`. `GachaService.pull(accountId: string, request: PullRequest): Promise<PullReceipt>` and `findReceipt(accountId: string, requestId: string): Promise<PullReceipt | null>`. Receipt includes payload hash, immutable banner version/price, ordered results, duplicate flags, resulting pity and committed timestamp. Expose `GET /api/banner`, `POST /api/pulls`, `GET /api/pulls/:requestId` with session/proxy/origin checks and bounded rate limiting.
 
-- [ ] Write replica-set tests before implementation: 5 tickets permits one single pull; two parallel singles from 5 charge exactly once; identical ID returns same receipt; changed count/version under same ID conflicts; different accounts may use same ID independently; insufficient funds leaves no receipt/debit/pity/ownership changes.
-- [ ] Initialize wallet/progress idempotently. Within one transaction find receipt first, increment wallet revision, validate current banner, conditionally debit, process draws sequentially with updated ownership/pity per draw, then commit ledger, ownership, pity and receipt together. Return an existing receipt before rejecting its now-stale banner version. Duplicate-key races resolve to the winning matching receipt.
-- [ ] Add failure injection after debit/ownership/pity writes; assert full rollback. Retry after an uncertain commit returns only committed results. Concurrent reward and pull preserve wallet/ledger and cap invariants. Spending never replenishes daily earning allowance.
-- [ ] Run `pnpm --filter @poker/server test -- gacha.e2e-spec tickets.e2e-spec`; verify privacy of receipt lookup and logs. Commit: `feat: commit cosmetic pulls with durable receipts`.
+- [x] Write replica-set tests before implementation: 5 tickets permits one single pull; two parallel singles from 5 charge exactly once; identical ID returns same receipt; changed count/version under same ID conflicts; different accounts may use same ID independently; insufficient funds leaves no receipt/debit/pity/ownership changes.
+- [x] Initialize wallet/progress idempotently. Within one transaction find receipt first, increment wallet revision, validate current banner, conditionally debit, process draws sequentially with updated ownership/pity per draw, then commit ledger, ownership, pity and receipt together. Return an existing receipt before rejecting its now-stale banner version. Duplicate-key races resolve to the winning matching receipt.
+- [x] Add failure injection after debit/ownership/pity writes; assert full rollback. Retry after an uncertain commit returns only committed results. Concurrent reward and pull preserve wallet/ledger and cap invariants. Spending never replenishes daily earning allowance.
+- [x] Run `pnpm --filter @poker/server test --runTestsByPath test/gacha.e2e-spec.ts test/settlement.e2e-spec.ts`; verify privacy of receipt lookup and logs. Commit: `feat: commit cosmetic pulls with durable receipts`.
 
 ### M4.3 — Pull screen with reload-safe pending identity
 
@@ -157,9 +167,9 @@ produce no reward; reject unsupported versions when introducing another policy.
 
 **Interfaces:** `savePendingPull(accountId: string, request: PullRequest): void`, `readPendingPull(accountId: string): PullRequest | null`, and `clearPendingPull(accountId: string): void` retain original identity across refresh in tab storage. Store no session cookie or unrevealed private data. Reconcile using receipt lookup or identical POST; a missing receipt after an uncertain request alone does not justify a new request ID.
 
-- [ ] Write cases for refresh during POST, same ID after timeout, account switching, unavailable storage, stale catalogue and explicit rejection versus uncertain network result. Storage failure disables purchase with recovery guidance before sending a debit request.
-- [ ] Display cost, odds, guarantees, owned/duplicate rules and insufficient balance before submission. Reveal only committed ordered results; skip and reduced-motion reveal have identical durable outcomes. Clear pending identity only on committed receipt or definitive rejection; reauthentication recovers the original account's operation.
-- [ ] Run web tests and `pnpm --filter @poker/web exec playwright test e2e/pulls.spec.ts`; interrupt reveal, reload and retry, asserting one ledger debit and stable results. Inspect mobile and keyboard flow. Commit: `feat: add recoverable cosmetic pull experience`.
+- [x] Write cases for refresh during POST, same ID after timeout, account switching, unavailable storage, stale catalogue and explicit rejection versus uncertain network result. Storage failure disables purchase with recovery guidance before sending a debit request.
+- [x] Display cost, odds, guarantees, owned/duplicate rules and insufficient balance before submission. Reveal only committed ordered results; skip and reduced-motion reveal have identical durable outcomes. Clear pending identity only on committed receipt or definitive rejection; reauthentication recovers the original account's operation.
+- [x] Run web tests and `pnpm --filter @poker/web exec playwright test collection.spec.ts`; interrupt reveal, reload and retry, asserting one ledger debit and stable results. Inspect mobile and keyboard flow. Commit: `feat: add recoverable cosmetic pull experience`.
 
 ### M4.4 — Ownership, equipment and next-hand snapshots
 
@@ -167,10 +177,10 @@ produce no reward; reject unsupported versions when introducing another policy.
 
 **Interfaces:** `GET /api/collection`, `GET /api/equipment`, `PUT /api/equipment/:slot` with `{ itemId: string | null; expectedRevision: number }`. `CollectionService.equip(accountId, slot, itemId, expectedRevision)` returns committed equipment with revision or conflict. `snapshotEquipment(accountIds: readonly string[], session: ClientSession)` returns one consistent selection set for the durable next-hand boundary; capture it once and project that frozen set throughout the hand.
 
-- [ ] Write tests for unowned item, wrong slot, default null item, competing tab revision, missed notification recovery and equipment races at deal. An active hand's visuals remain unchanged; next hand shows the committed selection to every authorized player.
-- [ ] Implement owned-item reads, bounded pagination, ownership/slot checks, optimistic revision match and account invalidation. Render current versus next-hand selection clearly. Assets never encode or reveal another account's hole-card value.
-- [ ] Run server equipment tests and browser earn → pull → equip → next hand → reconnect → sign out/in with two independent accounts. Test both slots, long names, empty collection and card readability at 360 px.
-- [ ] Run milestone aggregate checks including M3 reward/pull concurrency. Commit: `feat: equip owned cosmetics at hand boundaries`; submit M4 PR to `dev` for manual merge.
+- [x] Write tests for unowned item, wrong slot, default null item, competing tab revision, missed notification recovery and equipment races at deal. An active hand's visuals remain unchanged; next hand shows the committed selection to every authorized player.
+- [x] Implement owned-item reads, bounded pagination, ownership/slot checks, optimistic revision match and account invalidation. Render current versus next-hand selection clearly. Assets never encode or reveal another account's hole-card value.
+- [x] Run server equipment tests and browser earn → pull → equip → next hand → reconnect → sign out/in with two independent accounts. Test both slots, long names, empty collection and card readability at 360 px.
+- [x] Run milestone aggregate checks including M3 reward/pull concurrency. Commit: `feat: equip owned cosmetics at hand boundaries`; submit M4 PR to `dev` for manual merge.
 
 ## M5 — Friends release candidate and hosted acceptance
 
@@ -267,4 +277,4 @@ Checked 2026-09-30; recheck at provisioning and launch:
 
 Coverage: economy/settlement → M3; versioned catalogue/pulls/equipment → M4; privacy/recovery/accessibility/build/hosting → M5; approved production cutover/rollback → M6; ownership and maintenance → M7. The five review-focus failures each have named task coverage. Durable operations share the existing transaction boundary, and legacy M2 results remain readable without backfill.
 
-This is a planning deliverable. All execution boxes intentionally remain open. The next action after this plan is reviewed/merged is M3.1: confirm reward policy and account recovery decisions, then implement M3 sequentially. Recommended execution is inline because rewards, wallet writes and settlement share one transaction boundary. No deployment or production operation has been performed by preparing this document.
+The original document was a planning deliverable. M3 is merged and M4 local implementation evidence is recorded above; M5-M7 execution remains pending. The next milestone after manual M4 review/merge is M5.1. Recommended execution is inline because rewards, wallet writes and settlement share one transaction boundary. No deployment or production operation has been performed by preparing this document.

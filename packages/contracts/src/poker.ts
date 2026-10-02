@@ -2,6 +2,7 @@ import { z } from 'zod';
 
 import type { Result } from './common.js';
 import { rewardReceiptSchema } from './tickets.js';
+import { handEquipmentSchema } from './collection.js';
 
 const id = z.string().min(1).max(128);
 const chips = z.number().int().nonnegative().safe();
@@ -45,6 +46,7 @@ const participantSchema = z.object({
   seat: z.number().int().min(0).max(5), stack: chips,
   streetContribution: chips, totalContribution: chips,
   folded: z.boolean(), allIn: z.boolean(), connected: z.boolean(),
+  equipment: handEquipmentSchema.optional(),
 }).strict();
 
 const potSchema = z.object({ amount: chips, eligibleAccountIds: z.array(id).max(6) }).strict();

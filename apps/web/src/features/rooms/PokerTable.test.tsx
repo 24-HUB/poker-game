@@ -58,4 +58,15 @@ describe('PokerTable', () => {
     render(<PokerTable {...props} game={{ ...game, sessionPhase: 'ending' }} />);
     expect(screen.getByRole('button', { name: 'Fold' })).toBeEnabled();
   });
+
+  it('uses cosmetic backs only for hidden cards and preserves readable private fronts', () => {
+    const avatar = { id: 'avatar', name: 'Star Scout', slot: 'avatar' as const, rarity: 'R' as const, assetUrl: '/art/cosmetics/star-scout-avatar.svg' };
+    const back = { id: 'back', name: 'Star Scout Card Back', slot: 'cardBack' as const, rarity: 'R' as const, assetUrl: '/art/cosmetics/star-scout-back.svg' };
+    render(<PokerTable {...props} game={{ ...game, participants: game.participants.map((player) => ({ ...player, equipment: { avatar, cardBack: back } })) }} />);
+    expect(screen.getByLabelText('Your cards')).toHaveTextContent('2♣');
+    expect(screen.getByLabelText('Your cards').querySelectorAll('img')).toHaveLength(0);
+    expect(screen.getByLabelText('Hidden cards').querySelectorAll('img')).toHaveLength(2);
+    expect(screen.getByLabelText('Hidden cards')).not.toHaveTextContent('2♣');
+    expect(screen.getByRole('img', { name: "Guest's Star Scout avatar" })).toBeVisible();
+  });
 });

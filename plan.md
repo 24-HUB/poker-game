@@ -101,11 +101,11 @@ Example: participating in five qualifying hands and having a positive net result
 
 The user confirmed the 1-ticket participation reward, 1-ticket positive-net bonus, manual-action qualification, 20-ticket UTC daily earning cap, and participation-first cap allocation for M3 on 2026-09-30. These are launch values, not established balance results. Evaluate the pace during a friends playtest. The cap and authenticated, once-only rewards limit casual farming; coordinated collusion is outside the first private release's protection goals.
 
-## 5. Proposed gacha and cosmetics — review required
+## 5. Approved M4 gacha and cosmetics — 2026-10-01
 
-Start with one permanent catalogue of 12 original or appropriately licensed assets: six card backs and six avatars, distributed as six R, four SR, and two SSR items. Keep default cosmetics available without pulling. Higher rarity changes appearance only.
+The user approved one permanent original celestial vector catalogue of 12 assets: six card backs and six avatars, distributed as six R, four SR, and two SSR items. Each slot has Star Scout, Moon Courier and Solar Knight (R), Comet Mage and Eclipse Oracle (SR), and Astral Empress (SSR). Keep free default cosmetics outside the pull pool. Higher rarity changes appearance only.
 
-Proposed base rarity probabilities: R 70%, SR 25%, SSR 5%.
+Approved prices: 5 tickets per single pull and 50 per ten-pull. Base rarity probabilities: R 70%, SR 25%, SSR 5%. These are launch tuning values; evaluate pacing during M5.
 
 Specify guarantees precisely:
 
@@ -118,7 +118,7 @@ Specify guarantees precisely:
 - Equip at most one avatar and one card back. Ownership is validated by the server. Changes appear at the next hand boundary; table legibility and card secrecy remain unchanged.
 - Pull animation reveals an already committed result. Closing the animation cannot cancel a charge or lose the item. Retrying the same request returns the same result.
 
-The duplicate policy, starting catalogue, pity behavior, and prices above are proposals. The participation-plus-win reward model and separate currency choice are already agreed.
+The user approved the duplicate policy, celestial catalogue, pity behavior and prices on 2026-10-01. Selection within each eligible rarity pool is uniform. Published catalogue versions are immutable; changing these values requires a new approved version.
 
 ## 6. Architecture decision
 
@@ -496,7 +496,33 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
-### Repository README task - 2026-10-02
+### README conflict resolution - 2026-10-02 14:29 UTC
+
+The user requested resolution of PR [#14](https://github.com/24-HUB/poker-game/pull/14)
+on `codex/repository-readme` after M4 PR #13 merged. Fresh `origin/dev` is
+`1054e977`; its integration is resolved on this existing task branch. Both documentation
+histories are retained, including all M4 evidence and approved decisions.
+README.md now describes merged M0-M4 and local catalogue publication. M5,
+hosted acceptance and live email delivery verification remain pending.
+
+Last completed README handoff commit before this resolution: `c665de83`.
+Validation passed: ten local links, pinned versions, eleven package scripts,
+harness setup, conflict markers, Markdown fences and whitespace. All original
+dev checkpoint entries, handoffs and approved decisions are preserved exactly.
+Only the three Markdown files differ from dev; application files match it.
+The complete diff was reviewed and `git diff --check` passed. Application tests
+were not rerun locally for this docs-only resolution. No deployment or live
+database operation occurred. The merge commit containing this checkpoint saves
+the resolution. Next: commit/push, fetch and confirm PR #14 is mergeable, then
+review final-head CI before manual merge.
+Usage at 2026-10-02 14:29 UTC: five-hour 86% remaining (reset 2026-10-02
+19:02:07 UTC), weekly 9% remaining (reset 2026-10-06 01:38:22 UTC).
+Below-10% save-point assessment: finish this bounded verified resolution and
+remote save; begin no substantial new work. No reset credit used.
+See CHECKPOINT.md for verification and next steps. All older handoffs below are
+historical. The user merges manually.
+
+### Historical repository README task - 2026-10-02
 
 The documentation-only task is on `codex/repository-readme`, created clean from
 freshly fetched `origin/dev` at `a3cb9794` (merged M3). `README.md` now explains
@@ -521,7 +547,63 @@ Usage at 2026-10-02 14:20 UTC: five-hour 90% remaining (reset
 2026-10-06 01:38:22 UTC). See `CHECKPOINT.md` for the task handoff. The user
 merges manually.
 
-### Historical M3 handoff — 2026-09-30
+### M4 local implementation and CI verified - 2026-10-02
+
+M4 is implemented on `codex/m4-cosmetic-collection`, PR
+[#13](https://github.com/24-HUB/poker-game/pull/13) targeting `dev`.
+Implementation commit `0b3ab8b3` and shutdown checkpoint `c89772ee` are pushed.
+[Linux CI on the saved head](https://github.com/24-HUB/poker-game/actions/runs/36879381633/job/110426938910)
+passed frozen install, replica initialization, migration idempotency, aggregate
+checks and Cloudflare Worker packaging. Existing local tests include server
+169/169, web 68/68, contracts 15/15, engine 18/18 and Chromium 14/14; fresh UI
+verdict is **ship**, all six findings resolved. No application change was needed
+on resumption. This evidence-only follow-up triggers final-head CI; inspect it
+before manual merge. Fresh `origin/dev` remains `a3cb9794` and is contained.
+
+The user merges manually. M5.1 follows that review/merge as a new task from
+fresh `origin/dev`; no M5, hosted acceptance, live email, deployment or live
+catalogue publication is claimed. See CHECKPOINT.md for next steps.
+Usage observed 2026-10-02 14:04:29 UTC: five-hour 98% remaining (reset 2026-10-02
+19:02:07 UTC), weekly 11% remaining (reset 2026-10-06 01:38:22 UTC).
+
+### M4 shutdown save point - 2026-10-01 14:48 UTC
+
+The user requested stop before closing the PC. M4 implementation commit
+`0b3ab8b3` is pushed on `codex/m4-cosmetic-collection`, draft PR
+[#13](https://github.com/24-HUB/poker-game/pull/13) targeting `dev`. Local checks
+and fresh UI verdict pass as detailed below; Linux CI/Worker packaging has not
+yet been inspected. Keep the PR draft. Fresh `origin/dev` remains `a3cb9794`
+and is contained in this branch. No task process is still running, no live
+publication/deployment occurred, and the user merges manually.
+
+Resume by checking usage/status/branch, fetching origin, then inspecting the
+final PR head's [checks](https://github.com/24-HUB/poker-game/pull/13/checks).
+Do not repeat completed M4 work. See CHECKPOINT.md for exact steps and evidence.
+Usage at 2026-10-01 14:47:52 UTC: five-hour 51% remaining (reset 2026-10-01
+18:27:23 UTC), weekly 12% remaining (reset 2026-10-06 01:38:22 UTC).
+
+### M4 local implementation verified - 2026-10-01
+
+M3 PR #12 is merged. Branch `codex/m4-cosmetic-collection` starts from fresh
+`origin/dev` at `a3cb9794`. M4 launch rules and the original twelve-asset celestial
+catalogue are approved (section 5). Local code implements immutable catalogue
+publication, migration 005, atomic idempotent pulls, saved pending identities,
+collection/equipment and durable next-hand cosmetic snapshots. No live catalogue
+publication or deployment occurred.
+
+Sequential `pnpm check` passed (168 server, 65 web, 15 contracts, 18 engine tests,
+script tests, typechecks and production builds). Later suites passed 169 server
+and 68 web tests; final typecheck/backend build passed. Chromium passed 14/14;
+the focused M4 capture flow passed 1/1. Fresh UI verdict is **ship**, all six
+findings resolved. Commit/PR and Linux Worker CI remain pending. See
+`CHECKPOINT.md` for precise evidence and next commands.
+
+Usage observed 2026-10-01 14:40 UTC: five-hour 60% remaining (reset 2026-10-01
+18:27:23 UTC), weekly 13% remaining (reset 2026-10-06 01:38:22 UTC). No reset
+credit used. The user merges manually. Hosted acceptance and live Brevo delivery
+remain separate M5 gates.
+
+### Historical M3 handoff - 2026-09-30
 
 **M3 local implementation verified — 2026-09-30:** Branch
 `codex/m3-persistent-tickets`, PR [#12](https://github.com/24-HUB/poker-game/pull/12)

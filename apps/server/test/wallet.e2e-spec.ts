@@ -12,6 +12,8 @@ import { TicketsRepository } from '../src/modules/tickets/tickets.repository';
 import { TransactionRunner } from '../src/database/transactionRunner';
 import type { Db } from 'mongodb';
 import { AccountPublisher } from '../src/realtime/accountPublisher';
+import { CELESTIAL_BANNER, publishCatalogue } from '../src/modules/gacha/catalogue';
+import { randomUUID } from 'node:crypto';
 import { createTestDatabase, type TestDatabase } from './support/testDatabase';
 
 describe('authenticated ticket wallet', () => {
@@ -77,6 +79,36 @@ describe('authenticated ticket wallet', () => {
     expect(bobView.status).toBe(200);
     expect(bobView.body.data).toMatchObject({ balance: 0, revision: 0, earnedToday: 0, dailyCap: 20, remainingToday: 20 });
     expect((await read('')).status).toBe(401);
+  });
+
+  it('protects pull receipts and collection mutations with session, origin and strict intent checks', async () => {
+    await publishCatalogue(database.db, CELESTIAL_BANNER);
+    const alice = await createAccount('alice@example.com');
+    const bob = await createAccount('bob@example.com');
+    await app.get(TicketsService).getWallet(alice.id, new Date());
+    await database.db.collection<{ _id: string; balance: number }>('ticketWallets').updateOne({ _id: alice.id }, { $set: { balance: 5 } });
+    const input = { requestId: randomUUID(), bannerVersion: CELESTIAL_BANNER.version, count: 1 };
+    const post = (body: object, suppliedOrigin = origin) => request(app.getHttpServer()).post('/api/pulls')
+      .set('origin', suppliedOrigin).set('cookie', alice.cookie).set('x-poker-proxy-secret', proxySecret).send(body);
+    expect((await post(input, 'https://evil.example')).status).toBe(403);
+    expect((await post({ ...input, accountId: bob.id })).status).toBe(400);
+    const committed = await post(input);
+    expect(committed.status).toBe(201);
+    expect((await post(input)).body.data).toEqual(committed.body.data);
+    const read = (path: string, cookie = alice.cookie) => request(app.getHttpServer()).get(path).set('cookie', cookie).set('x-poker-proxy-secret', proxySecret);
+    expect((await read(`/api/pulls/${input.requestId}`, bob.cookie)).status).toBe(404);
+    expect((await read('/api/banner', '')).status).toBe(401);
+    const owned = (await read('/api/collection')).body.data;
+    expect(owned.items).toHaveLength(1);
+    expect((await read('/api/collection', bob.cookie)).body.data.items).toHaveLength(0);
+    const item = committed.body.data.results[0].item;
+    const selected = await request(app.getHttpServer()).put(`/api/equipment/${item.slot}`).set('origin', origin)
+      .set('cookie', alice.cookie).set('x-poker-proxy-secret', proxySecret).send({ itemId: item.id, expectedRevision: 0 });
+    expect(selected.status).toBe(200);
+    expect(selected.body.data[item.slot].itemId).toBe(item.id);
+    for (let i = 0; i < 28; i += 1) await post(input);
+    expect((await post(input)).status).toBe(429);
+    expect((await read(`/api/pulls/${input.requestId}`)).body.data).toEqual(committed.body.data);
   });
 
   it('resets the UTC allowance at midnight while preserving the balance', async () => {

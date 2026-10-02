@@ -6,6 +6,7 @@
     "build": "nest build",
     "check:auth-import": "node scripts/check-auth-import.mjs",
     "db:migrate": "ts-node src/database/migrate.ts",
+    "catalogue:publish": "ts-node scripts/publish-catalogue.ts",
     "start": "node dist/main.js",
     "start:dev": "nest start --watch",
     "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js --runInBand",

@@ -1,12 +1,59 @@
 # Checkpoint — Remaining phases through production
 
-## Repository README handoff - 2026-10-02 14:20 UTC
+## README conflict resolution - 2026-10-02 14:29 UTC
+
+- Continuing `codex/repository-readme`, PR [#14](https://github.com/24-HUB/poker-game/pull/14), base `dev`. Last completed README handoff commit before this resolution: `c665de83`; the merge commit containing this checkpoint records the resolution. The user requested conflict resolution after M4 PR [#13](https://github.com/24-HUB/poker-game/pull/13) merged into `dev` at `1054e977`; this explicitly authorizes synchronizing the existing task branch.
+- Resolved integration of freshly fetched `origin/dev` into the README branch. Resolved the two documentation conflicts in `CHECKPOINT.md` and plan.md by retaining both the README history and all M4 verification/save-point entries. The README now reflects merged M0-M4, includes collection/pull/equipment status, and documents the local catalogue publication requirement. M5 and hosted/live email acceptance remain pending.
+- Verification passed: ten local README links with exact case, pinned versions, eleven package scripts, harness catalogue setup, conflict-marker scan, Markdown fences and whitespace. Confirmed every original dev checkpoint entry, plan handoff and approved decision is preserved exactly. No unresolved files remain; the staged diff against `origin/dev` contains only the three Markdown files and all application files match dev. Reviewed the complete diff and `git diff --check` passed. Application tests were not rerun locally for this docs-only resolution; no deployment or live database operation occurred.
+- Save-point next step: commit the staged merge, then `git push -u origin codex/repository-readme`. Fetch before final handoff, confirm the branch contains latest dev, and confirm GitHub reports PR #14 mergeable. After the push, review PR #14 and final-head CI before manual merge. No further implementation is pending; the user merges manually.
+- Usage observed 2026-10-02 14:29 UTC: five-hour 86% remaining, reset 2026-10-02 19:02:07 UTC; weekly 9% remaining, reset 2026-10-06 01:38:22 UTC. Below-10% save-point trigger assessed: finish this bounded verified resolution and remote save; start no substantial new work. No reset credit used.
+
+The dated handoffs below retain their original state and are historical.
+
+---
+
+## Historical repository README handoff - 2026-10-02 14:20 UTC
 
 - Task: add the root README. Branch `codex/repository-readme` was created clean from freshly fetched `origin/dev` at `a3cb9794`, which includes merged M3. README commit `3aaf96ca` is pushed. PR [#14](https://github.com/24-HUB/poker-game/pull/14) targets `dev` and is open for review; the user merges manually. The follow-up documentation commit records this completed handoff.
 - Added `README.md` with the product overview, actual workspace structure, pinned tooling, disposable MongoDB setup, PowerShell migration environment, frontend preview, complete loopback test harness, verification commands, configuration, and documentation links. M4 is correctly described as implemented in open PR [#13](https://github.com/24-HUB/poker-game/pull/13), pending merge; M5, hosted acceptance and live email delivery remain pending.
 - Verification: all eight local README links exist with exact filename case; pinned versions, ten package scripts, harness path, Markdown fences and whitespace checks passed. Reviewed the complete task diff against `origin/dev`; `git diff --check` passed. Scope is documentation only; application checks were not rerun locally under the docs-only rule in `AGENTS.md`. No application behavior, provider setup, deployment or database operation changed.
 - Freshness: handoff fetch succeeded and `origin/dev` remains `a3cb9794`, contained in the task branch. Only the three task-owned Markdown files changed. No local blocker or remaining README implementation work. Next action: review PR #14 and its final-head automated CI before manual merge; this handoff update triggers CI again. M4 review/merge stays in PR #13; M5 requires its own task and authorization gates.
 - Usage observed 2026-10-02 14:20 UTC: five-hour 90% remaining, reset 2026-10-02 19:02:07 UTC; weekly 10% remaining, reset 2026-10-06 01:38:22 UTC. No reset credit used.
+
+---
+
+## M4 CI verification and review handoff - 2026-10-02 14:04 UTC
+
+- Resumed the existing clean branch `codex/m4-cosmetic-collection` and draft PR [#13](https://github.com/24-HUB/poker-game/pull/13), base `dev`. Implementation commit `0b3ab8b3` and shutdown checkpoint `c89772ee` are pushed. No implementation work remains from the M4 save point; this follow-up records CI evidence and completes the handoff. The user merges manually.
+- [Linux CI on saved head `c89772ee`](https://github.com/24-HUB/poker-game/actions/runs/36879381633/job/110426938910) passed. Every configured step succeeded: frozen pnpm install, disposable replica initialization, migration idempotency, `pnpm check` and Cloudflare Worker packaging. No PR review comments or submitted reviews were present at inspection.
+- Existing local evidence remains valid: final server 169/169, web 68/68, contracts 15/15, engine 18/18, script tests, typechecks/production builds, full Chromium 14/14 and captured M4 flow 1/1. Fresh UI verdict **ship**, all six findings resolved, and scoped design record are complete. Only documentation changed during this resume; application checks were not needlessly repeated. Full task diff and `git diff --check` were reviewed.
+- Fresh fetch succeeded; `origin/dev` remains `a3cb9794` and is contained in the task branch. No integration, deployment, live email delivery or live catalogue/database operation occurred. This documentation follow-up triggers another CI run; verify its latest head before manual merge. The PR can be marked ready after required checks pass.
+- Next milestone after the user's manual M4 review/merge: M5.1 release controls and regression/CI preparation in `docs/superpowers/plans/2026-09-30-m3-through-production.md`. Start that new task with clean status, usage inspection and fetch, then create its branch from fresh `origin/dev`. M5 hosted playtest, live email and deployment remain separate authorization gates.
+- Usage observed 2026-10-02 14:04:29 UTC: five-hour 98% remaining, reset 2026-10-02 19:02:07 UTC; weekly 11% remaining, reset 2026-10-06 01:38:22 UTC. No reset credit used.
+
+---
+
+## M4 shutdown save point - user requested stop - 2026-10-01 14:48 UTC
+
+- Work stopped for the user to close the PC. Branch `codex/m4-cosmetic-collection`; draft PR [#13](https://github.com/24-HUB/poker-game/pull/13), base `dev`. Implementation commit `0b3ab8b3a621a4f8ad6b7010bc9094c018d4b633` is committed and pushed. This documentation save point follows it; no implementation changes remain pending locally. Leave the PR draft until Linux CI/Worker packaging and final review are inspected. The user merges manually.
+- Last completed step: approved M4 collection/pull/equipment loop, twelve original celestial vectors, fresh UI review disposition **ship** (six findings resolved), and scoped design documentation. Frozen install, sequential aggregate (168 server/65 web/15 contracts/18 engine plus script tests, typechecks and production builds), later full server 169/169 and web 68/68, final typecheck/backend build, focused captured M4 Chromium 1/1 and full Chromium 14/14 passed. `git diff --check` passed. No lint script exists. Detailed behavior and earlier failed harness runs are recorded in the entry below.
+- Fresh fetch at shutdown succeeded; `origin/dev` remains `a3cb9794` and is contained in the task branch. Only disposable Docker replica-set data was used. No deployment, live catalogue publication, production DB action or reset credit occurred.
+- Remaining: inspect the final PR head's Linux CI, including migration idempotency and Cloudflare Worker build. CI status has not yet been inspected; local passing checks do not establish its result. No additional UI polish is pending. No tests/processes are still running for this task.
+- Exact resume steps: check account usage; read this save point and plan.md; run `git status --short --branch`, `git branch --show-current`, then `git fetch origin --prune`. Continue this branch, do not recreate M4 or repeat passing checks without a new failure/change. Inspect [PR #13 checks](https://github.com/24-HUB/poker-game/pull/13/checks), fix any failure within M4, record CI evidence and mark ready only after required checks pass. Fetch before final handoff and report drift without merging/rebasing. M5 follows the user's manual M4 review/merge; deployment still needs separate authorization.
+- Usage observed 2026-10-01 14:47:52 UTC: five-hour 51% remaining, reset 2026-10-01 18:27:23 UTC; weekly 12% remaining, reset 2026-10-06 01:38:22 UTC. No reset credit used.
+
+---
+
+## M4 local implementation verification - 2026-10-01 14:40 UTC
+
+- Branch `codex/m4-cosmetic-collection`, created clean from freshly fetched `origin/dev` at `a3cb9794` after M3 PR #12 merged. All current changes belong to M4 and are pending the first task commit/PR targeting `dev`. Last completed base commit is `a3cb9794`. The user merges manually.
+- User approved 5/50-ticket pulls, 70/25/5 R/SR/SSR odds, SR+10/SSR90 guarantees, unowned SSR exclusion until complete, no duplicate refunds, and twelve original celestial vectors plus free defaults. Each slot has three R, two SR and one SSR. Catalogue `celestial-v1` is explicitly published only in disposable tests; no live publication or deployment occurred.
+- Implemented contracts/migration 005, immutable publication command and deterministic draws; atomic wallet/debit/ledger/ownership/pity/receipt transactions with account-scoped recovery; reload-safe pending request identity, committed reveal and collection UI; ownership/slot/revision-checked equipment, coherent collection reads and durable per-hand equipment snapshots. Custom backs never replace visible private card fronts. Assets and provenance are repository-authored.
+- Verification: frozen install passed. Sequential `pnpm check` passed 168 server, 65 web, 15 contract and 18 engine tests, three script tests, typechecks and Nest/Next production builds. Later full server suite passed 169/169 including the competing collection snapshot regression; full web suite passed 68/68 including uncertain retries, stale-price review and account switching. Final workspace typecheck and backend build passed. No lint script exists.
+- Chromium M4 flow passed 1/1: five earned tickets, storage denied without charge, interrupted committed POST/reload/same receipt, equip, next session visuals, card-front secrecy and sign out/in persistence. Mobile overflow, preview reachability/focus and keyboard tabs passed; reduced-motion/skip are unit-tested. The prior full browser attempt passed 13/14; its M4 failure was capture-clock hydration control, subsequently fixed with the focused pass. The full Chromium rerun passed 14/14. Fresh UI finish verdict is **ship**, with all six material findings resolved; the built M4 surface record is finalized. Six desktop/mobile purchase/collection/reveal captures are saved outside the repository.
+- Earlier Docker checks were unavailable while its engine was stopped; after the user opened Docker, both disposable services and replica initialization succeeded. Earlier browser harness failures from actor-only controls, an ambiguous alert, transferred host control and premature login reads were corrected; none are claimed as passing runs. An initial aggregate test matcher type error was fixed before the passing aggregate.
+- Next exact step: review/stage the final documentation, commit and `git push -u origin codex/m4-cosmetic-collection`; create its PR with base `dev`, attach it and inspect Linux CI/Worker packaging. Fetch origin before handoff; report drift without integration. Keep the PR draft while required checks remain unresolved.
+- Usage observed 2026-10-01 14:40 UTC: five-hour 60% remaining, reset 2026-10-01 18:27:23 UTC; weekly 13% remaining, reset 2026-10-06 01:38:22 UTC. No reset credit used.
 
 ---
 
