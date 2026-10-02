@@ -507,11 +507,16 @@ the complete loopback stack. M4 remains implemented in open
 hosted M5 acceptance and live email verification remain pending. The older
 handoffs below are historical.
 
-Next: validate documentation links/scripts, review the diff and run
-`git diff --check`; commit/push task-owned docs and create a separate PR to `dev`.
-No application checks, deployment or database operations are claimed for this
-task. Last completed base commit is `a3cb9794`; the PR is pending creation.
-Usage at 2026-10-02 14:17 UTC: five-hour 91% remaining (reset
+README commit `3aaf96ca` is pushed in
+[PR #14](https://github.com/24-HUB/poker-game/pull/14) targeting `dev`. All eight
+local links, pinned versions, ten package scripts, harness path, Markdown fences
+and whitespace checks passed; the complete diff was reviewed and
+`git diff --check` passed. Application checks were not rerun locally for this
+docs-only task. Handoff fetch succeeded; `origin/dev` remains `a3cb9794` and is
+contained in the branch. No implementation work or local blocker remains.
+Next: review PR #14 and its final-head CI before manual merge. This handoff
+update triggers CI again. No deployment or database operation occurred.
+Usage at 2026-10-02 14:20 UTC: five-hour 90% remaining (reset
 2026-10-02 19:02:07 UTC), weekly 10% remaining (reset
 2026-10-06 01:38:22 UTC). See `CHECKPOINT.md` for the task handoff. The user
 merges manually.

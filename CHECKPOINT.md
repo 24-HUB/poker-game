@@ -1,12 +1,12 @@
 # Checkpoint — Remaining phases through production
 
-## Repository README handoff - 2026-10-02 14:17 UTC
+## Repository README handoff - 2026-10-02 14:20 UTC
 
-- Task: add the root README. Branch `codex/repository-readme` was created clean from freshly fetched `origin/dev` at `a3cb9794`, which includes merged M3. Last completed commit before this documentation task: `a3cb9794`. A separate PR targeting `dev` will be created after the documentation commit; the user merges manually.
+- Task: add the root README. Branch `codex/repository-readme` was created clean from freshly fetched `origin/dev` at `a3cb9794`, which includes merged M3. README commit `3aaf96ca` is pushed. PR [#14](https://github.com/24-HUB/poker-game/pull/14) targets `dev` and is open for review; the user merges manually. The follow-up documentation commit records this completed handoff.
 - Added `README.md` with the product overview, actual workspace structure, pinned tooling, disposable MongoDB setup, PowerShell migration environment, frontend preview, complete loopback test harness, verification commands, configuration, and documentation links. M4 is correctly described as implemented in open PR [#13](https://github.com/24-HUB/poker-game/pull/13), pending merge; M5, hosted acceptance and live email delivery remain pending.
-- Scope: documentation only. No application behavior, provider setup, deployment or database operation changed. Pending work: review all three documentation files, validate local links and package scripts, run `git diff --check`, commit/push only task-owned files, create the README PR, then fetch origin and confirm branch freshness.
-- Exact next step: `git diff --check`, inspect the complete task diff against `origin/dev`, then commit `README.md`, `CHECKPOINT.md`, and `plan.md` on this branch. Application checks are unnecessary for this docs-only task under `AGENTS.md`; no previous test results are claimed as rerun.
-- Usage observed 2026-10-02 14:17 UTC: five-hour 91% remaining, reset 2026-10-02 19:02:07 UTC; weekly 10% remaining, reset 2026-10-06 01:38:22 UTC. No reset credit used.
+- Verification: all eight local README links exist with exact filename case; pinned versions, ten package scripts, harness path, Markdown fences and whitespace checks passed. Reviewed the complete task diff against `origin/dev`; `git diff --check` passed. Scope is documentation only; application checks were not rerun locally under the docs-only rule in `AGENTS.md`. No application behavior, provider setup, deployment or database operation changed.
+- Freshness: handoff fetch succeeded and `origin/dev` remains `a3cb9794`, contained in the task branch. Only the three task-owned Markdown files changed. No local blocker or remaining README implementation work. Next action: review PR #14 and its final-head automated CI before manual merge; this handoff update triggers CI again. M4 review/merge stays in PR #13; M5 requires its own task and authorization gates.
+- Usage observed 2026-10-02 14:20 UTC: five-hour 90% remaining, reset 2026-10-02 19:02:07 UTC; weekly 10% remaining, reset 2026-10-06 01:38:22 UTC. No reset credit used.
 
 ---
 
