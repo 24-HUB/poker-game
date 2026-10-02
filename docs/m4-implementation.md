@@ -31,3 +31,13 @@ Verify frozen install, pure policy/contracts, real disposable replica-set cases,
 workspace checks and production builds, Chromium account flows, 360px/desktop
 layouts and keyboard/reduced-motion behavior. Publish a PR targeting `dev`;
 the user merges manually. Record actual evidence in the existing checkpoints.
+
+## Verification handoff - 2026-10-02
+
+Implemented in commit `0b3ab8b3` on PR [#13](https://github.com/24-HUB/poker-game/pull/13),
+base `dev`. Local server/web/contract/engine and Chromium checks passed; the
+fresh UI finish verdict is **ship** with all six findings resolved.
+[Linux CI on saved head `c89772ee`](https://github.com/24-HUB/poker-game/actions/runs/36879381633/job/110426938910)
+passed migrations, aggregate checks and Cloudflare Worker packaging.
+The latest documentation head must pass CI before manual merge. Detailed
+counts and resume history remain in CHECKPOINT.md and plan.md. M5 is pending.

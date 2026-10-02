@@ -1,5 +1,16 @@
 # Checkpoint — Remaining phases through production
 
+## M4 CI verification and review handoff - 2026-10-02 14:04 UTC
+
+- Resumed the existing clean branch `codex/m4-cosmetic-collection` and draft PR [#13](https://github.com/24-HUB/poker-game/pull/13), base `dev`. Implementation commit `0b3ab8b3` and shutdown checkpoint `c89772ee` are pushed. No implementation work remains from the M4 save point; this follow-up records CI evidence and completes the handoff. The user merges manually.
+- [Linux CI on saved head `c89772ee`](https://github.com/24-HUB/poker-game/actions/runs/36879381633/job/110426938910) passed. Every configured step succeeded: frozen pnpm install, disposable replica initialization, migration idempotency, `pnpm check` and Cloudflare Worker packaging. No PR review comments or submitted reviews were present at inspection.
+- Existing local evidence remains valid: final server 169/169, web 68/68, contracts 15/15, engine 18/18, script tests, typechecks/production builds, full Chromium 14/14 and captured M4 flow 1/1. Fresh UI verdict **ship**, all six findings resolved, and scoped design record are complete. Only documentation changed during this resume; application checks were not needlessly repeated. Full task diff and `git diff --check` were reviewed.
+- Fresh fetch succeeded; `origin/dev` remains `a3cb9794` and is contained in the task branch. No integration, deployment, live email delivery or live catalogue/database operation occurred. This documentation follow-up triggers another CI run; verify its latest head before manual merge. The PR can be marked ready after required checks pass.
+- Next milestone after the user's manual M4 review/merge: M5.1 release controls and regression/CI preparation in `docs/superpowers/plans/2026-09-30-m3-through-production.md`. Start that new task with clean status, usage inspection and fetch, then create its branch from fresh `origin/dev`. M5 hosted playtest, live email and deployment remain separate authorization gates.
+- Usage observed 2026-10-02 14:04:29 UTC: five-hour 98% remaining, reset 2026-10-02 19:02:07 UTC; weekly 11% remaining, reset 2026-10-06 01:38:22 UTC. No reset credit used.
+
+---
+
 ## M4 shutdown save point - user requested stop - 2026-10-01 14:48 UTC
 
 - Work stopped for the user to close the PC. Branch `codex/m4-cosmetic-collection`; draft PR [#13](https://github.com/24-HUB/poker-game/pull/13), base `dev`. Implementation commit `0b3ab8b3a621a4f8ad6b7010bc9094c018d4b633` is committed and pushed. This documentation save point follows it; no implementation changes remain pending locally. Leave the PR draft until Linux CI/Worker packaging and final review are inspected. The user merges manually.

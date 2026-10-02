@@ -496,6 +496,25 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### M4 local implementation and CI verified - 2026-10-02
+
+M4 is implemented on `codex/m4-cosmetic-collection`, PR
+[#13](https://github.com/24-HUB/poker-game/pull/13) targeting `dev`.
+Implementation commit `0b3ab8b3` and shutdown checkpoint `c89772ee` are pushed.
+[Linux CI on the saved head](https://github.com/24-HUB/poker-game/actions/runs/36879381633/job/110426938910)
+passed frozen install, replica initialization, migration idempotency, aggregate
+checks and Cloudflare Worker packaging. Existing local tests include server
+169/169, web 68/68, contracts 15/15, engine 18/18 and Chromium 14/14; fresh UI
+verdict is **ship**, all six findings resolved. No application change was needed
+on resumption. This evidence-only follow-up triggers final-head CI; inspect it
+before manual merge. Fresh `origin/dev` remains `a3cb9794` and is contained.
+
+The user merges manually. M5.1 follows that review/merge as a new task from
+fresh `origin/dev`; no M5, hosted acceptance, live email, deployment or live
+catalogue publication is claimed. See CHECKPOINT.md for next steps.
+Usage observed 2026-10-02 14:04:29 UTC: five-hour 98% remaining (reset 2026-10-02
+19:02:07 UTC), weekly 11% remaining (reset 2026-10-06 01:38:22 UTC).
+
 ### M4 shutdown save point - 2026-10-01 14:48 UTC
 
 The user requested stop before closing the PC. M4 implementation commit
