@@ -82,6 +82,27 @@ authorization. An unpublished catalogue returns an actionable unavailable state.
 
 ## Local acceptance
 
+`pnpm build:server` builds the contracts, poker engine and Nest server in workspace
+dependency order. Render uses that same command after a frozen installation. CI runs
+it immediately after checkout/install, before any typecheck or other build can supply
+cached `dist` output. A contracts-only build is insufficient for the server.
+
+Linux CI retains migration idempotency, aggregate checks and OpenNext Worker packaging,
+then installs Chromium with its system dependencies and runs the full browser suite.
+The browser harness creates a unique disposable local database, applies migrations and
+publishes the approved test catalogue; it does not connect to Atlas or send real email.
+Tests run with one worker and no retries, and focused `.only` tests fail CI.
+
+CI disables browser traces, automatic screenshots and video, and does not upload test
+reports or manually captured media. Local failure traces and screenshots can contain
+cookies, invitation fragments or private cards: keep them in ignored `test-results/`
+and review/redact them before sharing. Test output in the CI job supplies the result;
+do not publish raw captures as release evidence. This follows the browser setup in
+[Playwright's CI guide](https://playwright.dev/docs/ci).
+
+See the [release checklist](release-checklist.md) for the remaining M5 gates. CI success
+alone does not establish hosted acceptance, live email delivery or restore readiness.
+
 ```powershell
 docker compose up -d mongodb mongodb-standalone
 pnpm db:init

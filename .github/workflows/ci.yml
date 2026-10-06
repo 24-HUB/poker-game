@@ -12,7 +12,7 @@ permissions:
 jobs:
   verify:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 40
     env:
       CI: "true"
       TEST_MONGODB_URI: mongodb://127.0.0.1:27018/?replicaSet=rs0&directConnection=true
@@ -27,6 +27,8 @@ jobs:
           node-version: 22.16.0
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Build Render backend with uncached workspace dependencies
+        run: pnpm build:server
       - name: Start disposable MongoDB services
         run: docker compose up -d mongodb mongodb-standalone
       - name: Initialize replica set
@@ -41,3 +43,8 @@ jobs:
       - run: pnpm check
       - name: Build Cloudflare Worker
         run: pnpm --filter @poker/web build:worker
+      - name: Install Chromium and system dependencies
+        run: pnpm --filter @poker/web exec playwright install --with-deps chromium
+      - name: Run full Chromium acceptance against disposable services
+        timeout-minutes: 15
+        run: pnpm --filter @poker/web exec playwright test --project=chromium
