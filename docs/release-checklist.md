@@ -7,7 +7,8 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 
 ## Candidate record
 
-- Candidate commit and PR: pending the M5.1 handoff.
+- CI/build slice: `f6b2577a`, draft [PR #15](https://github.com/24-HUB/poker-game/pull/15)
+  to `dev`; final release candidate remains pending the remaining M5 gates.
 - Runtime: Node 22.16.0 and pnpm 10.33.0, pinned in the repository.
 - Frontend adapter: OpenNext Cloudflare 1.20.6; Next.js 16.3.6.
 - Reward policy: v1; catalogue: immutable `celestial-v1`.
