@@ -7,8 +7,9 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 
 ## Candidate record
 
-- CI/build slice with clock correction: `b614e003`, draft [PR #15](https://github.com/24-HUB/poker-game/pull/15)
-  to `dev`; final release candidate remains pending the remaining M5 gates.
+- M5.1 CI/build correction merged in [PR #15](https://github.com/24-HUB/poker-game/pull/15).
+  M5.2 local recovery implementation: `9ec83a8e`, draft [PR #16](https://github.com/24-HUB/poker-game/pull/16)
+  to `dev`; inspect its final head's CI. Final release candidate remains pending M5 gates.
 - Runtime: Node 22.16.0 and pnpm 10.33.0, pinned in the repository.
 - Frontend adapter: OpenNext Cloudflare 1.20.6; Next.js 16.3.6.
 - Reward policy: v1; catalogue: immutable `celestial-v1`.
