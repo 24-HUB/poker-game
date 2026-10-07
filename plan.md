@@ -496,6 +496,69 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### M5.1 timer correction - 2026-10-07 12:00 UTC
+
+Continuing `codex/m5-release-gates`, draft PR [#15](https://github.com/24-HUB/poker-game/pull/15)
+to `dev`; correction `b614e003` is pushed. The system clock now reschedules early
+native timers until their absolute deadline, retaining cancellation and unref
+semantics. Five deterministic tests and sanitized collection wait diagnostics
+were added. Browser sequence, wait bounds and zero retries remain unchanged.
+
+Native probe RED: 11/500 timers fired one millisecond early; game deadline guards
+could then discard a callback without rescheduling. Deterministic early/cancel
+regressions failed before the fix. Fixed probe GREEN: zero early callbacks out
+of 500. Aggregate passed 174 server, 68 web, 15 contracts, 18 engine and three
+script tests, typechecks and production builds; two full Chromium runs passed
+28/28 under CI settings. Focused review found no clock correctness issue and its
+minor diagnostic auto-wait issue was corrected. No harness listeners remain.
+
+Earlier Linux on `2db3aaef` passed 13/14 browsers but failed the collection turn
+wait; its exact cause was not captured. Speculative setup changes were withdrawn.
+See `CHECKPOINT.md` for intermediate failed runs and resolved Docker/import issues.
+[Linux CI for the correction](https://github.com/24-HUB/poker-game/actions/runs/37617148673/job/112778136755)
+passed all steps, including uncached backend, migration idempotency, aggregate,
+OpenNext Worker packaging and full Chromium 14/14. The docs-only follow-up triggers
+another run; inspect its final head before manual merge. Fresh fetch confirms
+`origin/dev` remains `d0883bac`, contained in the branch.
+
+Next: inspect final-head checks, investigate failures without retries, then
+continue M5.1's maintenance/admission race and receipt replay tests and controls
+on this branch/PR. Expanded gameplay/visual, hosted/live email and restore gates
+remain unchecked. No deployment or live database action occurred; user merges
+manually. Usage observed 2026-10-07 11:59 UTC: five-hour 70% remaining (reset
+2026-10-07 14:30:43 UTC), weekly 93% (reset 2026-10-14 03:43:34 UTC).
+
+### M5.1 CI/build slice - 2026-10-06 13:45 UTC
+
+Branch `codex/m5-release-gates`, draft PR [#15](https://github.com/24-HUB/poker-game/pull/15)
+to `dev`; verified implementation commit `f6b2577a` is pushed. Shared
+`pnpm build:server` fixes the uncached Render dependency build and runs before
+other CI builds. CI retains migrations, aggregate checks and Worker packaging,
+adds full Chromium acceptance, rejects `.only`, and uploads no browser media or
+raw reports. The [release checklist](docs/release-checklist.md) preserves all
+remaining release gates. The user merges manually.
+
+Actual evidence: old clean-source Render build failed without poker-engine;
+new exact command passed with all backend `dist` directories absent. Frozen
+installs, two isolated migration runs, sequential aggregate (169 server, 68 web,
+15 contracts, 18 engine and three script tests, typechecks/builds), full Chromium
+under CI settings 14/14, YAML parsing, independent review and diff whitespace
+checks passed. Earlier Docker outage blocked the first aggregate; it was resolved
+before the passing rerun. No browser harness listeners remain. No deployment,
+live email or live database operation occurred.
+
+Fresh fetch confirms latest `origin/dev` at `d0883bac` is contained. Linux CI
+on implementation commit is in progress at this save point; Worker/candidate
+Linux evidence remains pending. Check the final docs-follow-up head too. Resume
+on this branch/PR after usage/status/checkpoint/fetch checks: write M5.1's failing
+maintenance/admission race and receipt replay tests, then implement the two
+server-only controls and one active session room. Expanded gameplay/visual,
+hosted/live email and restore gates remain unchecked. See CHECKPOINT.md for exact
+resume details; do not repeat completed CI/build steps.
+
+Usage observed 2026-10-06 13:42 UTC: five-hour 82% remaining (reset 2026-10-06
+17:15:35 UTC), weekly 89% remaining (reset 2026-10-13 02:15:10 UTC).
+
 ### README conflict resolution - 2026-10-02 14:29 UTC
 
 The user requested resolution of PR [#14](https://github.com/24-HUB/poker-game/pull/14)

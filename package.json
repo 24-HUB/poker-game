@@ -7,6 +7,7 @@
   },
   "scripts": {
     "build": "pnpm -r --if-present build",
+    "build:server": "pnpm -r --filter @poker/server... build",
     "check": "pnpm typecheck && pnpm test && pnpm build",
     "db:init": "node scripts/init-replica-set.mjs",
     "db:migrate": "pnpm --filter @poker/server db:migrate",

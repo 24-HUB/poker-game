@@ -32,11 +32,23 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
       const guestClaim = guest.getByRole('button', { name: 'Claim control', exact: true });
       if (await guestClaim.isVisible()) await guestClaim.click();
       const hostFold = host.getByRole('button', { name: 'Fold', exact: true });
-      await expect.poll(async () => Boolean(await hostFold.count()) && await hostFold.isEnabled()
-        || Boolean(await guest.getByRole('button', { name: /^Call / }).count()) && await guest.getByRole('button', { name: /^Call / }).isEnabled(), { timeout: 10_000 }).toBe(true);
+      const guestCall = guest.getByRole('button', { name: /^Call / });
+      await expect.poll(async () => {
+        if (Boolean(await hostFold.count()) && await hostFold.isEnabled()
+          || Boolean(await guestCall.count()) && await guestCall.isEnabled()) return 'ready';
+        const states = [];
+        for (const page of [host, guest]) {
+          states.push({
+            phase: await page.locator('.poker-table__header > div:first-child > p:last-child').allTextContents(),
+            turn: await page.locator('.poker-table__action-panel > [role="status"]').allTextContents(),
+            claim: await page.getByRole('button', { name: 'Claim control', exact: true }).count(),
+            pending: await page.getByRole('button', { name: 'Reconcile pending game action' }).count(),
+          });
+        }
+        return JSON.stringify(states);
+      }, { timeout: 10_000, message: `Waiting for an actor in qualifying hand ${i + 1}` }).toBe('ready');
       if (!await hostFold.count() || !await hostFold.isEnabled()) {
-        const claim = guest.getByRole('button', { name: 'Claim control', exact: true });
-        if (await claim.isVisible()) await claim.click();
+        if (await guestClaim.isVisible()) await guestClaim.click();
         await guest.getByRole('button', { name: /^Call / }).click();
       }
       await expect(host.getByRole('button', { name: 'Fold', exact: true })).toBeEnabled();

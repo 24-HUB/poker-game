@@ -191,10 +191,26 @@ All publication so far used disposable databases. M5 stays pending.
 **Interfaces:** Proposed server-only `ALLOW_NEW_SESSIONS` and `ECONOMY_WRITES_ENABLED` validated settings support controlled maintenance; ordinary browser input cannot alter them. Session admission enforces one active room globally at launch under existing backend ownership fencing. Maintenance blocks new purchases/sessions, still permits receipt reads and resolves already in-flight durable work; existing hands drain or explicitly abort under documented restart semantics.
 
 - [ ] Test limits and maintenance races before implementing: a second room cannot start while another session is active; retries cannot bypass admission; already committed receipt replay remains available; blocked new writes do not corrupt balances. No fake keep-alive or extra authority instance.
-- [ ] Add CI Playwright execution with required browser/system dependencies and disposable DB configuration. Preserve current aggregate checks and Worker build. Restrict artifacts and redact tokens/private cards rather than publishing sensitive traces.
-- [ ] Fix the actual deployment build gap: `render.yaml` currently builds contracts then server but omits the poker-engine dependency. Verify the backend build from a clean checkout with no cached `dist`; build its workspace dependencies in order. Recheck supported runtime, pinned adapter and provider settings without unrelated upgrades.
+- [x] Add CI Playwright execution with required browser/system dependencies and disposable DB configuration. Preserve current aggregate checks and Worker build. Restrict artifacts and redact tokens/private cards rather than publishing sensitive traces. Implemented 2026-10-06; candidate `b614e003` Linux suite passed 14/14 on 2026-10-07, including Worker packaging; no media/report uploads.
+- [x] Fix the actual deployment build gap: `render.yaml` previously built contracts then server but omitted the poker-engine dependency. Shared `pnpm build:server` now builds both dependencies before Nest and is exercised before other CI builds. Old clean-source build failed; exact new command passed without cached `dist`. Node 22 LTS, explicit Render version pin and existing OpenNext adapter were rechecked; dependencies were not upgraded.
 - [ ] Run full browser/Socket.IO suite, two/six-player flows, disconnect/expiry/takeover, all-in/side-pot result readability, account separation and cold/unavailable backend states. Inspect desktop and 360 px mobile, focus, contrast, touch controls and reduced motion.
 - [ ] Record release candidate commit, test reports, artifact versions, known issues, and no unresolved money-equivalent ledger/privacy/authorization defects. Commit: `test: establish private release acceptance gates`.
+
+2026-10-06 CI/build slice on `codex/m5-release-gates`: local aggregate passed
+169 server, 68 web, 15 contract, 18 engine and three script tests, typechecks and
+production builds. Migration idempotency and full Chromium 14/14 passed. Independent
+review found no actionable issue. Remaining maintenance/admission controls, expanded
+gameplay/visual acceptance and hosted/restore gates are not complete; see
+[release checklist](../../release-checklist.md) and the current repository checkpoint.
+
+2026-10-07 follow-up `b614e003`: fixed early native game-clock dispatch with five
+deterministic regressions; aggregate passed 174 server tests and unchanged other
+suite counts, typechecks and builds. Two full Chromium runs passed 28/28. Earlier
+Linux passed 13/14 and failed the collection actor wait; the exact failure state
+was not captured. [Correction-candidate CI](https://github.com/24-HUB/poker-game/actions/runs/37617148673/job/112778136755)
+passed all steps, including Worker packaging and full Chromium 14/14. Original
+browser sequence, wait bounds and no-retry policy are retained with sanitized
+failure diagnostics. Recheck the docs-only follow-up's final head before merge.
 
 ### M5.2 — Backup, restore and incident rehearsal
 
