@@ -7,7 +7,7 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 
 ## Candidate record
 
-- CI/build slice: `f6b2577a`, draft [PR #15](https://github.com/24-HUB/poker-game/pull/15)
+- CI/build slice with clock correction: `b614e003`, draft [PR #15](https://github.com/24-HUB/poker-game/pull/15)
   to `dev`; final release candidate remains pending the remaining M5 gates.
 - Runtime: Node 22.16.0 and pnpm 10.33.0, pinned in the repository.
 - Frontend adapter: OpenNext Cloudflare 1.20.6; Next.js 16.3.6.
@@ -19,12 +19,18 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 - [x] Frozen install and `pnpm build:server` from fresh source without cached `dist`.
   Verified locally 2026-10-06; the old Render sequence failed before the fix.
 - [x] Migration idempotency on a disposable MongoDB replica set, two successful runs.
-- [x] `pnpm check`: 169 server, 68 web, 15 contracts, 18 engine and three script tests,
-  typechecks and production builds passed locally 2026-10-06. No lint script exists.
-- [ ] Linux OpenNext Worker packaging on the candidate commit.
-- [ ] Full Chromium suite in CI: accounts, rooms, takeover, restart, poker, tickets,
+- [x] `pnpm check`: 174 server, 68 web, 15 contracts, 18 engine and three script tests,
+  typechecks and production builds passed locally 2026-10-07. No lint script exists.
+- [x] Linux OpenNext Worker packaging on correction candidate `b614e003`.
+- [x] Full Chromium suite in CI: accounts, rooms, takeover, restart, poker, tickets,
   interrupted pull recovery, equipment and persistence.
-  Local run with `CI=true` passed 14/14 on 2026-10-06; Linux CI remains pending.
+  Two local runs with `CI=true` passed 28/28 on 2026-10-07; [Linux candidate CI](https://github.com/24-HUB/poker-game/actions/runs/37617148673/job/112778136755)
+  passed 14/14. Earlier Linux passed 13/14 and failed the collection actor wait.
+  Recheck the documentation follow-up's final head before manual merge.
+- [x] Absolute game-clock deadlines survive early native callbacks and cancellation.
+  Five deterministic regressions passed; real fixed-clock probe had zero early
+  callbacks out of 500 (native probe before correction: 11 early). The exact
+  earlier CI failure state was not captured; sanitized diagnostics are retained.
 - [x] CI/build slice diff reviewed independently; no actionable finding. This is
   not a release-wide review of remaining M5 work.
 

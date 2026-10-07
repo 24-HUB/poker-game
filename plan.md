@@ -496,6 +496,38 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### M5.1 timer correction - 2026-10-07 12:00 UTC
+
+Continuing `codex/m5-release-gates`, draft PR [#15](https://github.com/24-HUB/poker-game/pull/15)
+to `dev`; correction `b614e003` is pushed. The system clock now reschedules early
+native timers until their absolute deadline, retaining cancellation and unref
+semantics. Five deterministic tests and sanitized collection wait diagnostics
+were added. Browser sequence, wait bounds and zero retries remain unchanged.
+
+Native probe RED: 11/500 timers fired one millisecond early; game deadline guards
+could then discard a callback without rescheduling. Deterministic early/cancel
+regressions failed before the fix. Fixed probe GREEN: zero early callbacks out
+of 500. Aggregate passed 174 server, 68 web, 15 contracts, 18 engine and three
+script tests, typechecks and production builds; two full Chromium runs passed
+28/28 under CI settings. Focused review found no clock correctness issue and its
+minor diagnostic auto-wait issue was corrected. No harness listeners remain.
+
+Earlier Linux on `2db3aaef` passed 13/14 browsers but failed the collection turn
+wait; its exact cause was not captured. Speculative setup changes were withdrawn.
+See `CHECKPOINT.md` for intermediate failed runs and resolved Docker/import issues.
+[Linux CI for the correction](https://github.com/24-HUB/poker-game/actions/runs/37617148673/job/112778136755)
+passed all steps, including uncached backend, migration idempotency, aggregate,
+OpenNext Worker packaging and full Chromium 14/14. The docs-only follow-up triggers
+another run; inspect its final head before manual merge. Fresh fetch confirms
+`origin/dev` remains `d0883bac`, contained in the branch.
+
+Next: inspect final-head checks, investigate failures without retries, then
+continue M5.1's maintenance/admission race and receipt replay tests and controls
+on this branch/PR. Expanded gameplay/visual, hosted/live email and restore gates
+remain unchecked. No deployment or live database action occurred; user merges
+manually. Usage observed 2026-10-07 11:59 UTC: five-hour 70% remaining (reset
+2026-10-07 14:30:43 UTC), weekly 93% (reset 2026-10-14 03:43:34 UTC).
+
 ### M5.1 CI/build slice - 2026-10-06 13:45 UTC
 
 Branch `codex/m5-release-gates`, draft PR [#15](https://github.com/24-HUB/poker-game/pull/15)
