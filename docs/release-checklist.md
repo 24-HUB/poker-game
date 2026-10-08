@@ -11,6 +11,8 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
   M5.2 local recovery implementation merged in [PR #16](https://github.com/24-HUB/poker-game/pull/16).
   [Merged dev CI](https://github.com/24-HUB/poker-game/actions/runs/37771118582)
   passed on `08e67c82` on 2026-10-08. Final release candidate remains pending M5 gates.
+  M5.1 controls: `c4462714`, draft [PR #17](https://github.com/24-HUB/poker-game/pull/17)
+  targets `dev`; inspect its final-head checks separately.
 - Runtime: Node 22.16.0 and pnpm 10.33.0, pinned in the repository.
 - Frontend adapter: OpenNext Cloudflare 1.20.6; Next.js 16.3.6.
 - Reward policy: v1; catalogue: immutable `celestial-v1`.
@@ -24,12 +26,18 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 - [x] Migration idempotency on a disposable MongoDB replica set, two successful runs.
 - [x] `pnpm check`: 174 server, 68 web, 15 contracts, 18 engine and three script tests,
   typechecks and production builds passed locally 2026-10-07. No lint script exists.
+  Controls candidate 2026-10-08 passed 191 server, 68 web, 15 contracts, 18 engine,
+  29 economy and three script tests (324 total), typechecks and production builds.
 - [x] Linux OpenNext Worker packaging on correction candidate `b614e003`.
 - [x] Full Chromium suite in CI: accounts, rooms, takeover, restart, poker, tickets,
   interrupted pull recovery, equipment and persistence.
   Two local runs with `CI=true` passed 28/28 on 2026-10-07; [Linux candidate CI](https://github.com/24-HUB/poker-game/actions/runs/37617148673/job/112778136755)
   passed 14/14. Earlier Linux passed 13/14 and failed the collection actor wait.
   Recheck the documentation follow-up's final head before manual merge.
+  Controls candidate's final local Chromium passed 14/14 without retries. The new
+  limit exposed collection-test session leakage, fixed via real session completion.
+  A separate transient restart assertion failed once; focused 6/6 and final full
+  14/14 passed. Its exact cause remains unestablished; sanitized diagnostics remain.
 - [x] Absolute game-clock deadlines survive early native callbacks and cancellation.
   Five deterministic regressions passed; real fixed-clock probe had zero early
   callbacks out of 500 (native probe before correction: 11 early). The exact

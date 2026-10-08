@@ -506,6 +506,39 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### M5.1 admission and maintenance controls — 2026-10-08 13:53 UTC
+
+Branch `codex/m5-maintenance-controls`, draft [PR #17](https://github.com/24-HUB/poker-game/pull/17),
+base `dev`. Implementation `c4462714` is committed/pushed from freshly fetched
+`origin/dev` `08e67c82` (M5.2 PR #16 merged). This documentation follow-up records
+the handoff; the user merges manually. A fresh fetch still contains latest dev;
+merged dev CI passed. Inspect the final PR head separately.
+
+This bounded M5.1 slice implements validated server-only startup gates, production
+defaults closed, one global ACTIVE-session admission inside the existing shared
+authority fence, blocked new purchases/equipment changes without durable effects,
+and retained committed identities/receipt replay and admitted settlement/rewards.
+Flags require restart and do not freeze auth, wallet-read initialization, leases
+or admitted work. Operations docs require full writer shutdown for backups.
+No deployment, live database operation, email or dependency change occurred.
+
+Frozen install and `pnpm check` passed 324 tests (191 server, 68 web, 15 contracts,
+18 engine, 29 economy, three scripts), all typechecks and production builds.
+Final Chromium passed 14/14 without retries; focused restart 6/6; final route
+type generation, web typecheck and diff whitespace passed. Independent review
+found no actionable issue. Initial browser failure exposed collection-test
+capacity leakage, corrected with real session completion. A later transient
+restart assertion failure did not reproduce; its cause is unestablished and
+sanitized diagnostics remain. CHECKPOINT.md records RED/GREEN, failures and rulings.
+
+Next: commit/push this docs follow-up, fetch, inspect final-head PR #17 Linux/
+Worker/browser checks. Keep draft while evidence is pending. Then continue
+remaining M5.1 expanded gameplay/visual gates; external encrypted destination/
+budget/key access and separately authorized hosted M5.3 remain pending. On
+resume use usage/status/branch/fetch checks; do not repeat completed recovery work.
+Usage at 13:53 UTC: five-hour 58% remaining (reset 2026-10-08 18:05:52 UTC),
+weekly 62% remaining (reset 2026-10-14 03:43:34 UTC). No reset credit used.
+
 ### M5.2 local recovery tooling — 2026-10-07 12:45 UTC
 
 Branch `codex/m5-backup-rehearsal`, draft [PR #16](https://github.com/24-HUB/poker-game/pull/16),
