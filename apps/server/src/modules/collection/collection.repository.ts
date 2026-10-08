@@ -1,6 +1,7 @@
 import { Inject, Injectable } from '@nestjs/common';
 import type { CollectionView, CosmeticSlot, EquipmentView, HandEquipment } from '@poker/contracts' with { 'resolution-mode': 'import' };
 import type { ClientSession, Db } from 'mongodb';
+import { ReleaseControls } from '../../config/release-controls';
 import { MONGO_DB, TRANSACTION_RUNNER } from '../../database/database.tokens';
 import { TransactionRunner } from '../../database/transactionRunner';
 import { findCosmetic, type BannerDocument } from '../gacha/catalogue';
@@ -28,7 +29,8 @@ export async function snapshotEquipment(db: Db, accounts: readonly string[], ses
 
 @Injectable()
 export class CollectionRepository {
-  public constructor(@Inject(MONGO_DB) private readonly db: Db, @Inject(TRANSACTION_RUNNER) private readonly transactions: TransactionRunner) {}
+  public constructor(@Inject(MONGO_DB) private readonly db: Db, @Inject(TRANSACTION_RUNNER) private readonly transactions: TransactionRunner,
+    private readonly controls: ReleaseControls = new ReleaseControls()) {}
   public async equipment(accountId: string, session?: ClientSession): Promise<EquipmentView> {
     const view: EquipmentView = { avatar: { itemId: null, revision: 0 }, cardBack: { itemId: null, revision: 0 } };
     for (const row of await this.db.collection<EquipmentDocument>('equipment').find({ accountId }, session ? { session } : { readConcern: { level: 'snapshot' } }).toArray()) {
@@ -51,6 +53,9 @@ export class CollectionRepository {
     });
   }
   public async equip(accountId: string, slot: CosmeticSlot, itemId: string | null, expectedRevision: number): Promise<EquipmentView> {
+    if (!this.controls.settings.economyWritesEnabled) {
+      throw new GachaError('MAINTENANCE', 'Equipment changes are paused for maintenance.');
+    }
     try { await this.transactions.run(async (session) => {
       if (itemId) {
         const owned = await this.db.collection<OwnedCosmetic>('ownedCosmetics').findOne({ accountId, itemId }, { session });

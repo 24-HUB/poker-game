@@ -2,6 +2,7 @@ import { createHash, randomInt } from 'node:crypto';
 import { Inject, Injectable } from '@nestjs/common';
 import type { BannerProgress, BannerVersion, PullReceipt, PullRequest } from '@poker/contracts' with { 'resolution-mode': 'import' };
 import type { ClientSession, Db } from 'mongodb';
+import { ReleaseControls } from '../../config/release-controls';
 import { MONGO_DB, TRANSACTION_RUNNER } from '../../database/database.tokens';
 import { TransactionRunner } from '../../database/transactionRunner';
 import { TicketsRepository, type WalletDocument } from '../tickets/tickets.repository';
@@ -24,6 +25,7 @@ export class GachaRepository {
     @Inject(MONGO_DB) private readonly db: Db,
     @Inject(TRANSACTION_RUNNER) private readonly transactions: TransactionRunner,
     private readonly tickets: TicketsRepository,
+    private readonly controls: ReleaseControls = new ReleaseControls(),
   ) {}
 
   public async banner(version = CELESTIAL_BANNER.version, session?: ClientSession): Promise<BannerVersion> {
@@ -45,6 +47,14 @@ export class GachaRepository {
   }
 
   public async pull(accountId: string, input: PullRequest, random: (max: number) => number = randomInt): Promise<PullReceipt> {
+    // Resolve committed retries before the gate, catalogue reads or lazy wallet initialization.
+    const prior = await this.db.collection<ReceiptDocument>('pullReceipts').findOne(
+      { accountId, requestId: input.requestId }, { readConcern: { level: 'majority' } },
+    );
+    if (prior) return this.matching(prior, input);
+    if (!this.controls.settings.economyWritesEnabled) {
+      throw new GachaError('MAINTENANCE', 'New purchases are paused for maintenance.');
+    }
     await this.tickets.ensureWallet(accountId);
     try {
       return await this.transactions.run(async (session) => {
