@@ -41,6 +41,9 @@ jobs:
           pnpm db:migrate
           pnpm db:migrate
       - run: pnpm check
+      - name: Rehearse encrypted backup and isolated authenticated restore
+        timeout-minutes: 5
+        run: pnpm test:backup
       - name: Build Cloudflare Worker
         run: pnpm --filter @poker/web build:worker
       - name: Install Chromium and system dependencies

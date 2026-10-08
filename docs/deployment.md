@@ -103,6 +103,15 @@ do not publish raw captures as release evidence. This follows the browser setup 
 See the [release checklist](release-checklist.md) for the remaining M5 gates. CI success
 alone does not establish hosted acceptance, live email delivery or restore readiness.
 
+M5.2 local recovery preparation is in [operations.md](operations.md): approved
+operator/retention/recovery targets, read-only economy audit, complete writer
+quiescence, encrypted backup, isolated namespace restore and incident response.
+`pnpm test:economy` verifies valid/corrupt local fixtures; `pnpm test:backup` creates
+an independent authenticated disposable replica set and checks metadata, sign-in
+and committed progression after restore. CI runs both without external credentials.
+The encrypted live storage location remains pending. M5.1 maintenance controls,
+hosted restore, provider/email acceptance and deployment remain separate gates.
+
 ```powershell
 docker compose up -d mongodb mongodb-standalone
 pnpm db:init

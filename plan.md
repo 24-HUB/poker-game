@@ -449,6 +449,16 @@ Run versioned MongoDB setup/migration scripts as a controlled step before game r
 
 Since Atlas Free lacks managed backups, take an encrypted `mongodump` before database changes and after each playtest, with mutations paused for the backup window. Save it outside Render's ephemeral disk and outside the repository. Test `mongorestore` into an isolated database before inviting friends; the recovery point is the last successful manual backup. Do not claim zero data loss after a database disaster.
 
+Recovery operating policy approved 2026-10-07 for M5.2: the user is the operator;
+back up after every play session and before releases/database changes; retain seven
+recent successful session backups plus the latest pre-release backup until the next
+release is verified. Maximum tolerated loss is progress since the last successful
+backup; target recovery is within one operator-attended day. These are approved
+targets, not hosted measurements. Encrypted external destination/budget and retained
+recovery-key access remain pending. See `docs/operations.md` for quiescence of all
+writers (including auth/session refresh), read-only reconciliation, isolated restore
+and incident response. The local generated-data drill does not authorize live actions.
+
 Cloudflare stores only its fixed upstream configuration and proxy secret. Render stores database URI, Better Auth secret, registration-code digest, trusted public origin, and proxy secret. Configure secrets through provider settings; deployment output/logs must redact them. Do not attach account session cookies or private cards to observability events.
 
 Use provider logs and application metrics for connection count, command latency, Worker CPU, event-loop delay, pending settlements, database errors, and failed pulls. Track free-tier usage and wallet/ledger consistency. When deployment is authorized, validate a real Cloudflare -> Render -> Atlas flow, including sleeping-backend wake-up, email/password sessions, HTTP and WebSocket proxying, transaction retries, and backend replacement.
@@ -495,6 +505,49 @@ Implementation prerequisites are concrete: prove the Cloudflare frontend/runtime
 Section 19 supplies the detailed M0/M1 implementation plan. Review it before execution. Build subsequent milestones sequentially, each with a usable frontend slice and its acceptance evidence. Keep all future implementation on a separate development branch so this planning branch retains its single-file purpose. This design task creates no application code, provider accounts, deployed resources, or paid subscriptions.
 
 ## 18. Checkpoint and resumption notes
+
+### M5.2 local recovery tooling — 2026-10-07 12:45 UTC
+
+Branch `codex/m5-backup-rehearsal`, draft [PR #16](https://github.com/24-HUB/poker-game/pull/16),
+base `dev`. Implementation `9ec83a8e` is pushed; this documentation follow-up records
+the handoff. Created clean from freshly fetched `origin/dev` `4d9fb000` (M5.1 PR #15
+merged). The user merges manually. Final freshness fetch confirmed that same dev
+revision is contained in the task branch; no upstream integration performed.
+
+Local M5.2 audit/runbooks/rehearsal are implemented: read-only consistent snapshot,
+explicit operator target mode, counts-only output, reciprocal wallet/receipt/hand
+checks, catalogue/ownership/progress/equipment checks, isolated encrypted dump/restore
+with independent scoped credentials and all source writers closed/revoked. Full
+metadata/counts, restored real sign-in, stable identity, receipt replay without charge,
+ownership and equipment passed. Repeatable audit runs in the aggregate; the independent
+restore drill also runs in CI. No live data, deployment or email action occurred.
+
+Final local checks passed: frozen pnpm 10.33.0 install; `pnpm check` with 174 server,
+68 web, 15 contract, 18 engine, 29 economy and three existing script tests, typechecks
+and production builds; two `pnpm test:backup` drills; JS syntax and diff whitespace.
+Final restore: 12:37:48 UTC, Database Tools 100.14.0, 862 ms archive restoration,
+14,341 ms measured procedure, zero fixture loss. Checksum/timings and scale limits
+are in `docs/operations.md`; all generated containers and temporary archives were
+removed. Review's default-equipment-without-wallet defect was reproduced RED, fixed,
+and aggregate rerun green. SSR eligible-pool audit coverage is a documented deferred
+minor. Initial receipt `_id`, fractional aggregate, container ownership and scoped
+migration permission failures were corrected; runtime roles were not widened.
+
+Approved operator/cadence/retention/recovery targets are recorded in section 15.
+Storage destination/budget/key access remain pending. Hosted Atlas permissions,
+writer shutdown/outbound isolation, authority recovery, compatible rollback artifacts,
+operator response and recovery loss/time remain unverified. M5.1 remaining controls
+and expanded visual gates are unchecked. These local results do not verify the
+complete M5 release or authorize M5.3. [Implementation-head CI](https://github.com/24-HUB/poker-game/actions/runs/37623352933/job/112798842571)
+was running at 12:45 UTC; inspect the docs follow-up's final PR head before review.
+
+Exact next step: inspect final PR #16 checks; obtain encrypted destination/budget
+and retained-key access details from the operator; finish remaining M5.1 gates before
+preparing any separately authorized hosted actions. Commit/push this documentation
+follow-up on the same branch/PR; no other task-owned changes are pending here.
+Usage at 12:45 UTC: five-hour 30% remaining, reset 2026-10-07 14:30:43 UTC; weekly
+86% remaining, reset 2026-10-14 03:43:34 UTC. No reset credit used. Resume with
+usage/status/checkpoint/fetch checks and preserve completed work.
 
 ### M5.1 timer correction - 2026-10-07 12:00 UTC
 

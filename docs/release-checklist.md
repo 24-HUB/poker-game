@@ -7,12 +7,14 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 
 ## Candidate record
 
-- CI/build slice with clock correction: `b614e003`, draft [PR #15](https://github.com/24-HUB/poker-game/pull/15)
-  to `dev`; final release candidate remains pending the remaining M5 gates.
+- M5.1 CI/build correction merged in [PR #15](https://github.com/24-HUB/poker-game/pull/15).
+  M5.2 local recovery implementation: `9ec83a8e`, draft [PR #16](https://github.com/24-HUB/poker-game/pull/16)
+  to `dev`; inspect its final head's CI. Final release candidate remains pending M5 gates.
 - Runtime: Node 22.16.0 and pnpm 10.33.0, pinned in the repository.
 - Frontend adapter: OpenNext Cloudflare 1.20.6; Next.js 16.3.6.
 - Reward policy: v1; catalogue: immutable `celestial-v1`.
-- Environments, operator and approved recovery targets: pending.
+- Environments and encrypted backup destination: pending. The user is the backup
+  operator; recovery/retention targets approved 2026-10-07 are in [operations.md](operations.md).
 
 ## Local and CI gates
 
@@ -53,7 +55,13 @@ captures private and redact cookies, tokens and private cards before sharing evi
 - [ ] Complete the friends loop through the public Worker using real test accounts.
 - [ ] Exercise backend sleep, restart and reconnect; interrupted hands award no tickets.
 - [ ] Verify proxy trust, private cards, account isolation and provider quota headroom.
-- [ ] Approve recovery targets and operator; perform an isolated backup/restore drill.
+- [x] Recovery targets/retention and backup operator approved 2026-10-07.
+- [x] Local encrypted backup/restore drill with scoped credentials: collection
+  metadata/counts, economy audit, restored sign-in, receipt replay, ownership/equipment
+  passed. First drill restored in 777 ms, procedure 8,007 ms, zero fixture loss.
+  See [operations.md](operations.md) for timestamp/checksum and measurement limits.
+- [ ] Select encrypted external destination/budget and rehearse retained-key access.
+- [ ] Perform authorized hosted backup/restore and compare actual loss/time to targets.
 - [ ] Record known issues, rollback revision and compatibility, and release decision.
 
 See [M5-M7 in the implementation plan](superpowers/plans/2026-09-30-m3-through-production.md)
