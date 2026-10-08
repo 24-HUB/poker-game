@@ -2,7 +2,7 @@
 
 This runbook prepares the private release. Live backups, restores, provisioning,
 secret changes and deployments still require authorization for the exact environment
-and action. M5.1 admission/maintenance controls remain incomplete; M5.3 hosted
+and action. M5.1 admission/maintenance controls are locally implemented; M5.3 hosted
 acceptance has not run. An isolated local rehearsal is evidence about test data,
 not a verified Atlas recovery plan.
 
@@ -91,8 +91,9 @@ and [Atlas Free tool restrictions](https://www.mongodb.com/docs/atlas/reference/
 3. Stop **every database writer**, including auth signup/login, session refresh,
    password recovery, lease renewal, migrations, catalogue publishing and jobs.
    Prevent Worker traffic from waking the backend; all instances must be confirmed
-   stopped. Maintenance flags alone are insufficient, and currently are not
-   implemented. Where available, temporarily revoke runtime write access after
+   stopped. The startup controls in [deployment.md](deployment.md) block new
+   sessions, pulls and equipment changes but do not freeze all writers.
+   Where available, temporarily revoke runtime write access after
    shutdown; retain only an operator-scoped dump reader. If writers cannot be
    stopped, cancel this backup. Reopening waits until dump completion.
 4. Verify economy with the reader and record collection counts plus collection

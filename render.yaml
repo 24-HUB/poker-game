@@ -15,6 +15,10 @@ services:
         value: 22.16.0
       - key: NODE_ENV
         value: production
+      - key: ALLOW_NEW_SESSIONS
+        value: "false"
+      - key: ECONOMY_WRITES_ENABLED
+        value: "false"
       - key: PUBLIC_ORIGIN
         sync: false
       - key: PROXY_SECRET

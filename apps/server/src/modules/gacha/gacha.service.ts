@@ -5,7 +5,7 @@ import { GachaError, GachaRepository } from './gacha.repository';
 
 export function economyException(error: unknown): never {
   if (error instanceof GachaError) {
-    const status = error.code === 'NOT_FOUND' ? 404 : error.code === 'SERVICE_UNAVAILABLE' ? 503
+    const status = error.code === 'NOT_FOUND' ? 404 : error.code === 'SERVICE_UNAVAILABLE' || error.code === 'MAINTENANCE' ? 503
       : error.code === 'NOT_OWNED' ? 403 : error.code === 'COMMAND_CONFLICT' || error.code === 'STALE_BANNER' || error.code === 'REVISION_CONFLICT' ? 409 : 400;
     throw new HttpException({ code: error.code, message: error.message }, status);
   }

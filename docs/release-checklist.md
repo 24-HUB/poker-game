@@ -8,8 +8,9 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 ## Candidate record
 
 - M5.1 CI/build correction merged in [PR #15](https://github.com/24-HUB/poker-game/pull/15).
-  M5.2 local recovery implementation: `9ec83a8e`, draft [PR #16](https://github.com/24-HUB/poker-game/pull/16)
-  to `dev`; inspect its final head's CI. Final release candidate remains pending M5 gates.
+  M5.2 local recovery implementation merged in [PR #16](https://github.com/24-HUB/poker-game/pull/16).
+  [Merged dev CI](https://github.com/24-HUB/poker-game/actions/runs/37771118582)
+  passed on `08e67c82` on 2026-10-08. Final release candidate remains pending M5 gates.
 - Runtime: Node 22.16.0 and pnpm 10.33.0, pinned in the repository.
 - Frontend adapter: OpenNext Cloudflare 1.20.6; Next.js 16.3.6.
 - Reward policy: v1; catalogue: immutable `celestial-v1`.
@@ -41,10 +42,14 @@ captures private and redact cookies, tokens and private cards before sharing evi
 
 ## Remaining M5.1 work
 
-- [ ] Server-only session admission and economy maintenance controls with race tests.
-- [ ] One active session room globally, including concurrent starts and retries.
-- [ ] Committed receipt replay remains available while new purchases are blocked;
+- [x] Server-only session admission and economy maintenance controls with race tests.
+- [x] One active session room globally, including concurrent starts and retries.
+- [x] Committed receipt replay remains available while new purchases are blocked;
   admitted durable work resolves and committed balances remain intact.
+  Locally verified 2026-10-08 with real replica-set and authenticated HTTP/Socket.IO
+  tests on `codex/m5-maintenance-controls`. Production defaults and the Render
+  blueprint keep admission/purchases closed until explicitly opened. Review the
+  task PR and its final-head CI before integrating; these checks do not authorize deployment.
 - [ ] Two- and six-player play, disconnect/expiry/takeover, all-in and side-pot results,
   desktop and 360 px layouts, focus, contrast, touch and reduced motion inspected.
 

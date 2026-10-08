@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 
 import { AuthorityModule } from '../../authority/authority.module';
+import { ReleaseControlsModule } from '../../config/release-controls';
 import { CryptoDeckFactory, DECK_FACTORY } from '../../infrastructure/deckFactory';
 import { GAME_CLOCK, SystemGameClock } from '../../infrastructure/gameClock';
 import { IdentityModule } from '../identity/identity.module';
@@ -15,7 +16,7 @@ import { SessionRepository } from './session.repository';
 import { SessionService } from './session.service';
 
 @Module({
-  imports: [AuthorityModule, IdentityModule, SettlementModule],
+  imports: [AuthorityModule, IdentityModule, SettlementModule, ReleaseControlsModule],
   providers: [
     RoomRepository,
     SessionRepository,

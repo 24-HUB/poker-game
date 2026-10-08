@@ -35,7 +35,19 @@ test('a backend restart returns an authenticated participant to the lobby with a
     const restart = await request.post('/__e2e/restart-backend', { data: { delayMs: 250 } });
     expect(restart.ok(), await restart.text()).toBe(true);
 
-    await expect(page).toHaveURL('http://127.0.0.1:3100/');
+    try {
+      await expect(page).toHaveURL('http://127.0.0.1:3100/');
+    } catch (error) {
+      // Keep the acceptance bound; capture only fixed states and HTTP status on failure.
+      const sessionStatus = await context.request.get('/api/me', { timeout: 1_000 })
+        .then((response) => response.status()).catch(() => null);
+      console.error('Restart acceptance diagnostics', {
+        sessionStatus,
+        unavailable: await page.getByText('Service unavailable', { exact: true }).count(),
+        reconnecting: await page.getByText('Reconnecting', { exact: true }).count(),
+      });
+      throw error;
+    }
     await expect(page.getByText('The game server restarted, so the previous room was closed.')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'Restart table' })).toHaveCount(0);
   } finally {

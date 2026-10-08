@@ -138,6 +138,13 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     await expect(observer.locator(`.poker-seat img[src="${item.assetUrl}"]`)).toHaveCount(item.slot === 'avatar' ? 1 : 2);
     const cards = await host.getByLabel('Your cards').innerText();
     expect(cards).not.toContain(item.name);
+    // Finish this second session before the next test needs the global admission slot.
+    guest.once('dialog', (dialog) => void dialog.accept());
+    await guest.getByRole('button', { name: 'End after this hand' }).click();
+    await expect(guest.getByText('The session will end after this hand.')).toBeVisible();
+    await expect(host.getByRole('button', { name: 'Fold', exact: true })).toBeEnabled();
+    await host.getByRole('button', { name: 'Fold', exact: true }).click();
+    await expect(guest.getByRole('heading', { name: 'Session standings' })).toBeVisible({ timeout: 10_000 });
     await host.getByRole('button', { name: 'Sign out' }).click();
     await host.goto('/collection');
     await host.getByRole('button', { name: 'Sign in', exact: true }).click();

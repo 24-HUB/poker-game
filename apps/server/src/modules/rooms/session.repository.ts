@@ -2,6 +2,7 @@ import { Inject, Injectable } from '@nestjs/common';
 import type { ClientSession, Db } from 'mongodb';
 
 import { AuthorityLease, type AuthorityToken } from '../../authority/authorityLease';
+import { ReleaseControls } from '../../config/release-controls';
 import { MONGO_DB, TRANSACTION_RUNNER } from '../../database/database.tokens';
 import { TransactionRunner } from '../../database/transactionRunner';
 import type { HandEquipment, SessionResult } from '@poker/contracts' with { 'resolution-mode': 'import' };
@@ -56,6 +57,7 @@ export class SessionRepository {
     @Inject(MONGO_DB) private readonly db: Db,
     @Inject(TRANSACTION_RUNNER) private readonly transactions: TransactionRunner,
     private readonly authority: AuthorityLease,
+    private readonly controls: ReleaseControls = new ReleaseControls(),
   ) {}
 
   public async findByStart(accountId: string, commandId: string): Promise<StoredGameSession | null> {
@@ -110,6 +112,17 @@ export class SessionRepository {
     const participants = members.map((member) => ({
       accountId: member.accountId, displayName: member.displayName, seat: member.seat!,
     }));
+    if (!this.controls.settings.allowNewSessions) {
+      throw new SessionError('MAINTENANCE', 'New poker sessions are paused for maintenance.');
+    }
+    const participating = await this.db.collection<{ _id: string }>('activeParticipants').findOne(
+      { _id: { $in: participants.map((participant) => participant.accountId) } }, { session },
+    );
+    if (participating) throw new SessionError('ALREADY_IN_SESSION', 'A participant is already in an active session.');
+    // Every start, completion and abort writes the same authority fence in its transaction.
+    // Competing rooms therefore retry with a fresh snapshot before this admission read.
+    const active = await this.db.collection<StoredGameSession>('gameSessions').findOne({ status: 'ACTIVE' }, { session });
+    if (active) throw new SessionError('SESSION_LIMIT_REACHED', 'Another room is playing. Wait for its session to end.');
     const document: StoredGameSession = {
       _id: input.sessionId, roomId: input.roomId, status: 'ACTIVE',
       startedByAccountId: input.accountId, startCommandId: input.commandId,
