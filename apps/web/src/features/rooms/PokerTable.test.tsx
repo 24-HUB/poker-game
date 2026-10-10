@@ -30,6 +30,21 @@ const props: PokerTableProps = { room, game, accountId: 'host', status: 'connect
 
 describe('PokerTable', () => {
   afterEach(cleanup);
+  it('distinguishes the main pot and side pots after unequal all-ins', () => {
+    render(<PokerTable {...props} game={{ ...game, handPhase: 'result', pots: [
+      { amount: 1800, eligibleAccountIds: ['host', 'guest'] },
+      { amount: 200, eligibleAccountIds: ['guest'] },
+    ] }} />);
+    expect(screen.getByText('Main pot: 1800 chips · Side pot 1: 200 chips')).toBeVisible();
+  });
+  it('shows the live total before contribution levels become settled pots', () => {
+    render(<PokerTable {...props} game={{ ...game, pots: [
+      { amount: 20, eligibleAccountIds: ['host', 'guest'] },
+      { amount: 10, eligibleAccountIds: ['guest'] },
+    ] }} />);
+    expect(screen.getByText('Pot: 30 chips')).toBeVisible();
+    expect(screen.queryByText(/Side pot/)).not.toBeInTheDocument();
+  });
   it('renders server legal actions and enforces raise bounds', () => {
     const onAction = vi.fn();
     render(<PokerTable {...props} onAction={onAction} />);

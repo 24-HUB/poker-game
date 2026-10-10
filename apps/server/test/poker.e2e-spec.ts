@@ -261,6 +261,9 @@ describe('authoritative poker actions', () => {
   });
 
   it('resolves an all-in call without another actor or lost chips', async () => {
+    await game.execute(gameContext('host'), {
+      type: 'session:end', ...metadata(), controlEpoch: 1, sessionId,
+    });
     const shove = await game.execute(gameContext('host'), {
       ...action('host'), action: { type: 'raise', raiseTo: 1000 },
     });
@@ -271,6 +274,20 @@ describe('authoritative poker actions', () => {
     expect(called.data?.game?.board).toHaveLength(5);
     expect(registry.controller(roomId).session?.settlement?.finalStacks.reduce((sum, value) => sum + value, 0))
       .toBe(2000);
+    const resultTimer = clock.callbacks.at(-1)!;
+    clock.current = resultTimer.at;
+    resultTimer.callback();
+    await registry.enqueue(roomId, async () => undefined);
+    const ended = await game.execute(gameContext('host'), { type: 'game:sync', roomId });
+    expect(ended.data?.game?.sessionPhase).toBe('ended');
+    expect(ended.data?.game?.pots).toEqual([{ amount: 2000, eligibleAccountIds: ['host', 'guest'] }]);
+  });
+
+  it('excludes uncalled returns from pots throughout the committed result interval', async () => {
+    const folded = await game.execute(gameContext('host'), { ...action('host'), action: { type: 'fold' } });
+    expect(folded.error).toBeNull();
+    expect(folded.data?.game?.handPhase).toBe('result');
+    expect(folded.data?.game?.pots).toEqual([{ amount: 20, eligibleAccountIds: ['guest'] }]);
   });
 
   it('replays the accepted start version after later betting without redealing', async () => {

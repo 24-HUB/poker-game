@@ -221,7 +221,11 @@ describe('room gateway', () => {
       expect(JSON.stringify(hostSnapshots)).not.toContain(created.data.invitation.token);
 
       member.close();
-      await new Promise((resolve) => setTimeout(resolve, 50));
+      await waitFor(() => hostSnapshots.some((snapshot) => {
+        const view = snapshot as { members: { accountId: string; connected: boolean }[] };
+        return view.members.some((entry) => entry.accountId === joined.data?.room?.members
+          .find((entry) => entry.displayName === 'Member')?.accountId && !entry.connected);
+      }));
       const moved = await emitWithAck(host, 'room:takeSeat', mutation('room:takeSeat', hostReady.authorityBootId, {
         roomId: created.data.room.roomId,
         seat: 2,

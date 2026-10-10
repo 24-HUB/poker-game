@@ -6,6 +6,12 @@ import type { SessionRuntime } from '../modules/rooms/session.service';
 import type { RoomController } from '../modules/rooms/roomController';
 
 function currentPots(runtime: SessionRuntime): GameView['pots'] {
+  if (runtime.settlement && runtime.committedHandResult?.handId === runtime.handId &&
+    (runtime.hand?.street === 'complete' || runtime.sessionResult)) {
+    return runtime.settlement.pots.map((pot) => ({
+      amount: pot.amount, eligibleAccountIds: [...pot.eligibleAccountIds],
+    }));
+  }
   const seats = runtime.hand?.seats ?? [];
   const levels = [...new Set(seats.map((seat) => seat.totalContribution))]
     .filter((level) => level > 0).sort((a, b) => a - b);
