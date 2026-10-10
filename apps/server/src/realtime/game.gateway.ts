@@ -86,6 +86,9 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     this.rateLimiter.unregisterSocket(socket.id);
     if (this.shuttingDown) return;
     const operation = this.rooms.disconnect(socket.id)
+      .then(async (roomIds) => {
+        await Promise.all(roomIds.map((roomId) => this.publisher.publish(roomId)));
+      })
       .catch(() => undefined)
       .finally(() => this.disconnectOperations.delete(operation));
     this.disconnectOperations.add(operation);

@@ -66,7 +66,10 @@ export function PokerTable({ room, game, accountId, status, pending, message,
             ? <span className="poker-card poker-card--back" key={index} aria-label="Undealt card">✦</span>
             : <span className={`poker-card poker-card--${cardColor(game.board[index]!)}`} key={index}>{cardLabel(game.board[index]!)}</span>)}
         </div>
-        <p className="poker-table__pot">Pots: {game.pots.length ? game.pots.map((pot) => pot.amount).join(' / ') : '0'} chips</p>
+        <p className="poker-table__pot">{game.handPhase === 'result' || game.sessionResult
+          ? game.pots.map((pot, index) =>
+            `${index === 0 ? 'Main pot' : `Side pot ${index}`}: ${pot.amount} chips`).join(' · ')
+          : `Pot: ${game.pots.reduce((total, pot) => total + pot.amount, 0)} chips`}</p>
         <ul className="poker-table__seats" aria-label="Players">
           {game.participants.map((participant) => <li key={participant.accountId}
             className={participant.accountId === game.actorAccountId ? 'poker-seat poker-seat--acting' : 'poker-seat'}>

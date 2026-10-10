@@ -153,9 +153,9 @@ export class RoomService implements OnApplicationShutdown {
     return reply;
   }
 
-  public async disconnect(connectionId: string): Promise<void> {
+  public async disconnect(connectionId: string): Promise<string[]> {
     const authority = this.authority.currentToken();
-    if (!authority) return;
+    if (!authority) return [];
     const roomIds = this.registry.roomsForConnection(connectionId);
     await Promise.all(roomIds.map((roomId) => this.registry.enqueue(roomId, async () => {
       const controller = this.registry.controller(roomId);
@@ -175,6 +175,7 @@ export class RoomService implements OnApplicationShutdown {
       this.bumpGameSnapshot(roomId);
       if (disconnected.roomEmpty) this.scheduleEmptyClosure(roomId);
     })));
+    return roomIds;
   }
 
   public closedReason(roomId: string): Promise<'LEFT' | 'EMPTY' | 'RESTARTED' | null> {
