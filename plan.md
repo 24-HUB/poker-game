@@ -506,6 +506,32 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### M5.1 multiplayer gameplay acceptance — 2026-10-10 07:17 UTC
+
+Resumed `codex/m5-gameplay-acceptance` from fetched `origin/dev` `5decc3eb`,
+preserving its unfinished six-player browser test. Local scope adds six-player
+unequal all-ins/chip conservation/private-card/result-reload acceptance and
+heads-up disconnect/reconnect/takeover. Fixed missing post-persistence disconnect
+publication and settled-pot projections (including uncalled returns); live pots
+show their total, settled pots have main/side labels. Felt text contrast improved
+from 4.11:1 to 5.04:1; desktop/mobile captures and keyboard/touch/reduced-motion
+checks were inspected. No deployment or live database operation occurred.
+
+Implementation `d4c2373c` is pushed in draft [PR #18](https://github.com/24-HUB/poker-game/pull/18),
+base `dev`. Frozen install and `pnpm check` passed 327 tests, typechecks and production
+builds; focused browser 2/2, three repeat rounds 6/6 and final full Chromium 16/16
+passed without retries. Final production route generation, web typecheck and diff
+checks passed. An intermediate full run failed the six-player actor wait;
+atomic locator reads remove a selector race, with sanitized diagnostics retained,
+but its original exact cause remains unproven. Review's uncalled-return finding
+was fixed and regression-tested; no remaining actionable review findings.
+
+Only this documentation follow-up remains to commit/push. Latest fetch contains current dev. See
+[CHECKPOINT.md](CHECKPOINT.md) for commands, failures and exact resume steps.
+Usage readings are unavailable in this session. After local completion, inspect
+final-head PR #18 Linux/Worker CI, then resolve external backup destination/key access
+before requesting concrete hosted authorization; the user merges manually.
+
 ### M5.1 admission and maintenance controls — 2026-10-08 13:53 UTC
 
 Branch `codex/m5-maintenance-controls`, draft [PR #17](https://github.com/24-HUB/poker-game/pull/17),

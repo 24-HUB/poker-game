@@ -14,6 +14,9 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
   M5.1 controls: `c4462714`, draft [PR #17](https://github.com/24-HUB/poker-game/pull/17)
   targets `dev`; inspect its final-head checks separately.
 - Runtime: Node 22.16.0 and pnpm 10.33.0, pinned in the repository.
+- Local gameplay acceptance: `d4c2373c`, draft [PR #18](https://github.com/24-HUB/poker-game/pull/18),
+  base `dev`, from `5decc3eb` (controls PR #17 merged). Final-head candidate CI
+  remains pending; local evidence below does not authorize deployment.
 - Frontend adapter: OpenNext Cloudflare 1.20.6; Next.js 16.3.6.
 - Reward policy: v1; catalogue: immutable `celestial-v1`.
 - Environments and encrypted backup destination: pending. The user is the backup
@@ -58,8 +61,22 @@ captures private and redact cookies, tokens and private cards before sharing evi
   tests on `codex/m5-maintenance-controls`. Production defaults and the Render
   blueprint keep admission/purchases closed until explicitly opened. Review the
   task PR and its final-head CI before integrating; these checks do not authorize deployment.
-- [ ] Two- and six-player play, disconnect/expiry/takeover, all-in and side-pot results,
+- [x] Two- and six-player play, disconnect/expiry/takeover, all-in and side-pot results,
   desktop and 360 px layouts, focus, contrast, touch and reduced motion inspected.
+  Locally verified 2026-10-10: `pnpm check` passed 327 tests, typechecks and production
+  builds; final Chromium under `CI=true` passed 16/16 with zero retries. New release
+  flows passed three repeat rounds (6/6); existing real Socket.IO tests cover persisted
+  expiry, revoked recipients and takeover. Six-account all-ins conserve 6,000 chips;
+  heads-up reconnect restores private cards and new-tab control removes old-tab actions.
+  Four hand/result captures at 360×800 and 1440×1000 were inspected. Keyboard raise
+  has a visible focus outline and a 44×44 minimum target; reduced motion is exercised.
+  Felt text's conservative contrast is 5.04:1 (previously 4.11:1).
+  Disconnect publication and committed/ended pot projections were corrected with
+  failing real-replica/transport regressions. Uncalled returns do not become side pots.
+  One intermediate full browser run failed its caller selector; atomic DOM reads remove
+  that race, but the original exact failure cause remains unproven. Sanitized diagnostics
+  remain. Review's pot finding is resolved; no remaining actionable findings.
+  These scoped checks are not an exhaustive accessibility certification.
 
 ## Hosted and recovery gates
 
