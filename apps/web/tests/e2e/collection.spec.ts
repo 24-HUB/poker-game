@@ -20,16 +20,16 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     await host.getByLabel('Room title').fill('Celestial table');
     await host.getByRole('button', { name: 'Create private room' }).click();
     await expect(host.getByRole('heading', { name: 'Celestial table' })).toBeVisible();
-    await host.getByRole('button', { name: 'Copy room link' }).click();
+    await host.getByRole('button', { name: 'Copy invite code' }).click();
     const invitation = await host.evaluate(() => navigator.clipboard.readText());
     const roomUrl = host.url();
-    await guest.goto(invitation);
+    await guest.goto('/#invite=' + encodeURIComponent(invitation));
     await expect(host.getByText('2 of 6 members')).toBeVisible();
-    await host.getByRole('button', { name: 'Claim control in this tab' }).click();
+    await host.getByRole('button', { name: 'Use this tab to play' }).click();
     await host.getByRole('button', { name: 'Start poker session' }).click();
     await expect(guest.getByRole('region', { name: 'Poker table' })).toBeVisible();
     for (let i = 0; i < 5; i += 1) {
-      const guestClaim = guest.getByRole('button', { name: 'Claim control', exact: true });
+      const guestClaim = guest.getByRole('button', { name: 'Use this tab to play', exact: true });
       if (await guestClaim.isVisible()) await guestClaim.click();
       const hostFold = host.getByRole('button', { name: 'Fold', exact: true });
       const guestCall = guest.getByRole('button', { name: /^Call / });
@@ -40,8 +40,8 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
         for (const page of [host, guest]) {
           states.push({
             phase: await page.locator('.poker-table__header > div:first-child > p:last-child').allTextContents(),
-            turn: await page.locator('.poker-table__action-panel > [role="status"]').allTextContents(),
-            claim: await page.getByRole('button', { name: 'Claim control', exact: true }).count(),
+            turn: await page.locator('.poker-turn > [role="status"]').allTextContents(),
+            claim: await page.getByRole('button', { name: 'Use this tab to play', exact: true }).count(),
             pending: await page.getByRole('button', { name: 'Reconcile pending game action' }).count(),
           });
         }
@@ -52,7 +52,8 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
         await guest.getByRole('button', { name: /^Call / }).click();
       }
       await expect(host.getByRole('button', { name: 'Fold', exact: true })).toBeEnabled();
-      if (i === 4) { host.once('dialog', (dialog) => void dialog.accept()); await host.getByRole('button', { name: 'End after this hand' }).click(); }
+      if (i === 4) { host.once('dialog', (dialog) => void dialog.accept()); await host.getByText('Room options', { exact: true }).click();
+    await host.getByRole('button', { name: 'End after this hand' }).click(); }
       await host.getByRole('button', { name: 'Fold', exact: true }).click();
       await expect(host.getByLabel(`${i + 1} tickets, ${19 - i} can be earned today`)).toBeVisible();
     }
@@ -128,10 +129,10 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     await host.setViewportSize({ width: 1280, height: 850 });
     await host.goto(roomUrl);
     await expect(host.getByRole('region', { name: 'Poker table' })).toBeVisible();
-    const claim = host.getByRole('button', { name: 'Claim control', exact: true });
+    const claim = host.getByRole('button', { name: 'Use this tab to play', exact: true });
     if (await claim.isVisible()) await claim.click();
     // Navigating away transferred host control to the guest who stayed at the table.
-    const guestControl = guest.getByRole('button', { name: 'Claim control', exact: true });
+    const guestControl = guest.getByRole('button', { name: 'Use this tab to play', exact: true });
     if (await guestControl.isVisible()) await guestControl.click();
     await guest.getByRole('button', { name: 'Start new session' }).click();
     const observer = item.slot === 'avatar' ? host : guest;
@@ -140,6 +141,7 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     expect(cards).not.toContain(item.name);
     // Finish this second session before the next test needs the global admission slot.
     guest.once('dialog', (dialog) => void dialog.accept());
+    await guest.getByText('Room options', { exact: true }).click();
     await guest.getByRole('button', { name: 'End after this hand' }).click();
     await expect(guest.getByText('The session will end after this hand.')).toBeVisible();
     await expect(host.getByRole('button', { name: 'Fold', exact: true })).toBeEnabled();

@@ -14,6 +14,7 @@ const room: RoomView = {
 const game: GameView = {
   roomId: 'room-a', authorityBootId: 'boot-a', sessionId: 'session-a', handId: 'hand-a',
   snapshotRevision: 1, gameVersion: 0, sessionPhase: 'playing', handPhase: 'preflop',
+  handNumber: 1, smallBlind: 10, bigBlind: 20, smallBlindSeat: 0, bigBlindSeat: 1, currentBet: 20,
   participants: [{ accountId: 'host', displayName: 'Host', seat: 0, stack: 990,
     streetContribution: 10, totalContribution: 10, folded: false, allIn: false, connected: true },
   { accountId: 'guest', displayName: 'Guest', seat: 1, stack: 980,
@@ -21,7 +22,7 @@ const game: GameView = {
   board: [], pots: [{ amount: 30, eligibleAccountIds: ['host', 'guest'] }], buttonSeat: 0,
   actorAccountId: 'host', serverTime: new Date().toISOString(), deadline: null,
   holeCards: [0, 13], revealedCards: [], legalActions: { canFold: true, canCheck: false,
-    callAmount: 10, raise: { minRaiseTo: 40, maxRaiseTo: 1000, shortAllInOnly: false } },
+    callAmount: 10, raise: { minRaiseTo: 40, maxRaiseTo: 1000, amountStep: 1, shortAllInOnly: false } },
   control: { isController: true, epoch: 1 }, handResult: null, sessionResult: null,
 };
 const props: PokerTableProps = { room, game, accountId: 'host', status: 'connected', pending: false,
@@ -30,6 +31,23 @@ const props: PokerTableProps = { room, game, accountId: 'host', status: 'connect
 
 describe('PokerTable', () => {
   afterEach(cleanup);
+  it('keeps caller and opponent seat positions stable after disconnect or fold', () => {
+    const view = render(<PokerTable {...props} />);
+    const own = screen.getByText('Host (you)').closest('li')!;
+    const opponent = screen.getByText('Guest').closest('li')!;
+    expect(own).toHaveAttribute('data-position', 'bottom');
+    expect(opponent).toHaveAttribute('data-position', 'top');
+    view.rerender(<PokerTable {...props} game={{ ...game, participants: game.participants.map((player) => ({ ...player, folded: true, connected: false })) }} />);
+    expect(screen.getByText('Host (you)').closest('li')).toHaveAttribute('data-position', 'bottom');
+  });
+  it('prevents an observer from starting a finished session and explains takeover', () => {
+    render(<PokerTable {...props} room={{ ...room, phase: 'waiting', members: [
+      { accountId: 'host', displayName: 'Host', seat: 0, connected: true },
+      { accountId: 'guest', displayName: 'Guest', seat: 1, connected: true },
+    ], control: { isController: false, epoch: 2 } }} game={{ ...game, sessionPhase: 'ended', control: { isController: false, epoch: 2 } }} />);
+    expect(screen.getByRole('button', { name: 'Start new session' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Use this tab to play' })).toBeVisible();
+  });
   it('distinguishes the main pot and side pots after unequal all-ins', () => {
     render(<PokerTable {...props} game={{ ...game, handPhase: 'result', pots: [
       { amount: 1800, eligibleAccountIds: ['host', 'guest'] },
@@ -47,15 +65,16 @@ describe('PokerTable', () => {
   });
   it('renders server legal actions and enforces raise bounds', () => {
     const onAction = vi.fn();
-    render(<PokerTable {...props} onAction={onAction} />);
+    const view = render(<PokerTable {...props} onAction={onAction} />);
     expect(screen.queryByRole('button', { name: 'Check' })).not.toBeInTheDocument();
     fireEvent.click(screen.getByRole('button', { name: 'Call 10' }));
     expect(onAction).toHaveBeenCalledWith({ type: 'call' });
+    view.rerender(<PokerTable {...props} onAction={onAction} game={{ ...game, gameVersion: 1 }} />);
     const input = screen.getByRole('spinbutton', { name: /raise to/i });
     fireEvent.change(input, { target: { value: '39' } });
-    expect(screen.getByRole('button', { name: 'Raise' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Raise 39' })).toBeDisabled();
     fireEvent.change(input, { target: { value: '40' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Raise' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Raise 40' }));
     expect(onAction).toHaveBeenCalledWith({ type: 'raise', raiseTo: 40 });
   });
 
@@ -64,7 +83,7 @@ describe('PokerTable', () => {
       game={{ ...game, control: { isController: false, epoch: 1 },
       legalActions: { canFold: false, canCheck: false, callAmount: 0, raise: null } }} />);
     expect(screen.queryByRole('button', { name: 'Call 10' })).not.toBeInTheDocument();
-    expect(screen.getByRole('button', { name: 'Claim control' })).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Use this tab to play' })).toBeVisible();
     expect(screen.getByLabelText('Your cards')).toHaveTextContent('2♣');
     expect(screen.getByLabelText('Hidden cards')).not.toHaveTextContent('2♣');
   });

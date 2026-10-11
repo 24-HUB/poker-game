@@ -1,6 +1,7 @@
 import { randomUUID } from 'node:crypto';
 
 import type { GameCommand } from '@poker/contracts' with { 'resolution-mode': 'import' };
+import { startHand } from '@poker/poker-engine';
 
 import { AuthorityLease } from '../src/authority/authorityLease';
 import { applyMigrations } from '../src/database/migrate';
@@ -115,6 +116,56 @@ describe('authoritative poker actions', () => {
     expect(reply.error).toBeNull();
     expect(reply.data?.outcome?.acceptedGameVersion).toBe(1);
     expect(reply.data?.game?.gameVersion).toBe(1);
+  });
+
+  it('projects live hand number, configured blinds and raise increments', async () => {
+    const first = (await game.execute(gameContext('host'), { type: 'game:sync', roomId })).data!.game!;
+    expect(first).toMatchObject({ handNumber: 1, smallBlind: 10, bigBlind: 20, smallBlindSeat: 0, bigBlindSeat: 1, currentBet: 20 });
+    expect(first.legalActions.raise).toMatchObject({ amountStep: 1, minRaiseTo: 40 });
+    await game.execute(gameContext('host'), { ...action('host'), action: { type: 'fold' } });
+    const timer = [...clock.callbacks].reverse().find((entry) => !entry.cancelled)!;
+    clock.current = timer.at; await timer.callback();
+    const next = (await game.execute(gameContext('host'), { type: 'game:sync', roomId })).data!.game!;
+    expect(next.handNumber).toBe(2);
+    expect(next).toMatchObject({ smallBlindSeat: 1, bigBlindSeat: 0 });
+  });
+  it('retains correct blind markers when multi-seat blinds are short all-ins', async () => {
+    const runtime = registry.controller(roomId).session!;
+    runtime.buttonSeat = 4;
+    runtime.participants = [{ accountId: 'host', displayName: 'Host', seat: 4 },
+      { accountId: 'guest', displayName: 'Guest', seat: 0 }, { accountId: 'third', displayName: 'Third', seat: 2 }];
+    runtime.stacks = [1000, 5, 7];
+    runtime.hand = startHand({ seats: runtime.participants.map((participant, index) => ({ accountId: participant.accountId, seat: participant.seat, startingStack: runtime.stacks[index]! })),
+      buttonSeat: 4, smallBlind: 10, bigBlind: 20, deck: Array.from({ length: 52 }, (_, index) => index) }).state;
+    const view = (await game.execute(gameContext('host'), { type: 'game:sync', roomId })).data!.game!;
+    expect(view).toMatchObject({ smallBlindSeat: 0, bigBlindSeat: 2, smallBlind: 10, bigBlind: 20 });
+    expect(view.participants.filter((player) => player.allIn).map((player) => player.seat)).toEqual([0, 2]);
+    expect(view.participants.find((player) => player.accountId === 'guest')?.streetContribution).toBe(5);
+    expect(view.participants.find((player) => player.accountId === 'third')?.streetContribution).toBe(7);
+  });
+
+  it('reads only committed hand history with exclusive pagination and caller rewards', async () => {
+    const { handHistorySchema } = await import('@poker/contracts');
+    await game.execute(gameContext('host'), { ...action('host'), action: { type: 'fold' } });
+    const completed = await database.db.collection('hands').findOne({ status: 'COMPLETED' });
+    for (let handNumber = 2; handNumber <= 23; handNumber += 1) {
+      await database.db.collection('hands').insertOne({ ...completed!, _id: randomUUID() as never, handNumber,
+        status: handNumber === 23 ? 'SETTLING' : 'COMPLETED', result: { ...completed!.result, handNumber } });
+    }
+    const first = await game.history('host', roomId, sessionId);
+    expect(first.hands).toHaveLength(20);
+    expect(handHistorySchema.safeParse(first).success).toBe(true);
+    expect(first.hands.map((hand) => hand.handNumber)).toEqual(Array.from({ length: 20 }, (_, index) => 22 - index));
+    expect(first.nextBeforeHandNumber).toBe(3);
+    expect(first.hands.every((hand) => hand.rewardReceipts?.every((receipt) => receipt.accountId === 'host'))).toBe(true);
+    expect(first.hands.every((hand) => hand.revealedCards.length === 0)).toBe(true);
+    const second = await game.history('host', roomId, sessionId, 3);
+    expect(second.hands.map((hand) => hand.handNumber)).toEqual([2, 1]);
+    expect(second.nextBeforeHandNumber).toBeNull();
+    await expect(game.history('outsider', roomId, sessionId)).rejects.toMatchObject({ status: 403 });
+    await expect(game.history('host', roomId, 'another-session')).rejects.toMatchObject({ status: 403 });
+    await database.db.collection('roomMemberships').updateOne({ accountId: 'host' }, { $set: { pendingDeparture: true } });
+    await expect(game.history('host', roomId, sessionId)).rejects.toMatchObject({ status: 403 });
   });
 
   it('freezes equipment for all recipients until the durable next-hand boundary', async () => {

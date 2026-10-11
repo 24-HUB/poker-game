@@ -520,6 +520,26 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### M5.1a implementation save point — 2026-10-11 13:32 UTC
+
+Tasks 1–4 are implemented on `codex/m5-predeploy-ux` from freshly fetched
+`origin/dev` `623749f0`. Current-room recovery/leave, legal poker controls/metadata,
+committed private history, code-only invitations and native loopback mock accounts
+have focused passing evidence. Review regressions and the history receipt projection
+were corrected. Final poker/history/reconnect Chromium passed 3/3, but full-suite
+restart-after-game recovery is unresolved. Visual inspection found mobile panel/card
+overlap and 1280×720 controls below the viewport. Keep M5.1a release gates unchecked
+and save a draft PR targeting `dev`; the user merges manually. Final `pnpm check`
+passed 370 tests, types and production builds; mock UI/helper strings are absent
+from production browser chunks. Commit and PR are recorded in CHECKPOINT.md.
+No deployment occurred.
+
+Read CHECKPOINT.md for exact evidence, local captures and resume commands. Next:
+fix responsive layout with real viewport assertions, diagnose the isolated
+active-room + backend-restart sequence, then run full CI-mode Chromium, aggregate
+checks and Linux Worker CI. Usage at 13:32 UTC: five-hour 9%, weekly 81% remaining;
+reset 2026-10-11 15:49:58 UTC and 2026-10-18 05:12:40 UTC respectively.
+
 ### Detailed poker-room UX/UI specification added — 2026-10-11 12:13 UTC
 
 Resumed clean `codex/predeploy-ux-plan` on draft

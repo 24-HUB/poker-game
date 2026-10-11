@@ -6,6 +6,7 @@ import { createGameStore } from './gameStore';
 const view = (revision: number, sessionId = 'session-a', roomId = 'room-a'): GameView => ({
   roomId, authorityBootId: 'boot-a', sessionId, handId: 'hand-a', snapshotRevision: revision,
   gameVersion: revision, sessionPhase: 'playing', handPhase: 'preflop', participants: [],
+  handNumber: 1, smallBlind: 10, bigBlind: 20, smallBlindSeat: 0, bigBlindSeat: 1, currentBet: 20,
   board: [], pots: [], buttonSeat: 0, actorAccountId: 'account-a', serverTime: new Date().toISOString(),
   deadline: null, holeCards: [0, 1], revealedCards: [], legalActions: {
     canFold: true, canCheck: false, callAmount: 10, raise: null,

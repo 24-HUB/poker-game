@@ -1,12 +1,14 @@
 'use client';
 
 import { KeyRound, X } from 'lucide-react';
-import { type FormEvent, useEffect, useRef, useState } from 'react';
+import { type FormEvent, lazy, Suspense, useEffect, useRef, useState } from 'react';
 
 import { Icon } from '../../components/ui/Icon';
 import { AuthRequestError, requestPasswordReset, resendVerification, signIn, signUp } from '../../lib/auth-client';
 
 type AuthMode = 'sign-in' | 'sign-up' | 'reset' | 'verify';
+const LocalMockAccounts = process.env.NEXT_PUBLIC_LOCAL_MOCK_ACCOUNTS === 'true'
+  ? lazy(() => import('./LocalMockAccounts').then((module) => ({ default: module.LocalMockAccounts }))) : null;
 
 export function SignInButton({ onAuthenticated }: { onAuthenticated: () => void }) {
   const [open, setOpen] = useState(false);
@@ -105,6 +107,7 @@ export function SignInButton({ onAuthenticated }: { onAuthenticated: () => void 
               }
             }}
           >
+            {LocalMockAccounts ? <Suspense fallback={null}><LocalMockAccounts onAuthenticated={() => { close(); onAuthenticated(); }} /></Suspense> : null}
             <div className="auth-dialog__heading">
               <span className="auth-dialog__mark"><Icon icon={KeyRound} /></span>
               <button className="icon-button" type="button" onClick={close} aria-label="Close sign-in">

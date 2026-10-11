@@ -56,6 +56,35 @@ describe('authoritative private rooms', () => {
       .not.toContain(first.data.invitation.token);
   });
 
+  it('reads only the callers current authoritative room without taking control', async () => {
+    const created = await rooms.execute(context('host', 'Host', 'host-tab'), mutation({ type: 'room:create', title: 'Recovery' }));
+    const roomId = created.data!.room!.roomId;
+    const before = await database.db.collection('roomMemberships').findOne({ accountId: 'host' });
+    expect(await rooms.currentRoom('host')).toEqual({ roomId, title: 'Recovery', phase: 'waiting' });
+    expect(await rooms.currentRoom('outsider')).toBeNull();
+    await database.db.collection('rooms').updateOne({ title: 'Recovery' }, { $set: { phase: 'playing' } });
+    expect(await rooms.currentRoom('host')).toEqual({ roomId, title: 'Recovery', phase: 'playing' });
+    expect(await database.db.collection('roomMemberships').findOne({ accountId: 'host' })).toEqual(before);
+    await database.db.collection('roomMemberships').updateOne({ accountId: 'host' }, { $set: { pendingDeparture: true } });
+    expect(await rooms.currentRoom('host')).toBeNull();
+  });
+
+  it.each(['closed', 'left', 'old boot'])('does not recover a %s membership', async (kind) => {
+    await rooms.execute(context('host', 'Host', 'host-tab'), mutation({ type: 'room:create', title: 'Recovery' }));
+    if (kind === 'closed') await database.db.collection('rooms').updateOne({ title: 'Recovery' }, { $set: { status: 'CLOSED' } });
+    if (kind === 'left') await database.db.collection('roomMemberships').updateOne({ accountId: 'host' }, { $set: { leftAt: new Date() } });
+    if (kind === 'old boot') await database.db.collection('rooms').updateOne({ title: 'Recovery' }, { $set: { authorityBootId: 'old' } });
+    expect(await rooms.currentRoom('host')).toBeNull();
+  });
+
+  it('reports unavailable authority and database instead of an empty room', async () => {
+    await database.client.close();
+    try { await expect(rooms.currentRoom('host')).rejects.toMatchObject({ status: 503 }); }
+    finally { await database.client.connect(); }
+    authority.markNotReady();
+    await expect(rooms.currentRoom('host')).rejects.toMatchObject({ status: 503 });
+  });
+
   it('coalesces concurrent copies of one create command to the same private reply', async () => {
     const host = context('host', 'Host', 'host-tab');
     const command = mutation({ type: 'room:create', title: 'One command' });

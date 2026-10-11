@@ -2,7 +2,9 @@
 
 User-supplied specification, 2026-10-11. This is the acceptance source for
 [M5.1a Task 2](../plans/2026-09-30-m3-through-production.md#task-2--playing-room-hierarchy-and-usable-controls).
-All behavior below is planned; application implementation and verification remain pending.
+Implementation is in progress on `codex/m5-predeploy-ux`. See `CHECKPOINT.md` for
+verified behavior and remaining responsive-layout/restart acceptance blockers.
+The requirements below remain the acceptance target; this is not a release sign-off.
 
 Apply the existing design system and theme. The reference image defines layout and interaction only.
 

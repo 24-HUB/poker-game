@@ -80,6 +80,13 @@ captures private and redact cookies, tokens and private cards before sharing evi
 
 ## New pre-deployment UX gates — requested 2026-10-11
 
+Implementation save point on `codex/m5-predeploy-ux`, 2026-10-11: active-room
+recovery, legal controls, authoritative metadata/history, invite codes and native
+local mock accounts are implemented. Focused gameplay/history/reconnect browser
+checks pass. Mobile sticky-panel overlap, 1280×720 action visibility and the full
+suite's restart-after-game sequence remain blockers; gates below stay unchecked.
+See `CHECKPOINT.md` for exact evidence and resume commands.
+
 Earlier passing gameplay evidence remains historical. The user requires these
 additional improvements before production; implement and verify them before the
 next hosted candidate using [M5.1a](superpowers/plans/2026-09-30-m3-through-production.md#m51a--required-local-playtest-ux-improvements-before-deployment).

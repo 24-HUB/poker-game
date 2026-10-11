@@ -1,7 +1,7 @@
 'use client';
 
 import type { GameView, PokerAction, RoomView } from '@poker/contracts';
-import { useEffect, useMemo, useState } from 'react';
+import { PokerActionPanel } from './PokerActionPanel';
 
 import type { RoomConnectionStatus } from './useRoomConnection';
 import { HandReward } from '../wallet/HandReward';
@@ -29,38 +29,27 @@ export type PokerTableProps = {
 
 export function PokerTable({ room, game, accountId, status, pending, message,
   onAction, onEnd, onStart, onLeave, onClaimControl, onRetryPending }: PokerTableProps) {
-  const [raiseTo, setRaiseTo] = useState('');
-  const [now, setNow] = useState(Date.now());
-  useEffect(() => {
-    const timer = window.setInterval(() => setNow(Date.now()), 250);
-    return () => window.clearInterval(timer);
-  }, []);
-  const offset = useMemo(() => game ? Date.parse(game.serverTime) - Date.now() : 0, [game?.serverTime]);
-  const seconds = game?.deadline ? Math.max(0, Math.ceil((Date.parse(game.deadline) - now - offset) / 1000)) : null;
-  const canAct = status === 'connected' && !pending &&
-    (game?.sessionPhase === 'playing' || game?.sessionPhase === 'ending') &&
-    game.control.isController && game.actorAccountId === accountId &&
-    game.handPhase !== 'paused' && game.handPhase !== 'settling' && game.handPhase !== 'result';
-  const legal = game?.legalActions;
-  const raise = legal?.raise;
-  const amount = Number(raiseTo);
-  const validRaise = raise && Number.isSafeInteger(amount) && amount >= raise.minRaiseTo && amount <= raise.maxRaiseTo;
   const host = room.hostAccountId === accountId;
   const canStart = host && room.phase === 'waiting' && room.members.filter((member) => member.seat !== null).length >= 2;
 
   return <section className="poker-table" aria-label="Poker table">
     <header className="poker-table__header">
-      <div><p className="room-eyebrow">Private poker · hand {game?.handResult?.handNumber ?? 1}</p>
-        <h1>{room.title}</h1><p>{game?.handPhase ?? 'Waiting for the next hand'} · {status}</p></div>
+      <div><h1>{room.title}</h1>
+        <p>Hand {game?.handNumber ?? '…'} · {game?.handPhase ?? 'Waiting for the next hand'} · Blinds {game?.smallBlind ?? '…'}/{game?.bigBlind ?? '…'}</p>
+        <span className={`connection-state connection-state--${status}`}>{status === 'connected' ? 'Connected' : status === 'unavailable' ? 'Service unavailable' : 'Reconnecting'}</span></div>
       <div className="poker-table__session-actions">
-        {canStart ? <button type="button" className="primary-button" disabled={pending || status !== 'connected'} onClick={onStart}>Start new session</button> : null}
-        {host && game?.sessionPhase !== 'ended' ? <button type="button" className="secondary-button" disabled={pending || !room.control.isController} onClick={onEnd}>End after this hand</button> : null}
-        {!room.control.isController ? <button type="button" className="secondary-button" onClick={onClaimControl}>Claim control</button> : null}
-        <button type="button" className="text-button" onClick={onLeave}>Leave room</button>
+        {canStart ? <button type="button" className="primary-button" disabled={pending || status !== 'connected' || !room.control.isController} onClick={onStart}>Start new session</button> : null}
+        {!room.control.isController ? <><p>You are watching from this tab. Take over to play or leave.</p><button type="button" className="secondary-button" disabled={pending || status !== 'connected'} onClick={onClaimControl}>Use this tab to play</button></> : null}
+        <details className="room-options"><summary>Room options</summary>
+          {host && game?.sessionPhase !== 'ended' ? <><button type="button" className="secondary-button" disabled={pending || !room.control.isController || status !== 'connected' || game?.sessionPhase === 'ending'} onClick={onEnd}>End after this hand</button>
+            {game?.sessionPhase === 'ending' ? <p>Ending requested. This hand will finish first.</p> : !room.control.isController ? <p>Use this tab to play to manage the session.</p> : null}</> : null}
+          <button type="button" className="text-button" disabled={pending || status !== 'connected' || !room.control.isController} onClick={onLeave}>Leave room</button>
+        </details>
       </div>
     </header>
     {!game ? <p role="status">Synchronizing the hand…</p> : <>
       <div className="poker-table__felt">
+        <div className="poker-table__center">
         <div className="poker-table__board" aria-label="Community cards">
           {Array.from({ length: 5 }, (_, index) => game.board[index] === undefined
             ? <span className="poker-card poker-card--back" key={index} aria-label="Undealt card">✦</span>
@@ -70,14 +59,19 @@ export function PokerTable({ room, game, accountId, status, pending, message,
           ? game.pots.map((pot, index) =>
             `${index === 0 ? 'Main pot' : `Side pot ${index}`}: ${pot.amount} chips`).join(' · ')
           : `Pot: ${game.pots.reduce((total, pot) => total + pot.amount, 0)} chips`}</p>
+        </div>
         <ul className="poker-table__seats" aria-label="Players">
-          {game.participants.map((participant) => <li key={participant.accountId}
+          {seatPositions(game, accountId).map(({ participant, position }) => <li key={participant.accountId} data-position={position}
             className={participant.accountId === game.actorAccountId ? 'poker-seat poker-seat--acting' : 'poker-seat'}>
             {participant.equipment?.avatar ? <img className="poker-seat__avatar" src={participant.equipment.avatar.assetUrl} alt={`${participant.displayName}'s ${participant.equipment.avatar.name} avatar`} width="48" height="48" /> : null}
             <strong>{participant.displayName}{participant.accountId === accountId ? ' (you)' : ''}</strong>
-            <span>{participant.stack} chips · bet {participant.streetContribution}</span>
-            <small>{participant.folded ? 'Folded' : participant.allIn ? 'All in' : participant.connected ? 'At table' : 'Reconnecting'}
-              {participant.seat === game.buttonSeat ? ' · Button' : ''}</small>
+            <span className="poker-seat__stack">Stack: {participant.stack} chips</span>
+            <span className="poker-seat__bet">Bet: {participant.streetContribution}</span>
+            <small>{participant.folded ? 'Folded' : participant.allIn ? 'All-in' : participant.connected ? 'At table' : 'Disconnected'}
+              {participant.accountId === game.actorAccountId ? ' · Acting' : ''}
+              {participant.seat === game.buttonSeat ? ' · Dealer' : ''}
+              {participant.seat === game.smallBlindSeat ? ' · SB' : ''}
+              {participant.seat === game.bigBlindSeat ? ' · BB' : ''}</small>
             {participant.accountId === accountId && game.holeCards ? <span className="poker-seat__cards" aria-label="Your cards">
               {game.holeCards.map((card) => <span className={`poker-card poker-card--${cardColor(card)}`} key={card}>{cardLabel(card)}</span>)}
             </span> : <span className="poker-seat__cards" aria-label="Hidden cards">{[0, 1].map((index) => <span className="poker-card poker-card--back" key={index}>
@@ -85,24 +79,7 @@ export function PokerTable({ room, game, accountId, status, pending, message,
           </li>)}
         </ul>
       </div>
-      <div className="poker-table__action-panel">
-        <p role="status">{game.handPhase === 'paused' ? 'Settlement paused. Retrying safely.' :
-          game.sessionPhase === 'ending' ? 'The session will end after this hand.' :
-            game.actorAccountId ? `Turn: ${game.participants.find((player) => player.accountId === game.actorAccountId)?.displayName ?? 'Player'}${seconds === null ? '' : ` · ${seconds}s left`}` : 'Waiting for the next hand'}</p>
-        <div className="poker-table__actions">
-          {legal?.canFold ? <button type="button" disabled={!canAct} onClick={() => onAction({ type: 'fold' })}>Fold</button> : null}
-          {legal?.canCheck ? <button type="button" disabled={!canAct} onClick={() => onAction({ type: 'check' })}>Check</button> : null}
-          {legal && legal.callAmount > 0 ? <button type="button" disabled={!canAct} onClick={() => onAction({ type: 'call' })}>Call {legal.callAmount}</button> : null}
-          {raise ? <label>Raise to
-            <input type="number" min={raise.minRaiseTo} max={raise.maxRaiseTo} step="1" value={raiseTo}
-              disabled={!canAct} onChange={(event) => setRaiseTo(event.target.value)} />
-            <span>{raise.shortAllInOnly ? 'Short all in only' : `${raise.minRaiseTo}–${raise.maxRaiseTo} chips`}</span>
-            <button type="button" disabled={!canAct || !validRaise} onClick={() => onAction({ type: 'raise', raiseTo: amount })}>Raise</button>
-          </label> : null}
-        </div>
-        {message ? <p className="room-control-message" role="alert">{message}</p> : null}
-        {pending ? <button type="button" className="secondary-button" onClick={onRetryPending}>Reconcile pending game action</button> : null}
-      </div>
+      <PokerActionPanel key={`${accountId}:${game.sessionId}:${game.handId}`} game={game} accountId={accountId} status={status} pending={pending} message={message} onAction={onAction} onRetryPending={onRetryPending} />
       {game.handResult ? <div className="poker-table__result"><h2>Hand result</h2>
         <p>Winner: {game.handResult.winners.map((id) => game.participants.find((player) => player.accountId === id)?.displayName ?? id).join(', ')}</p>
         <HandReward receipt={game.handResult.rewardReceipts?.find((receipt) => receipt.accountId === accountId)} />
@@ -114,4 +91,16 @@ export function PokerTable({ room, game, accountId, status, pending, message,
         </li>)}</ol></div> : null}
     </>}
   </section>;
+}
+
+function seatPositions(game: GameView, accountId: string) {
+  const sorted = [...game.participants].sort((a, b) => a.seat - b.seat);
+  const own = sorted.findIndex((player) => player.accountId === accountId);
+  const ordered = [...sorted.slice(Math.max(0, own)), ...sorted.slice(0, Math.max(0, own))];
+  const positions: Record<number, string[]> = {
+    2: ['bottom', 'top'], 3: ['bottom', 'top-left', 'top-right'],
+    4: ['bottom', 'top-left', 'top', 'top-right'], 5: ['bottom', 'bottom-left', 'top-left', 'top-right', 'bottom-right'],
+    6: ['bottom', 'bottom-left', 'top-left', 'top', 'top-right', 'bottom-right'],
+  };
+  return ordered.map((participant, index) => ({ participant, position: positions[ordered.length]?.[index] ?? 'bottom' }));
 }

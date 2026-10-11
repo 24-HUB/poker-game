@@ -32,10 +32,18 @@ export function projectGame(runtime: SessionRuntime, room: InternalRoom, control
   const isController = control?.connectionId === connectionId;
   const legal = hand && isController ? legalActions(hand, accountId)
     : { canFold: false, canCheck: false, callAmount: 0, raise: null };
+  // Retain every dealt seat, including folded players and all-in blinds.
+  const dealingOrder = [...(hand?.seats ?? [])].sort((a, b) =>
+    ((a.seat - runtime.buttonSeat + 5) % 6) - ((b.seat - runtime.buttonSeat + 5) % 6));
+  const headsUp = dealingOrder.length === 2;
   return {
     roomId: runtime.roomId, authorityBootId: room.authorityBootId,
     sessionId: runtime.sessionId, handId: hand ? runtime.handId : null,
     snapshotRevision: runtime.snapshotRevision, gameVersion: runtime.gameVersion,
+    handNumber: runtime.handNumber, smallBlind: runtime.smallBlind, bigBlind: runtime.bigBlind,
+    smallBlindSeat: dealingOrder.length < 2 ? null : headsUp ? runtime.buttonSeat : dealingOrder[0]!.seat,
+    bigBlindSeat: dealingOrder.length < 2 ? null : dealingOrder[headsUp ? 0 : 1]!.seat,
+    currentBet: hand?.currentBet ?? 0,
     sessionPhase: runtime.sessionResult ? 'ended' : runtime.ending ? 'ending' : 'playing',
     handPhase: hand?.street === 'complete' ? runtime.paused ? 'paused' : runtime.committedHandResult?.handId === runtime.handId ? 'result' : 'settling' : hand?.street ?? null,
     participants: runtime.participants.map((participant, index) => {
@@ -55,7 +63,8 @@ export function projectGame(runtime: SessionRuntime, room: InternalRoom, control
     holeCards: hand?.seats.find((seat) => seat.accountId === accountId)?.holeCards
       ? [...hand.seats.find((seat) => seat.accountId === accountId)!.holeCards] as [number, number]
       : null,
-    revealedCards: runtime.committedHandResult?.handId === runtime.handId ? runtime.committedHandResult.revealedCards : [], legalActions: legal,
+    revealedCards: runtime.committedHandResult?.handId === runtime.handId ? runtime.committedHandResult.revealedCards : [],
+    legalActions: { ...legal, raise: legal.raise ? { ...legal.raise, amountStep: 1 } : null },
     control: { isController, epoch: control?.epoch ?? member?.controllerEpoch ?? 0 },
     handResult: runtime.committedHandResult ? {
       ...runtime.committedHandResult,

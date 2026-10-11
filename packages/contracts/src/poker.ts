@@ -64,6 +64,12 @@ export const committedHandResultSchema = z.object({
 }).strict();
 export type CommittedHandResult = z.infer<typeof committedHandResultSchema>;
 
+export const handHistorySchema = z.object({
+  hands: z.array(committedHandResultSchema).max(20),
+  nextBeforeHandNumber: chips.positive().nullable(),
+}).strict();
+export type HandHistoryPage = z.infer<typeof handHistorySchema>;
+
 export const sessionResultSchema = z.object({
   sessionId: id, roomId: id, endedAt: z.iso.datetime(),
   reason: z.enum(['HOST_ENDED', 'ONE_FUNDED', 'ABANDONED', 'RESTARTED']),
@@ -74,13 +80,15 @@ export type SessionResult = z.infer<typeof sessionResultSchema>;
 
 export const legalActionsSchema = z.object({
   canFold: z.boolean(), canCheck: z.boolean(), callAmount: chips,
-  raise: z.object({ minRaiseTo: chips.positive(), maxRaiseTo: chips.positive(), shortAllInOnly: z.boolean() }).strict().nullable(),
+  raise: z.object({ minRaiseTo: chips.positive(), maxRaiseTo: chips.positive(), amountStep: chips.positive(), shortAllInOnly: z.boolean() }).strict().nullable(),
 }).strict();
 export type LegalActionsView = z.infer<typeof legalActionsSchema>;
 
 export const gameViewSchema = z.object({
   roomId: id, authorityBootId: id, sessionId: id, handId: id.nullable(),
   snapshotRevision: chips, gameVersion: chips,
+  handNumber: chips.positive(), smallBlind: chips.positive(), bigBlind: chips.positive(), currentBet: chips,
+  smallBlindSeat: z.number().int().min(0).max(5).nullable(), bigBlindSeat: z.number().int().min(0).max(5).nullable(),
   sessionPhase: z.enum(['playing', 'ending', 'ended', 'aborted']),
   handPhase: z.enum(['preflop', 'flop', 'turn', 'river', 'settling', 'paused', 'result']).nullable(),
   participants: z.array(participantSchema).min(2).max(6),

@@ -5,7 +5,7 @@ import { AuthorityLease, type AuthorityToken } from '../../authority/authorityLe
 import { ReleaseControls } from '../../config/release-controls';
 import { MONGO_DB, TRANSACTION_RUNNER } from '../../database/database.tokens';
 import { TransactionRunner } from '../../database/transactionRunner';
-import type { HandEquipment, SessionResult } from '@poker/contracts' with { 'resolution-mode': 'import' };
+import type { CommittedHandResult, HandEquipment, HandHistoryPage, SessionResult } from '@poker/contracts' with { 'resolution-mode': 'import' };
 import { M3_REWARD_POLICY } from '../tickets/rewardPolicy';
 import { snapshotEquipment } from '../collection/collection.repository';
 
@@ -66,6 +66,19 @@ export class SessionRepository {
 
   public async findActive(roomId: string): Promise<StoredGameSession | null> {
     return this.db.collection<StoredGameSession>('gameSessions').findOne({ roomId, status: 'ACTIVE' });
+  }
+
+  public async findSession(sessionId: string): Promise<StoredGameSession | null> {
+    return this.db.collection<StoredGameSession>('gameSessions').findOne({ _id: sessionId });
+  }
+
+  public async listCommittedHands(sessionId: string, beforeHandNumber?: number): Promise<HandHistoryPage> {
+    const records = await this.db.collection<{ sessionId: string; handNumber: number; status: string; result: CommittedHandResult }>('hands')
+      .find({ sessionId, status: 'COMPLETED', ...(beforeHandNumber === undefined ? {} : { handNumber: { $lt: beforeHandNumber } }) },
+        { projection: { _id: 0, result: 1 }, readConcern: { level: 'majority' } })
+      .sort({ handNumber: -1 }).limit(21).toArray();
+    const hands = records.slice(0, 20).map((record) => record.result);
+    return { hands, nextBeforeHandNumber: records.length > 20 ? hands.at(-1)!.handNumber : null };
   }
 
   public async start(input: StartSessionInput): Promise<StoredGameSession> {

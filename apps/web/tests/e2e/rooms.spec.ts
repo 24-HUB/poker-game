@@ -30,13 +30,16 @@ test('two accounts join one room and explicit takeover disables the old tab', as
       await host.screenshot({ path: testInfo.outputPath(`room-${viewport.name}.png`), fullPage: true });
     }
 
-    await host.getByRole('button', { name: 'Copy room link' }).click();
+    await host.getByRole('button', { name: 'Copy invite code' }).click();
     const invitationUrl = await host.evaluate(() => navigator.clipboard.readText());
-    expect(invitationUrl).toMatch(/^http:\/\/127\.0\.0\.1:3100\/#invite=/);
+    expect(invitationUrl).toMatch(/^[A-Za-z0-9_-]{43}$/);
     expect(invitationUrl).not.toContain('?');
 
     const guest = await guestContext.newPage();
-    await guest.goto(invitationUrl);
+    await guest.goto('/');
+    await guest.getByRole('button', { name: 'Join Room' }).click();
+    await guest.getByLabel('Invite code').fill(` ${invitationUrl} `);
+    await guest.getByRole('button', { name: 'Join private room' }).click();
     await expect(guest).toHaveURL('http://127.0.0.1:3100/');
     await createAccount(guest, { displayName: 'Bob Guest', email: `bob-${suffix}@example.test` });
     await expect(guest).toHaveURL(/\/rooms\/[^/]+$/);
@@ -52,8 +55,8 @@ test('two accounts join one room and explicit takeover disables the old tab', as
     const roomUrl = host.url();
     const newerHostTab = await hostContext.newPage();
     await newerHostTab.goto(roomUrl);
-    await newerHostTab.getByRole('button', { name: 'Claim control in this tab' }).click();
-    await expect(newerHostTab.getByRole('button', { name: 'Claim control in this tab' })).toHaveCount(0);
+    await newerHostTab.getByRole('button', { name: 'Use this tab to play' }).click();
+    await expect(newerHostTab.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
 
     await expect(host.getByRole('button', { name: 'Rotate room invitation' })).toBeDisabled();
     await expect(host.getByRole('button', { name: 'Take seat 3' })).toBeDisabled();
@@ -65,7 +68,7 @@ test('two accounts join one room and explicit takeover disables the old tab', as
       headers: { origin: 'http://127.0.0.1:3100' },
     });
     expect(revocation.ok(), await revocation.text()).toBe(true);
-    await guest.getByRole('button', { name: 'Claim control in this tab' }).click();
+    await guest.getByRole('button', { name: 'Use this tab to play' }).click();
     await expect(guest.getByRole('button', { name: 'Sign in' })).toBeVisible();
     await expect(guest.getByRole('heading', { name: 'Friday table' })).toHaveCount(0);
   } finally {
@@ -89,7 +92,7 @@ test('a six-seat room rejects a seventh authenticated account without leaking th
     await host.getByLabel('Room title').fill('Six seat table');
     await host.getByRole('button', { name: 'Create private room' }).click();
     await expect(host).toHaveURL(/\/rooms\/[^/]+$/);
-    await host.getByRole('button', { name: 'Copy room link' }).click();
+    await host.getByRole('button', { name: 'Copy invite code' }).click();
     const invitationUrl = await host.evaluate(() => navigator.clipboard.readText());
 
     for (let index = 1; index <= 5; index += 1) {
@@ -100,7 +103,7 @@ test('a six-seat room rejects a seventh authenticated account without leaking th
         email: `guest-${index}-${suffix}@example.test`,
       });
       const page = await context.newPage();
-      await page.goto(invitationUrl);
+      await page.goto('/#invite=' + encodeURIComponent(invitationUrl));
       await expect(page).toHaveURL(/\/rooms\/[^/]+$/);
     }
 
@@ -112,7 +115,7 @@ test('a six-seat room rejects a seventh authenticated account without leaking th
       email: `guest-7-${suffix}@example.test`,
     });
     const overflow = await overflowContext.newPage();
-    await overflow.goto(invitationUrl);
+    await overflow.goto('/#invite=' + encodeURIComponent(invitationUrl));
 
     await expect(overflow).toHaveURL('http://127.0.0.1:3100/');
     await expect(overflow.getByText('The room already has six seated members.')).toBeVisible();

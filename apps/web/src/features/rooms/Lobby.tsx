@@ -72,8 +72,8 @@ export function Lobby({
   function submitJoin(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     const token = invitation.trim();
-    if (!token) {
-      setValidationError('Enter the private invitation from the host.');
+    if (!/^[A-Za-z0-9_-]{43}$/.test(token)) {
+      setValidationError('Paste the complete invite code from the host.');
       return;
     }
     setValidationError(null);
@@ -134,10 +134,10 @@ export function Lobby({
               </button>
               <div>
                 <h3>A seat is waiting.</h3>
-                <p>Paste the private invitation sent by the room host.</p>
+                <p>Paste the invite code sent by the room host.</p>
               </div>
               <label>
-                Private invitation
+                Invite code
                 <input
                   autoFocus
                   value={invitation}

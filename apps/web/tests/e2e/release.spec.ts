@@ -20,8 +20,8 @@ async function actingPage(pages: Page[]): Promise<Page> {
   } catch (error) {
     console.error('Release actor diagnostics', await Promise.all(pages.map(async (page) => ({
       phase: await page.locator('.poker-table__header > div:first-child > p:last-child').allTextContents(),
-      turn: await page.locator('.poker-table__action-panel > [role="status"]').allTextContents(),
-      control: await page.getByRole('button', { name: 'Claim control', exact: true }).count(),
+      turn: await page.locator('.poker-turn > [role="status"]').allTextContents(),
+      control: await page.getByRole('button', { name: 'Use this tab to play', exact: true }).count(),
       pending: await page.getByRole('button', { name: 'Reconcile pending game action' }).count(),
     }))));
     throw error;
@@ -52,15 +52,15 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
     await host.getByRole('button', { name: 'Create Room' }).click();
     await host.getByLabel('Room title').fill('Release acceptance');
     await host.getByRole('button', { name: 'Create private room' }).click();
-    await host.getByRole('button', { name: 'Copy room link' }).click();
+    await host.getByRole('button', { name: 'Copy invite code' }).click();
     const invitation = await host.evaluate(() => navigator.clipboard.readText());
     for (const page of pages.slice(1)) {
-      await page.goto(invitation);
+      await page.goto('/#invite=' + encodeURIComponent(invitation));
       await expect(page).toHaveURL(/\/rooms\/[^/]+$/);
-      await page.getByRole('button', { name: 'Claim control in this tab' }).click();
-      await expect(page.getByRole('button', { name: 'Claim control in this tab' })).toHaveCount(0);
+      await page.getByRole('button', { name: 'Use this tab to play' }).click();
+      await expect(page.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     }
-    await host.getByRole('button', { name: 'Claim control in this tab' }).click();
+    await host.getByRole('button', { name: 'Use this tab to play' }).click();
     await expect(host.getByText('6 of 6 members')).toBeVisible();
     await host.getByRole('button', { name: 'Start poker session' }).click();
     for (const page of pages) {
@@ -87,6 +87,17 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
       await pages[1]!.evaluate(() => window.scrollTo(0, 0));
       await host.screenshot({ path: testInfo.outputPath('six-player-mobile.png'), fullPage: true });
       await pages[1]!.screenshot({ path: testInfo.outputPath('six-player-desktop.png'), fullPage: true });
+      for (const viewport of [{ width: 1280, height: 720 }, { width: 900, height: 900 }]) {
+        await pages[1]!.setViewportSize(viewport);
+        await expect.poll(() => pages[1]!.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+        const layout = await pages[1]!.locator('.poker-table__felt').boundingBox();
+        const actions = await pages[1]!.getByRole('region', { name: 'Poker actions' }).boundingBox();
+        expect(layout).not.toBeNull();
+        expect(actions).not.toBeNull();
+        expect(layout!.y + layout!.height).toBeLessThanOrEqual(actions!.y);
+        await pages[1]!.screenshot({ path: testInfo.outputPath(`six-player-${viewport.width}.png`), fullPage: true });
+      }
+      await pages[1]!.setViewportSize({ width: 1440, height: 1000 });
     }
 
     // Real folds create unequal stacks; no fixture changes live account balances.
@@ -99,14 +110,21 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
     await expect(host.getByRole('heading', { name: 'Hand result' })).toBeVisible();
     const actor = await actingPage(pages);
     host.once('dialog', (dialog) => void dialog.accept());
+    await host.getByText('Room options', { exact: true }).click();
     await host.getByRole('button', { name: 'End after this hand' }).click();
     await expect(host.getByText('The session will end after this hand.')).toBeVisible();
     const raiseInput = actor.getByRole('spinbutton', { name: /Raise to/ });
     const maximum = await raiseInput.getAttribute('max');
     expect(maximum).not.toBeNull();
     await raiseInput.fill(maximum!);
-    const raiseButton = actor.getByRole('button', { name: 'Raise', exact: true });
+    const raiseButton = actor.getByRole('button', { name: /^Raise \d+$/, exact: true });
     await raiseInput.press('Tab');
+    await expect(actor.getByRole('slider', { name: 'Raise amount' })).toBeFocused();
+    await actor.keyboard.press('Tab');
+    await expect(actor.getByRole('button', { name: 'Minimum' })).toBeFocused();
+    await actor.keyboard.press('Tab');
+    await expect(actor.getByRole('button', { name: 'Maximum' })).toBeFocused();
+    await actor.keyboard.press('Tab');
     await expect(raiseButton).toBeFocused();
     expect(await raiseButton.evaluate((button) => getComputedStyle(button).outlineStyle)).toBe('solid');
     const target = await raiseButton.boundingBox();
@@ -157,10 +175,10 @@ test('heads-up reconnect restores private cards and takeover removes old-tab bet
     await host.getByRole('button', { name: 'Create Room' }).click();
     await host.getByLabel('Room title').fill('Reconnect acceptance');
     await host.getByRole('button', { name: 'Create private room' }).click();
-    await host.getByRole('button', { name: 'Copy room link' }).click();
-    await guest.goto(await host.evaluate(() => navigator.clipboard.readText()));
-    await guest.getByRole('button', { name: 'Claim control in this tab' }).click();
-    await host.getByRole('button', { name: 'Claim control in this tab' }).click();
+    await host.getByRole('button', { name: 'Copy invite code' }).click();
+    await guest.goto('/#invite=' + encodeURIComponent(await host.evaluate(() => navigator.clipboard.readText())));
+    await guest.getByRole('button', { name: 'Use this tab to play' }).click();
+    await host.getByRole('button', { name: 'Use this tab to play' }).click();
     await host.getByRole('button', { name: 'Start poker session' }).click();
     await expect(guest.getByLabel('Your cards')).toBeVisible();
     const privateCards = await guest.getByLabel('Your cards').textContent();
@@ -168,25 +186,26 @@ test('heads-up reconnect restores private cards and takeover removes old-tab bet
     const roomUrl = guest.url();
     await guest.close();
     await expect(host.getByRole('list', { name: 'Players' }).getByRole('listitem')
-      .filter({ hasText: 'Reconnect Guest' }).getByText('Reconnecting', { exact: false })).toBeVisible();
+      .filter({ hasText: 'Reconnect Guest' }).getByText('Disconnected', { exact: false })).toBeVisible();
     guest = await guestContext.newPage();
     await guest.goto(roomUrl);
     await expect(guest.getByLabel('Your cards')).toHaveText(privateCards!);
     await expect(guest.getByLabel('Hidden cards')).toHaveCount(1);
-    await guest.getByRole('button', { name: 'Claim control', exact: true }).click();
-    await expect(guest.getByRole('button', { name: 'Claim control', exact: true })).toHaveCount(0);
+    await guest.getByRole('button', { name: 'Use this tab to play', exact: true }).click();
+    await expect(guest.getByRole('button', { name: 'Use this tab to play', exact: true })).toHaveCount(0);
 
     const newTab = await guestContext.newPage();
     await newTab.goto(guest.url());
-    await newTab.getByRole('button', { name: 'Claim control', exact: true }).click();
-    await expect(newTab.getByRole('button', { name: 'Claim control', exact: true })).toHaveCount(0);
-    await expect(guest.getByRole('button', { name: 'Claim control', exact: true })).toBeVisible();
+    await newTab.getByRole('button', { name: 'Use this tab to play', exact: true }).click();
+    await expect(newTab.getByRole('button', { name: 'Use this tab to play', exact: true })).toHaveCount(0);
+    await expect(guest.getByRole('button', { name: 'Use this tab to play', exact: true })).toBeVisible();
     await host.getByRole('button', { name: /^Call / }).click();
     await expect(newTab.getByRole('button', { name: 'Check', exact: true })).toBeEnabled();
     await expect(guest.getByRole('button', { name: 'Check', exact: true })).toHaveCount(0);
     await expect(newTab.getByLabel('Your cards')).toHaveText(privateCards!);
 
     host.once('dialog', (dialog) => void dialog.accept());
+    await host.getByText('Room options', { exact: true }).click();
     await host.getByRole('button', { name: 'End after this hand' }).click();
     await expect(host.getByText('The session will end after this hand.')).toBeVisible();
     await newTab.getByRole('button', { name: 'Fold', exact: true }).click();

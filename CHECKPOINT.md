@@ -1,5 +1,67 @@
 # Checkpoint — Remaining phases through production
 
+## M5.1a implementation save point — 2026-10-11 13:32 UTC
+
+- Task: implement the newly merged pre-deployment UX plan, Tasks 1–4. Clean start
+  and fetch succeeded; branch `codex/m5-predeploy-ux` starts at `origin/dev`
+  `623749f0` (merged planning PR #20). No unrelated work, deployment, live database
+  or billing changes. Final fetch succeeded and the base remains `623749f0`.
+- Implemented: authenticated no-store current-room lookup and active navigation
+  recovery/explicit destination leave; waiting-room Return entry; compact poker
+  table with stable caller-relative seats, authoritative hand/blind/current-bet
+  metadata, legal amount input/slider/presets and duplicate submission protection;
+  member/participant-only paginated committed history; selectable/copyable secure
+  invite codes; two verified native mock accounts in the disposable loopback harness;
+  accurate sign-in 403/429 mapping and documented pinned Windows launcher.
+- Evidence: initial frozen installation and `pnpm check` passed types, tests and
+  production builds. Focused server rooms 23/23, identity HTTP 17/17 and expanded
+  poker 20/20 passed; boundary regressions 6/6 passed. Final poker/history/release
+  Chromium 3/3 passed with zero retries, including actual history schema validation
+  after reload, six-player unequal all-ins/chip conservation and heads-up reconnect/
+  takeover. Separate mock/restart/accessibility run passed 4/5 (both native mock
+  cases and both restart cases); accessibility was corrected to await authenticated
+  UI and passed in the later full run. Collection and both room browser cases passed
+  in the focused gameplay batch. These separate runs do not constitute full-suite GREEN.
+- Review: one fresh read-only reviewer found stale waiting snapshots masking play
+  and null membership clearing an uncertain leave. Polling now reconciles phase only
+  against an unchanged room snapshot; pending leave survives null polling for explicit
+  command reconciliation. Regression tests pass. The initially successful history
+  HTTP response contained Mongo-mutated reward receipt `_id`; explicit nested public
+  projection fixed it and real browser/schema regression now passes.
+- Remaining blockers: (1) at 360×800 the bottom-sticky action panel overlays lower
+  seats/private cards; (2) at 1280×720 actions extend below the viewport; tighten
+  header/layout and preserve card visibility, add actual viewport/non-overlap assertions;
+  (3) full suite's backend restart after active-room gameplay returns 502 and misses
+  its 5-second recovery bound, cascading to later tests. Isolated active-room + restart
+  reproduced 1 failure/2 passes; restart + mock without prior gameplay passed.
+  Local diagnostic cleanup of the latest disposable database eventually passed but
+  was delayed; root cause is unproven. Do not mask it by relaxing bounds or claiming
+  a production fix. Linux Worker CI and full `CI=true` Chromium remain pending.
+- Visual evidence is local/ignored at
+  `apps/web/.artifacts/ux-captures/release-six-players-settle-c4946-d-keep-mobile-cards-private-chromium/`.
+  Inspected 360×800, 900×900, 1280×720 and 1440×1000 hand captures. No exhaustive
+  accessibility claim. Reviewer minor deferred: history retains cached outcomes on
+  a refetch permission error; assess hiding them without claiming server data leakage.
+- Final `pnpm check` passed **370 tests**, all configured typechecks and production
+  builds after correcting a test-only CommonJS/ESM import. No lint script exists.
+  Rebuilt production chunks contain no `LocalMockAccounts`, `Play as Mock` or
+  `/__e2e/mock-login` strings. `git diff --check` and staged diff check passed;
+  build regenerated Next development imports back to the unchanged production file.
+- Save remotely as a **draft** PR to `dev`; the user merges manually. Record the
+  implementation commit and PR below after creation. No required UX gate is complete.
+- Resume: check usage/status, fetch origin, remain on this task branch and read this
+  save point. Fix responsive blockers first, then run
+  `npm.cmd exec --yes --package=pnpm@10.33.0 --call "set npm_execpath=&& pnpm --filter @poker/web exec playwright test tests/e2e/poker.spec.ts tests/e2e/release.spec.ts --output=.artifacts/ux-captures"`.
+  Inspect screenshots and add mobile overlap/1280×720 viewport assertions. Diagnose
+  restart with `playwright test tests/e2e/active-room.spec.ts tests/e2e/backend-recovery.spec.ts`
+  via the same pinned pnpm invocation, then full `CI=true` Chromium and `pnpm check`;
+  regenerate production types after dev harness exits and update this existing PR.
+- Usage observed 2026-10-11 13:32 UTC: five-hour **9% remaining**, reset
+  2026-10-11 15:49:58 UTC; weekly **81% remaining**, reset 2026-10-18 05:12:40 UTC.
+  This is a save point due to the repository's below-10% rule, not task completion.
+
+---
+
 ## Detailed poker-room UX/UI specification added — 2026-10-11 12:13 UTC
 
 - Resumed clean `codex/predeploy-ux-plan` on draft

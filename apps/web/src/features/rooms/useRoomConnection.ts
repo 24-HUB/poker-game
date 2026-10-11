@@ -54,6 +54,7 @@ export function useRoomConnection(roomId: string | null) {
     setStatus('connecting');
 
     socket.on('connection:ready', ({ authorityBootId: nextBootId }) => {
+      void queryClient.invalidateQueries({ queryKey: ['current-room', accountId] });
       void queryClient.invalidateQueries({ queryKey: ['wallet', accountId] });
       bootIdRef.current = nextBootId;
       setAuthorityBootId(nextBootId);
@@ -83,6 +84,7 @@ export function useRoomConnection(roomId: string | null) {
     socket.on('room:snapshot', (view) => {
       if (view.roomId !== roomId) return;
       roomStore.getState().applySnapshot(view);
+      void queryClient.invalidateQueries({ queryKey: ['current-room', accountId] });
       const previous = gameStore.getState();
       gameStore.getState().setBoundary(accountId, roomId,
         view.sessionId ?? (previous.roomId === roomId ? previous.sessionId : null), bootIdRef.current);
@@ -98,6 +100,7 @@ export function useRoomConnection(roomId: string | null) {
         clearPendingGameCommand(sessionStorage);
         setPendingGameCommand(null);
         setStatus('closed');
+        void queryClient.invalidateQueries({ queryKey: ['current-room', accountId] });
       }
     });
     socket.on('disconnect', (reason) => {

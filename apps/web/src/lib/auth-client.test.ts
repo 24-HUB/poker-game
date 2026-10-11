@@ -1,6 +1,22 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { readSession, signOut } from './auth-client';
+import { readSession, signIn, signOut, signUp } from './auth-client';
+
+describe('authentication error copy', () => {
+  it.each(['INVALID_ORIGIN', 'FORBIDDEN', 'INVALID_REGISTRATION_CODE'])('does not mislabel sign-in 403 %s as a registration-code failure', async (code) => {
+    await expect(signIn({ email: 'test@example.test', password: 'password' }, async () => new Response(JSON.stringify({ code }), { status: 403 })))
+      .rejects.toMatchObject({ code: 'FORBIDDEN' });
+  });
+  it('reserves registration-code copy for a signup code rejection', async () => {
+    await expect(signUp({ email: 'a@example.test', password: 'password', name: 'Alice', registrationCode: 'bad' },
+      async () => new Response(JSON.stringify({ code: 'INVALID_REGISTRATION_CODE' }), { status: 403 })))
+      .rejects.toMatchObject({ code: 'INVALID_REGISTRATION_CODE' });
+  });
+  it('keeps auth rate limits distinct from server startup', async () => {
+    await expect(signIn({ email: 'a@example.test', password: 'password' }, async () => new Response('{}', { status: 429 })))
+      .rejects.toMatchObject({ code: 'RATE_LIMITED' });
+  });
+});
 
 describe('readSession', () => {
   it('returns an authenticated identity from the application envelope', async () => {

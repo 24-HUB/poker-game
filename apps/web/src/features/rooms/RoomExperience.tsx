@@ -2,7 +2,7 @@
 
 import type { GameMutationCommand, PokerAction, RoomMutationCommand } from '@poker/contracts';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 
 import { useSession } from '../auth/SessionBoundary';
@@ -10,9 +10,12 @@ import { RoomLobby } from './RoomLobby';
 import { PokerTable } from './PokerTable';
 import { roomStore } from './roomStore';
 import { createGameMutationCommand, createMutationCommand, useRoomConnection } from './useRoomConnection';
+import { useActiveRoom } from './ActiveRoomBoundary';
+import { HandHistory } from './HandHistory';
 
 export function RoomExperience({ roomId }: { roomId: string }) {
   const router = useRouter();
+  const boundary = useActiveRoom();
   const { session } = useSession();
   const invitation = useStore(roomStore, (state) => state.invitation);
   const interruption = useStore(roomStore, (state) => state.interruption);
@@ -30,15 +33,15 @@ export function RoomExperience({ roomId }: { roomId: string }) {
     retryPendingGame,
   } = useRoomConnection(roomId);
   const [message, setMessage] = useState<string | null>(null);
+  const leaveDestination = useRef('/');
   const accountId = session.status === 'authenticated' ? session.account.accountId : null;
   const currentRoom = room?.roomId === roomId ? room : null;
-  const invitationUrl = invitation
-    ? `${typeof window === 'undefined' ? '' : window.location.origin}/#invite=${encodeURIComponent(invitation.token)}`
-    : null;
+  const invitationCode = invitation?.token ?? null;
 
   useEffect(() => {
     if (interruption) router.replace('/');
   }, [interruption, router]);
+  useEffect(() => boundary?.registerLeave((destination) => { if (currentRoom) leave(destination); }));
 
   if (!accountId) return <p className="session-boundary">Sign in to enter this private room.</p>;
   if (!currentRoom) {
@@ -65,7 +68,10 @@ export function RoomExperience({ roomId }: { roomId: string }) {
   async function runGame(command: GameMutationCommand) {
     setMessage(null);
     const result = await sendGame(command);
-    if (result.error) setMessage(result.error.message);
+    if (result.error) {
+      setMessage(result.error.message);
+      if (result.error.code !== 'COMMAND_UNCERTAIN') await sendGame({ type: 'game:sync', roomId });
+    }
     return result;
   }
 
@@ -99,17 +105,32 @@ export function RoomExperience({ roomId }: { roomId: string }) {
     }));
   }
 
-  function leave() {
+  function leave(destination = '/') {
+    if (pendingCommand) { setMessage('Reconcile the pending room command before leaving.'); return; }
     const bootId = requireBootId();
-    if (!bootId || !window.confirm(activeRoom.phase === 'playing'
-      ? 'Leave this room? Your seat stays in the current session until it ends.'
-      : 'Leave this private room?')) return;
+    const activeHand = activeRoom.phase === 'playing' && game?.handId &&
+      game.handPhase !== null && !['result', 'settling'].includes(game.handPhase);
+    if (!bootId || (activeHand && !window.confirm('Leave this room? Your seat stays in the current session until it ends.'))) return;
+    leaveDestination.current = destination;
     void run(createMutationCommand('room:leave', bootId, {
       roomId, controlEpoch: activeRoom.control.epoch,
-    })).then((result) => {
-      if (!result.error) { roomStore.getState().clear(); router.push('/'); }
-    });
+    })).then(async (result) => { if (!result.error) await finishLeave(); });
   }
+
+  async function finishLeave() {
+    await boundary?.released();
+    roomStore.getState().clear(); router.push(leaveDestination.current);
+  }
+  const exitControls = <div className="room-exit-controls">
+    <button type="button" className="text-button" disabled={pendingCommand !== null} onClick={() => leave()}>Back to lobby</button>
+    {pendingCommand ? <button type="button" className="secondary-button" disabled={!canRetryPending} onClick={() => {
+      const leaving = pendingCommand.type === 'room:leave';
+      void retryPending().then(async (result) => {
+        if (result.error) setMessage(result.error.message);
+        else if (leaving) await finishLeave();
+      });
+    }}>Reconcile pending room command</button> : null}
+  </div>;
 
   function claimControl() {
     const bootId = requireBootId();
@@ -117,21 +138,25 @@ export function RoomExperience({ roomId }: { roomId: string }) {
   }
 
   if (currentRoom.phase === 'playing' || game?.sessionPhase === 'ended') {
-    return <PokerTable room={currentRoom} game={game} accountId={accountId} status={status}
+    return <>{exitControls}<PokerTable room={currentRoom} game={game} accountId={accountId} status={status}
       pending={pendingGameCommand !== null} message={message} onAction={act} onEnd={endSession}
-      onStart={startSession} onLeave={leave} onClaimControl={claimControl}
+      onStart={startSession} onLeave={() => leave()} onClaimControl={claimControl}
       onRetryPending={() => void retryPendingGame().then((result) => {
         if (result.error) setMessage(result.error.message);
-      })} />;
+      })} />
+      {game ? <HandHistory key={`${accountId}:${game.sessionId}`} accountId={accountId} roomId={roomId} sessionId={game.sessionId}
+        latestHandId={game.handResult?.handId} names={Object.fromEntries(game.participants.map((player) => [player.accountId, player.displayName]))} /> : null}
+    </>;
   }
 
   return (
+    <>{exitControls}
     <RoomLobby
       accountId={accountId}
       room={currentRoom}
       status={status}
       pending={pendingCommand !== null}
-      invitationUrl={invitationUrl}
+      invitationCode={invitationCode}
       message={message}
       canRetryPending={canRetryPending}
       onTakeSeat={(seat) => {
@@ -152,15 +177,17 @@ export function RoomExperience({ roomId }: { roomId: string }) {
       onClaimControl={() => {
         claimControl();
       }}
-      onLeave={leave}
+      onLeave={() => leave()}
       onStart={startSession}
       onRetryPending={() => {
         setMessage(null);
         void retryPending().then((result) => {
           if (result.error) setMessage(result.error.message);
+          else if (pendingCommand?.type === 'room:leave') void finishLeave();
           else if (result.data.invitation) roomStore.getState().setInvitation(result.data.invitation);
         });
       }}
     />
+    </>
   );
 }

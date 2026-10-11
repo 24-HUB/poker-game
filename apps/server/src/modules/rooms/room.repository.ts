@@ -2,6 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { Inject, Injectable } from '@nestjs/common';
 import type { ClientSession, Db } from 'mongodb';
+import type { CurrentRoom } from '@poker/contracts' with { 'resolution-mode': 'import' };
 
 import { AuthorityLease, type AuthorityToken } from '../../authority/authorityLease';
 import { MONGO_DB, TRANSACTION_RUNNER } from '../../database/database.tokens';
@@ -77,6 +78,23 @@ export class RoomRepository {
 
   public async findCommand(accountId: string, commandId: string): Promise<StoredRoomCommand | null> {
     return this.db.collection<StoredRoomCommand>('roomCommands').findOne({ accountId, commandId });
+  }
+
+  public async currentRoom(accountId: string, authority: AuthorityToken): Promise<CurrentRoom | null> {
+    return this.transactions.run(async (session) => {
+      const active = await this.db.collection<ActiveRoomMembershipDocument>('activeRoomMemberships')
+        .findOne({ _id: accountId, accountId }, { session });
+      if (!active) return null;
+      const membership = await this.db.collection<MembershipDocument>('roomMemberships').findOne({
+        roomId: active.roomId, accountId, leftAt: null, pendingDeparture: { $ne: true },
+      }, { session, projection: { _id: 1 } });
+      if (!membership) return null;
+      const room = await this.db.collection<RoomDocument>('rooms').findOne({
+        _id: active.roomId, status: 'OPEN',
+        authorityBootId: authority.bootId, authorityEpoch: authority.epoch,
+      }, { session, projection: { _id: 1, title: 1, phase: 1 } });
+      return room ? { roomId: room._id, title: room.title, phase: room.phase ?? 'waiting' } : null;
+    });
   }
 
   public async findRoomIdByInvitation(invitationHash: string): Promise<string | null> {
