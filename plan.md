@@ -45,6 +45,20 @@ Sections 1–5 define the product and its initial tuning proposals. Sections 6�
 
 The product is Texas Hold'em with virtual currency and cosmetic-only gacha. No cosmetic changes cards, odds, available information, or poker strength. Poker chips cannot pay for pulls or convert into tickets.
 
+Pre-deployment improvements requested 2026-10-11: recover the caller's current
+room and keep ordinary app navigation at the table during active play; improve
+playing-room UX/UI; share room invitations as codes rather than generated URLs;
+provide two ready local mock accounts without manual registration/verification.
+The executable scope and acceptance are in
+[M5.1a of the implementation plan](docs/superpowers/plans/2026-09-30-m3-through-production.md#m51a--required-local-playtest-ux-improvements-before-deployment).
+This navigation lock retains explicit leave/sign-out and account recovery; mock
+entry is confined to the loopback disposable test stack and never bypasses production
+authentication. These new release gates are planned, not implemented or verified.
+The user-supplied [Poker Room UX/UI specification](docs/superpowers/specs/2026-10-11-poker-room-ux-ui.md)
+now defines table layout, room controls, legal amount editing, responsive behavior,
+hand history and accessibility acceptance. Collapsed destinations remain accessible
+through deliberate leave; confirm only when leaving affects an active hand.
+
 Daily working hours and a release date have not been supplied. Delivery uses sequential milestones for the user working with Codex, without a calendar estimate.
 
 ## 2. First-release experience
@@ -505,6 +519,48 @@ Implementation prerequisites are concrete: prove the Cloudflare frontend/runtime
 Section 19 supplies the detailed M0/M1 implementation plan. Review it before execution. Build subsequent milestones sequentially, each with a usable frontend slice and its acceptance evidence. Keep all future implementation on a separate development branch so this planning branch retains its single-file purpose. This design task creates no application code, provider accounts, deployed resources, or paid subscriptions.
 
 ## 18. Checkpoint and resumption notes
+
+### Detailed poker-room UX/UI specification added — 2026-10-11 12:13 UTC
+
+Resumed clean `codex/predeploy-ux-plan` on draft
+[PR #20](https://github.com/24-HUB/poker-game/pull/20), base `dev`; previous handoff
+commit `0b0ac710` is preserved. Fetch succeeded before this follow-up.
+Saved the user's full UX/UI specification and expanded M5.1a Task 2 to cover page
+order, stable seats/cards/bets/markers, synchronized legal input/slider/presets,
+submission feedback, responsive safe areas, history and accessible timer behavior.
+Live metadata/history gaps have explicit server-read/projection tasks; no poker rules
+or production authentication changes are planned. Task 1 now reconciles collapsed
+destinations and Back to lobby through deliberate leave with consequence-only confirmation.
+No application code changed; all new implementation gates remain unchecked.
+Specification/plan commit `76020ee7` is pushed to PR #20; final fetch succeeded
+and the branch contains current `origin/dev` `fc6cb0dc`.
+Next: review this planning follow-up in PR #20 and merge manually, then implement
+M5.1a Task 1 on its task branch when requested. See CHECKPOINT.md for validation.
+Usage observed 12:13 UTC: five-hour 65%, weekly 90% remaining; reset times unchanged.
+Handoff observation 12:17 UTC: five-hour 61%, weekly 89% remaining.
+
+### Pre-deployment UX implementation-plan update — 2026-10-11 12:03 UTC
+
+Branch `codex/predeploy-ux-plan` starts from freshly fetched `origin/dev` `fc6cb0dc`.
+The user authorized restoring only Next-generated `apps/web/next-env.d.ts` changes
+before the clean branch start. No application code was changed in this task.
+Added M5.1a in the existing implementation plan, with task interfaces, files, regression
+cases and verification commands for active-room recovery/navigation lock, playing-room
+layout/control clarity, code-only invites and two ready local test accounts. The
+last task also fixes the reproduced sign-in 403 error-classification problem and
+records the verified Windows pinned-pnpm launch approach.
+
+Release checklist now treats these new items as blockers before the next hosted
+candidate and production; earlier gameplay checks do not verify them. All new
+implementation boxes remain unchecked. Provider accounts/storage/key selection
+and separately authorized hosted/production work still remain pending. Next step:
+review/merge the planning PR manually, then start Task 1 of M5.1a on a fresh task
+branch after status/usage/checkpoint/fetch checks. Planning commit `0f7f807c` is pushed
+in draft [PR #20](https://github.com/24-HUB/poker-game/pull/20), targeting `dev`;
+final fetch succeeded and the branch contains current `origin/dev` `fc6cb0dc`.
+See CHECKPOINT.md for validation and the exact next step.
+Usage observed 12:03 UTC: five-hour 76% remaining, weekly 91%; handoff observation
+12:08 UTC: five-hour 70%, weekly 90%. No reset credit used.
 
 ### M5.1 multiplayer gameplay acceptance — 2026-10-10 07:17 UTC
 

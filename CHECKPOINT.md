@@ -1,5 +1,66 @@
 # Checkpoint — Remaining phases through production
 
+## Detailed poker-room UX/UI specification added — 2026-10-11 12:13 UTC
+
+- Resumed clean `codex/predeploy-ux-plan` on draft
+  [PR #20](https://github.com/24-HUB/poker-game/pull/20), base `dev`;
+  previous handoff commit `0b0ac710` is preserved. Start fetch succeeded.
+- Saved the full user specification in `docs/superpowers/specs/2026-10-11-poker-room-ux-ui.md`
+  and expanded M5.1a Task 2 with layout, stable seats, authoritative metadata,
+  legal amount input/slider/presets, submission states, bounded committed history,
+  desktop/tablet/mobile acceptance and accessibility. Task 1 now retains destinations
+  via a deliberate leave flow; confirmation is limited to active-hand consequences.
+- Planning only: no application/database/deployment changes. Earlier gameplay
+  evidence does not verify this specification; all implementation steps stay unchecked.
+- Specification/plan commit `76020ee7` is pushed to PR #20; its description now
+  covers the full specification. This checkpoint follow-up records the handoff.
+  Final fetch succeeded; the branch contains current `origin/dev` `fc6cb0dc`.
+- Documentation verification passed: reviewed the complete five-file follow-up diff
+  and coverage of spec sections 1–9, checked data requirements against current engine/
+  contracts/projection/persistence, balanced Markdown fences and all 20 local link
+  targets, and passed `git diff --check`. Application tests were not rerun for prose.
+- Next: review/merge PR #20 manually, then implement M5.1a Task 1 when requested,
+  beginning with clean status/usage/fetch checks. Provider accounts, backup storage/key
+  access and hosted authorization remain pending.
+- Usage observed 2026-10-11 12:13 UTC: five-hour 65% remaining (reset
+  2026-10-11 15:49:58 UTC), weekly 90% remaining (reset 2026-10-18 05:12:40 UTC).
+  Handoff observation 12:17 UTC: five-hour 61%, weekly 89% remaining, same reset
+  times. No billing/reset action occurred.
+
+---
+
+## Pre-deployment UX plan update — 2026-10-11 12:03 UTC
+
+- Branch `codex/predeploy-ux-plan`, clean start from freshly fetched `origin/dev`
+  `fc6cb0dc`. The user explicitly authorized restoring the sole generated
+  `apps/web/next-env.d.ts` development-type change before branching. No unrelated
+  work was discarded; no application code, credentials, database or deployment changed.
+- Added M5.1a to the existing implementation plan: authoritative current-room
+  recovery and active navigation lock; clear table/actions/control states; code-only
+  invitations preserving token security; two ready local players without manual
+  registration/verification. Included the observed incorrect sign-in 403 message
+  and verified Windows pnpm launch path as acceptance regressions.
+- Added matching release blockers and confirmed requirements to plan.md. Earlier
+  passing M5.1 evidence remains historical; all new implementation steps are unchecked.
+  The new scope must pass before the next hosted candidate and M6 production approval.
+- Documentation-only validation passed: referenced paths/scripts were checked against
+  the repository, all 15 local documentation link targets exist, Markdown fences
+  are balanced, and the complete four-file diff and `git diff --check` were reviewed.
+  Application tests were not rerun for these prose-only changes.
+- Planning commit `0f7f807c` is pushed in draft [PR #20](https://github.com/24-HUB/poker-game/pull/20),
+  targeting `dev`; this documentation follow-up records the handoff. Final fetch
+  succeeded and the branch contains current `origin/dev` `fc6cb0dc`.
+- Next: inspect PR #20's final-head CI and review/merge the plan manually. After
+  merge and an implementation request, start M5.1a Task 1
+  with clean status/usage/fetch checks. Provider accounts, encrypted storage/key
+  access and hosted authorization remain pending; no new deployed evidence is claimed.
+- Usage observed 2026-10-11 12:03 UTC: five-hour 76% remaining (reset
+  2026-10-11 15:49:58 UTC), weekly 91% remaining (reset 2026-10-18 05:12:40 UTC).
+  Handoff observation 12:08 UTC: five-hour 70%, weekly 90% remaining, same reset
+  times. No billing/reset action occurred.
+
+---
+
 ## M5.1 multiplayer gameplay acceptance — 2026-10-10 07:17 UTC
 
 - Resumed `codex/m5-gameplay-acceptance` from `origin/dev` `5decc3eb` (PR #17 merged), preserving its unfinished `release.spec.ts`. Implementation `d4c2373c` is committed and pushed; draft [PR #18](https://github.com/24-HUB/poker-game/pull/18) targets `dev`. Fetch succeeded at start and during verification; the branch contains current dev. This documentation follow-up records the handoff. The user merges manually.
