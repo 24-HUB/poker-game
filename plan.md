@@ -534,6 +534,10 @@ passed 370 tests, types and production builds; mock UI/helper strings are absent
 from production browser chunks. Commit and PR are recorded in CHECKPOINT.md.
 No deployment occurred.
 
+Implementation commit `f7619764` is pushed in draft
+[PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`. Continue this
+branch/PR for the remaining acceptance work; do not create another implementation.
+
 Read CHECKPOINT.md for exact evidence, local captures and resume commands. Next:
 fix responsive layout with real viewport assertions, diagnose the isolated
 active-room + backend-restart sequence, then run full CI-mode Chromium, aggregate

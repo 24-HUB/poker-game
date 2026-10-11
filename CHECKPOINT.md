@@ -47,8 +47,11 @@
   Rebuilt production chunks contain no `LocalMockAccounts`, `Play as Mock` or
   `/__e2e/mock-login` strings. `git diff --check` and staged diff check passed;
   build regenerated Next development imports back to the unchanged production file.
-- Save remotely as a **draft** PR to `dev`; the user merges manually. Record the
-  implementation commit and PR below after creation. No required UX gate is complete.
+- Implementation commit **`f7619764`** is pushed on `codex/m5-predeploy-ux` in
+  **draft [PR #21](https://github.com/24-HUB/poker-game/pull/21)**, explicitly targeting
+  `dev`. This documentation follow-up records the save point. The user merges
+  manually; no required UX gate is complete. No task-owned application changes
+  remain uncommitted after this follow-up is saved.
 - Resume: check usage/status, fetch origin, remain on this task branch and read this
   save point. Fix responsive blockers first, then run
   `npm.cmd exec --yes --package=pnpm@10.33.0 --call "set npm_execpath=&& pnpm --filter @poker/web exec playwright test tests/e2e/poker.spec.ts tests/e2e/release.spec.ts --output=.artifacts/ux-captures"`.
