@@ -230,6 +230,8 @@ without manual account creation or email verification. These are release blocker
 private-card projection, explicit tab control and reward/collection rules. These tasks
 change navigation/presentation and local test setup, not poker strength or economy.
 Use the current workspace paths; browser cases live in `apps/web/tests/e2e/`.
+The user's detailed [Poker Room UX/UI specification](../specs/2026-10-11-poker-room-ux-ui.md)
+is the acceptance source for Task 2; reuse the current design system throughout.
 
 #### Task 1 — Authoritative current room and active-session navigation lock
 
@@ -261,12 +263,16 @@ not allocate a seat, claim tab control or expose invitations/private cards.
   Expected RED: missing current-room read/boundary behavior, rather than setup failures.
 - [ ] Implement the read and routing boundary. While phase is `playing` (including
   an ending session until durable completion), keep navigation inside that room:
-  disable Lobby/Collection/Pulls links with a reason; redirect direct app routes,
+  collapse navigation while keeping Lobby/Collection/Pulls discoverable through
+  the explicit leave flow with a reason; redirect unconfirmed direct app routes,
   browser Back and reload/sign-in recovery to `/rooms/<own roomId>`. A waiting room
   gets a visible **Return to room** entry in the lobby instead of a navigation lock.
   Do not rely only on in-memory room state or preserve private cards in storage.
-- [ ] Provide explicit **Leave room** with consequences and confirmation, plus
-  sign-out; successful leave/sign-out releases the navigation lock. Keep existing
+- [ ] Provide explicit **Leave room** and **Back to lobby**, plus sign-out.
+  Selecting a destination during play uses this same leave flow; confirm only
+  when leaving has consequences for an active hand. Cancellation or failed leave
+  stays in the room; successful leave/sign-out releases the lock. Waiting/finished
+  states do not require an unnecessary confirmation. Keep existing
   server behavior for a seat that leaves during a hand. Auth/recovery screens must
   remain usable when access expires. Browser/tab closing cannot be prohibited;
   reconnect must recover membership and request explicit control when needed.
@@ -274,33 +280,111 @@ not allocate a seat, claim tab control or expose invitations/private cards.
 - [ ] Run focused GREEN suites plus
   `pnpm --filter @poker/web exec playwright test tests/e2e/active-room.spec.ts`.
   Expected: two real accounts remain isolated; Back/direct navigation/reload recover
-  the same playing room; leave, sign-out, completion and backend restart unlock safely.
+  the same playing room; destination/leave cancellation stays at the table; confirmed
+  leave, sign-out, completion and backend restart unlock safely.
   Commit: `feat: recover active rooms and keep players at their table`.
 
 #### Task 2 — Playing-room hierarchy and usable controls
 
+**Spec:** [Poker Room — UX/UI Implementation Specification](../specs/2026-10-11-poker-room-ux-ui.md),
+sections 1–9 and the active-room integration note. Every subsection below is required.
+
 **Files:** modify `apps/web/src/features/rooms/{PokerTable.tsx,PokerTable.test.tsx,RoomLobby.tsx,RoomLobby.test.tsx,RoomExperience.tsx}`,
-`apps/web/src/app/globals.css`, and `apps/web/tests/e2e/{poker.spec.ts,release.spec.ts,accessibility.spec.ts}`.
-Use Task 1's active-room boundary and existing `GameView`, legal actions and control epoch.
+`apps/web/src/components/shell/GameShell.tsx`, `apps/web/src/app/globals.css`,
+`packages/contracts/src/{poker.ts,poker.test.ts}`, `apps/server/src/projections/gameProjection.ts`,
+`apps/server/src/modules/rooms/{game.service.ts,session.repository.ts,rooms.module.ts}`,
+`apps/server/test/poker.e2e-spec.ts`, and `apps/web/tests/e2e/{poker.spec.ts,release.spec.ts,accessibility.spec.ts}`;
+create `apps/server/src/modules/rooms/hand-history.controller.ts`,
+`apps/web/src/features/rooms/{PokerActionPanel.tsx,PokerActionPanel.test.tsx,HandHistory.tsx,HandHistory.test.tsx}`
+and `apps/web/src/lib/{hand-history.ts,hand-history.test.ts}`. Table owns spatial
+layout/seat mapping, action panel owns editing/validation, history owns disclosure/read
+states; shell owns collapsed navigation. Reuse existing components/icons/tokens.
+
+**Data interfaces:** reuse `GameView`, `LegalActionsView`, `PokerAction`, Task 1's
+boundary and existing control epoch. Current `GameView` does not expose live hand
+number/blinds/current bet or history; do not use `handResult.handNumber ?? 1` as a
+live-hand counter. Extend the recipient projection with `handNumber`, `smallBlind`,
+`bigBlind`, `smallBlindSeat: number | null`, `bigBlindSeat: number | null` and `currentBet`
+from session/engine state. Add `amountStep` to the projected non-null legal raise
+range, reflecting the engine's safe-integer chip unit (currently 1), without changing
+legal raises. Blind markers use the same heads-up/multi-seat deal rules and seat order
+as the engine, including all-in blinds; never infer them from remaining chip stacks.
+
+Authenticated, uncached `GET /api/rooms/:roomId/hands?sessionId=<id>&beforeHandNumber=<n>`
+returns `Result<{ hands: CommittedHandResult[]; nextBeforeHandNumber: number | null }>`.
+`GameService.history(accountId: string, roomId: string, sessionId: string,
+beforeHandNumber?: number): Promise<{ hands: CommittedHandResult[]; nextBeforeHandNumber: number | null }>`
+returns that payload after rechecking current room membership
+and participation in that room's requested session. Read only committed `COMPLETED`
+hand documents via `SessionRepository.listCommittedHands(sessionId, beforeHandNumber?)`;
+page at most 20, ordered by descending hand number, with an exclusive cursor.
+Never return candidates, raw engine decks/hole cards, another account's reward receipts,
+or data from an unrelated room/session. History shows committed outcomes, not action replay.
+
+**Review focus:** preserved amount during timer/snapshot updates; short all-in limits;
+stable seats after fold/disconnect; uncertain submissions without duplicate actions;
+history privacy and stale results after account/session change. Each is tested below.
 
 - [ ] Add failing behavior cases for actionable takeover, start blocked with fewer
   than two seated players, waiting for another player, disconnected transport,
   pending action and session ending. Every disabled action must have an adjacent
   explanation. No observer/superseded tab may start or act, including Start new session.
-- [ ] Run `pnpm --filter @poker/web test -- PokerTable.test RoomLobby.test`.
-  Expected RED: missing explanations/control restrictions, not merely changed class names.
-- [ ] Refine the approved interface: place your cards and controls together near
-  the bottom; make current actor/timer, board and pot visually distinct; show each
-  player's chips/contribution/state with readable six-seat positioning. Keep Fold,
-  Check/Call and raise amount unambiguous; show raise limits and safe pending feedback.
-  Separate end/leave actions from betting. Explain observer mode and label takeover
-  **Use this tab to play**, preserving explicit server control rather than auto-claiming.
-  Show settled pots/results and earned tickets without obscuring the next action.
-  Remove revision/control jargon from primary user-facing copy.
-- [ ] Verify unit GREEN and real browser flows at 360×800 and 1440×1000 with two/six
-  accounts, long names, all-ins/side pots, reconnect and takeover. Expected: no horizontal
-  overflow; cards, pot and actionable controls remain readable; visible keyboard focus,
-  at least 44×44 touch targets, contrast and reduced-motion behavior pass inspection.
+- [ ] Add failing contract/server cases for live hand number advancing, authoritative
+  blinds/markers/current bet/increments, heads-up and short-blind cases, history
+  pagination/reload, and outsider/left/revoked/cross-session denial. Assert hidden
+  cards/candidate data/other-player receipts are absent; unavailable history is not
+  silently rendered empty. Client tests discard previous account/session history.
+- [ ] Add failing action-panel cases: **Your turn** vs opponent name; Check vs Call
+  amount; Bet vs Raise with total **Raise to** semantics; input/slider synchronization;
+  presets change the selection without firing `onAction`; invalid/non-integer/out-of-range
+  and short-all-in-only amounts block submission with inline errors. Timer/unrelated
+  snapshot updates retain the edited amount; changed legal limits revalidate without
+  silently submitting or replacing it. Double-click/pending sends one command; failed
+  or stale commands show an error and sync legal actions. Uncertain acknowledgements
+  retain the existing command identity/reconciliation flow, never blind resubmission.
+- [ ] Run `pnpm --filter @poker/server test --runTestsByPath test/poker.e2e-spec.ts`,
+  `pnpm --filter @poker/contracts test` and
+  `pnpm --filter @poker/web test -- PokerTable.test RoomLobby.test PokerActionPanel.test HandHistory.test hand-history.test`.
+  Expected RED: missing metadata/history/editing/control behavior, not setup failures
+  or assertions tied only to changed class names.
+- [ ] Implement the authoritative metadata and bounded history read, updating strict
+  schemas and existing test fixtures. Keep all poker actions/rules, settlement/reward
+  writes and recipient card privacy unchanged. History opens/collapses below the action
+  panel without navigation, with loading/error/retry/empty states and committed winner,
+  payout and result details; after reload it reads actual committed results.
+- [ ] Implement the specified page order: compact app header; actual room title,
+  hand/phase/blinds, connection indicator plus text and room-options menu; table;
+  stable action panel; collapsed history. Apply Task 1's deliberate lobby/leave route.
+  Keep host **End after this hand** in room options and visibly mark ending requested.
+  Separate secondary/leave controls from betting; explain observer mode and label
+  takeover **Use this tab to play**. Remove revision/control jargon from primary copy.
+- [ ] Arrange seats relative to the caller: You at bottom, heads-up opponent at top,
+  up to six seats around the perimeter in stable hand-seat order. Folding, acting,
+  disconnect/reconnect and ordinary updates must not move a seat. Center the board/pot
+  with subtle undealt slots; each bet sits inward near its seat. Show name/You, remaining
+  stack, authorized visible/concealed cards, dealer/SB/BB markers and Folded/All-in/
+  Disconnected status without overlap. Actor highlight includes text/timer as well as
+  visual treatment; stack, current bet and total pot have distinct labels/positions.
+- [ ] Implement the stable panel below the table: readable secondary Fold, dynamic
+  Check/Call amount, Bet/Raise selected amount, numeric input, synchronized slider and
+  legal Minimum/Maximum presets that only edit. Derive bounds/step from legal actions,
+  timer from server deadline/time, and Bet/Raise from authoritative current bet; convert
+  labels to the existing `{ type: 'raise', raiseTo }` command without new poker rules.
+  Preserve ordinary edits, revalidate changed limits, and show valid/invalid/pending/error
+  feedback. Opponent turns/reconnecting/settling keep the panel stable and stale actions
+  disabled with explanations; waiting explains player requirements; complete hands show
+  winner/results/tickets. Announce actor/phase changes accessibly, not each timer tick.
+- [ ] Verify unit/server/contract GREEN and real browser flows at desktop 1440×1000
+  and 1280×720, tablet 900×900, and mobile 360×800 with two/six accounts, long names,
+  all-ins/side pots, reconnect, takeover, history and leave cancellation. Expected:
+  table and primary actions together without desktop scrolling; no overlapping cards,
+  names/bets/board/controls or horizontal overflow; mobile bottom panel accounts for
+  safe areas and keeps your cards/essential state visible above it. Desktop controls
+  form a horizontal row; tablet navigation collapses and spacing tightens while
+  cards stay readable. Reduce decoration
+  before shrinking readable cards/text. Check visible focus, keyboard menus/history/
+  slider/input/presets, accessible names, 44×44 targets, contrast, reduced motion and
+  a timer outside a per-tick live region. Inspect scoped screenshots at each breakpoint.
   Run `pnpm --filter @poker/web exec playwright test tests/e2e/poker.spec.ts tests/e2e/release.spec.ts tests/e2e/accessibility.spec.ts`.
   Keep sensitive captures local/ignored. Commit: `fix: clarify poker table controls and layout`.
 

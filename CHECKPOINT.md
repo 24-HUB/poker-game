@@ -1,5 +1,30 @@
 # Checkpoint — Remaining phases through production
 
+## Detailed poker-room UX/UI specification added — 2026-10-11 12:13 UTC
+
+- Resumed clean `codex/predeploy-ux-plan` on draft
+  [PR #20](https://github.com/24-HUB/poker-game/pull/20), base `dev`;
+  previous handoff commit `0b0ac710` is preserved. Start fetch succeeded.
+- Saved the full user specification in `docs/superpowers/specs/2026-10-11-poker-room-ux-ui.md`
+  and expanded M5.1a Task 2 with layout, stable seats, authoritative metadata,
+  legal amount input/slider/presets, submission states, bounded committed history,
+  desktop/tablet/mobile acceptance and accessibility. Task 1 now retains destinations
+  via a deliberate leave flow; confirmation is limited to active-hand consequences.
+- Planning only: no application/database/deployment changes. Earlier gameplay
+  evidence does not verify this specification; all implementation steps stay unchecked.
+- Documentation verification passed: reviewed the complete five-file follow-up diff
+  and coverage of spec sections 1–9, checked data requirements against current engine/
+  contracts/projection/persistence, balanced Markdown fences and all 20 local link
+  targets, and passed `git diff --check`. Application tests were not rerun for prose.
+- Next: review/merge PR #20 manually, then implement M5.1a Task 1 when requested,
+  beginning with clean status/usage/fetch checks. Provider accounts, backup storage/key
+  access and hosted authorization remain pending.
+- Usage observed 2026-10-11 12:13 UTC: five-hour 65% remaining (reset
+  2026-10-11 15:49:58 UTC), weekly 90% remaining (reset 2026-10-18 05:12:40 UTC).
+  No billing/reset action occurred.
+
+---
+
 ## Pre-deployment UX plan update — 2026-10-11 12:03 UTC
 
 - Branch `codex/predeploy-ux-plan`, clean start from freshly fetched `origin/dev`

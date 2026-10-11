@@ -54,6 +54,10 @@ The executable scope and acceptance are in
 This navigation lock retains explicit leave/sign-out and account recovery; mock
 entry is confined to the loopback disposable test stack and never bypasses production
 authentication. These new release gates are planned, not implemented or verified.
+The user-supplied [Poker Room UX/UI specification](docs/superpowers/specs/2026-10-11-poker-room-ux-ui.md)
+now defines table layout, room controls, legal amount editing, responsive behavior,
+hand history and accessibility acceptance. Collapsed destinations remain accessible
+through deliberate leave; confirm only when leaving affects an active hand.
 
 Daily working hours and a release date have not been supplied. Delivery uses sequential milestones for the user working with Codex, without a calendar estimate.
 
@@ -515,6 +519,22 @@ Implementation prerequisites are concrete: prove the Cloudflare frontend/runtime
 Section 19 supplies the detailed M0/M1 implementation plan. Review it before execution. Build subsequent milestones sequentially, each with a usable frontend slice and its acceptance evidence. Keep all future implementation on a separate development branch so this planning branch retains its single-file purpose. This design task creates no application code, provider accounts, deployed resources, or paid subscriptions.
 
 ## 18. Checkpoint and resumption notes
+
+### Detailed poker-room UX/UI specification added — 2026-10-11 12:13 UTC
+
+Resumed clean `codex/predeploy-ux-plan` on draft
+[PR #20](https://github.com/24-HUB/poker-game/pull/20), base `dev`; previous handoff
+commit `0b0ac710` is preserved. Fetch succeeded before this follow-up.
+Saved the user's full UX/UI specification and expanded M5.1a Task 2 to cover page
+order, stable seats/cards/bets/markers, synchronized legal input/slider/presets,
+submission feedback, responsive safe areas, history and accessible timer behavior.
+Live metadata/history gaps have explicit server-read/projection tasks; no poker rules
+or production authentication changes are planned. Task 1 now reconciles collapsed
+destinations and Back to lobby through deliberate leave with consequence-only confirmation.
+No application code changed; all new implementation gates remain unchecked.
+Next: review this planning follow-up in PR #20 and merge manually, then implement
+M5.1a Task 1 on its task branch when requested. See CHECKPOINT.md for validation.
+Usage observed 12:13 UTC: five-hour 65%, weekly 90% remaining; reset times unchanged.
 
 ### Pre-deployment UX implementation-plan update — 2026-10-11 12:03 UTC
 

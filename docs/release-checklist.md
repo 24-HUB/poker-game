@@ -88,7 +88,16 @@ next hosted candidate using [M5.1a](superpowers/plans/2026-09-30-m3-through-prod
   navigation stays at the playing table, with explicit leave/sign-out and safe
   completion/restart/expired-session recovery.
 - [ ] Playing-room layout makes your cards, turn/timer, board/pot and betting controls
-  readable on desktop/phone; disabled actions and tab takeover explain the next step.
+  readable on desktop/tablet/phone and meets the full
+  [Poker Room UX/UI specification](superpowers/specs/2026-10-11-poker-room-ux-ui.md):
+  compact header/options; stable caller-relative seats and dealer/blind markers;
+  desktop table/actions visible together; mobile bottom panel/safe areas; no overlap.
+- [ ] Input/slider/presets share a validated legal amount with clear Raise-to semantics;
+  updates preserve edits; pending/failure/reconnect states prevent duplicate/stale actions.
+  Inline errors, keyboard/focus/labels and non-repeating timer announcements are verified.
+- [ ] Live hand number/blinds and on-demand completed-hand history use authorized
+  server data, with privacy/pagination/account-isolation checks. Destination navigation
+  uses deliberate leave, confirming only active-hand consequences; host ending stays visible.
 - [ ] Invitation generation displays/copies only the secure invite code; Guest joins
   by code; expiry, rotation, privacy and existing fragment-link compatibility remain verified.
 - [ ] Mock Host/Mock Guest can enter the loopback test stack without manual signup,
