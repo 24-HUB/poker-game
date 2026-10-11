@@ -1,5 +1,33 @@
 # Checkpoint — Remaining phases through production
 
+## Pre-deployment UX plan update — 2026-10-11 12:03 UTC
+
+- Branch `codex/predeploy-ux-plan`, clean start from freshly fetched `origin/dev`
+  `fc6cb0dc`. The user explicitly authorized restoring the sole generated
+  `apps/web/next-env.d.ts` development-type change before branching. No unrelated
+  work was discarded; no application code, credentials, database or deployment changed.
+- Added M5.1a to the existing implementation plan: authoritative current-room
+  recovery and active navigation lock; clear table/actions/control states; code-only
+  invitations preserving token security; two ready local players without manual
+  registration/verification. Included the observed incorrect sign-in 403 message
+  and verified Windows pnpm launch path as acceptance regressions.
+- Added matching release blockers and confirmed requirements to plan.md. Earlier
+  passing M5.1 evidence remains historical; all new implementation steps are unchecked.
+  The new scope must pass before the next hosted candidate and M6 production approval.
+- Documentation-only validation passed: referenced paths/scripts were checked against
+  the repository, all 15 local documentation link targets exist, Markdown fences
+  are balanced, and the complete four-file diff and `git diff --check` were reviewed.
+  Application tests were not rerun for these prose-only changes.
+- Next: commit/push this planning task and create its PR targeting `dev`; the user
+  merges manually. After merge and an implementation request, start M5.1a Task 1
+  with clean status/usage/fetch checks. Provider accounts, encrypted storage/key
+  access and hosted authorization remain pending; no new deployed evidence is claimed.
+- Usage observed 2026-10-11 12:03 UTC: five-hour 76% remaining (reset
+  2026-10-11 15:49:58 UTC), weekly 91% remaining (reset 2026-10-18 05:12:40 UTC).
+  No billing/reset action occurred.
+
+---
+
 ## M5.1 multiplayer gameplay acceptance — 2026-10-10 07:17 UTC
 
 - Resumed `codex/m5-gameplay-acceptance` from `origin/dev` `5decc3eb` (PR #17 merged), preserving its unfinished `release.spec.ts`. Implementation `d4c2373c` is committed and pushed; draft [PR #18](https://github.com/24-HUB/poker-game/pull/18) targets `dev`. Fetch succeeded at start and during verification; the branch contains current dev. This documentation follow-up records the handoff. The user merges manually.

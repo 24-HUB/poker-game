@@ -12,6 +12,13 @@
 
 ## Baseline and sequence
 
+Execution update 2026-10-11: the user requires the four local playtest improvements
+in **M5.1a** below before production. Implement them before the next hosted candidate,
+then rerun the affected acceptance gates. Existing M5.1 evidence describes the earlier
+revision; it does not verify these new requirements. Hosted setup still depends on
+provider accounts, backup storage and concrete authorization. This update plans work;
+it does not implement application behavior or authorize deployment.
+
 Repository inspected on 2026-09-30: freshly fetched `origin/dev` is `d3aa002b`, merging M2 PR #9. M0–M2 code is present. Historical evidence records green Linux CI and 12/12 local browser cases; those checks were not rerun for this documentation task. M0/M1/M2 deployed acceptance remains unperformed. No wallet, gacha, or collection subsystem is implemented by this plan.
 
 | Phase | Outcome | Entry and exit gate |
@@ -212,6 +219,168 @@ passed all steps, including Worker packaging and full Chromium 14/14. Original
 browser sequence, wait bounds and no-retry policy are retained with sanitized
 failure diagnostics. Recheck the docs-only follow-up's final head before merge.
 
+### M5.1a — Required local playtest UX improvements before deployment
+
+**User requirements confirmed 2026-10-11:** keep a player at the current playing
+room instead of letting ordinary app navigation lose the table; improve playing-room
+UX/UI; generate/share only an invitation code; supply two mock accounts for testing
+without manual account creation or email verification. These are release blockers.
+
+**Scope:** preserve the existing approved blue/white design, server poker authority,
+private-card projection, explicit tab control and reward/collection rules. These tasks
+change navigation/presentation and local test setup, not poker strength or economy.
+Use the current workspace paths; browser cases live in `apps/web/tests/e2e/`.
+
+#### Task 1 — Authoritative current room and active-session navigation lock
+
+**Files:** modify `packages/contracts/src/{rooms.ts,rooms.test.ts,index.ts}`,
+`apps/server/src/modules/rooms/{room.repository.ts,room.service.ts,rooms.module.ts}`,
+`apps/web/src/features/rooms/{LobbyExperience.tsx,RoomExperience.tsx,roomStore.ts}`,
+`apps/web/src/components/shell/GameShell.tsx` and `apps/web/src/app/layout.tsx`;
+create `apps/server/src/modules/rooms/current-room.controller.ts`,
+`apps/web/src/features/rooms/{ActiveRoomBoundary.tsx,ActiveRoomBoundary.test.tsx}`,
+`apps/web/src/lib/{current-room.ts,current-room.test.ts}` and
+`apps/web/tests/e2e/active-room.spec.ts`; extend `apps/server/test/rooms.e2e-spec.ts`.
+
+**Interfaces:** shared `CurrentRoom = { roomId: string; title: string; phase: 'waiting' | 'playing' }`;
+authenticated `GET /api/rooms/current` returns `Result<CurrentRoom | null>`.
+`RoomService.currentRoom(accountId: string): Promise<CurrentRoom | null>` resolves
+the caller's open membership against the current authority, never another player's
+room or browser-supplied account ID. The uncached client read is keyed by authenticated
+account. An active boundary uses this summary to recover the room route, then existing
+`room:sync` / game sync obtain recipient-authorized snapshots. Current-room reads must
+not allocate a seat, claim tab control or expose invitations/private cards.
+
+- [ ] Write failing server cases: own waiting/playing membership returns its summary;
+  outsider/unauthenticated callers cannot discover it; closed/left/old-boot rooms
+  return null; a revoked session cannot query; database outage returns unavailable,
+  not an invented empty membership. Write client cases for account switches and
+  stale requests so one account's redirect cannot affect another.
+- [ ] Run `pnpm --filter @poker/server test --runTestsByPath test/rooms.e2e-spec.ts`
+  and `pnpm --filter @poker/web test -- current-room.test ActiveRoomBoundary.test`.
+  Expected RED: missing current-room read/boundary behavior, rather than setup failures.
+- [ ] Implement the read and routing boundary. While phase is `playing` (including
+  an ending session until durable completion), keep navigation inside that room:
+  disable Lobby/Collection/Pulls links with a reason; redirect direct app routes,
+  browser Back and reload/sign-in recovery to `/rooms/<own roomId>`. A waiting room
+  gets a visible **Return to room** entry in the lobby instead of a navigation lock.
+  Do not rely only on in-memory room state or preserve private cards in storage.
+- [ ] Provide explicit **Leave room** with consequences and confirmation, plus
+  sign-out; successful leave/sign-out releases the navigation lock. Keep existing
+  server behavior for a seat that leaves during a hand. Auth/recovery screens must
+  remain usable when access expires. Browser/tab closing cannot be prohibited;
+  reconnect must recover membership and request explicit control when needed.
+  Unavailable reads show a bounded reconnect state, not redirect loops or fake logout.
+- [ ] Run focused GREEN suites plus
+  `pnpm --filter @poker/web exec playwright test tests/e2e/active-room.spec.ts`.
+  Expected: two real accounts remain isolated; Back/direct navigation/reload recover
+  the same playing room; leave, sign-out, completion and backend restart unlock safely.
+  Commit: `feat: recover active rooms and keep players at their table`.
+
+#### Task 2 — Playing-room hierarchy and usable controls
+
+**Files:** modify `apps/web/src/features/rooms/{PokerTable.tsx,PokerTable.test.tsx,RoomLobby.tsx,RoomLobby.test.tsx,RoomExperience.tsx}`,
+`apps/web/src/app/globals.css`, and `apps/web/tests/e2e/{poker.spec.ts,release.spec.ts,accessibility.spec.ts}`.
+Use Task 1's active-room boundary and existing `GameView`, legal actions and control epoch.
+
+- [ ] Add failing behavior cases for actionable takeover, start blocked with fewer
+  than two seated players, waiting for another player, disconnected transport,
+  pending action and session ending. Every disabled action must have an adjacent
+  explanation. No observer/superseded tab may start or act, including Start new session.
+- [ ] Run `pnpm --filter @poker/web test -- PokerTable.test RoomLobby.test`.
+  Expected RED: missing explanations/control restrictions, not merely changed class names.
+- [ ] Refine the approved interface: place your cards and controls together near
+  the bottom; make current actor/timer, board and pot visually distinct; show each
+  player's chips/contribution/state with readable six-seat positioning. Keep Fold,
+  Check/Call and raise amount unambiguous; show raise limits and safe pending feedback.
+  Separate end/leave actions from betting. Explain observer mode and label takeover
+  **Use this tab to play**, preserving explicit server control rather than auto-claiming.
+  Show settled pots/results and earned tickets without obscuring the next action.
+  Remove revision/control jargon from primary user-facing copy.
+- [ ] Verify unit GREEN and real browser flows at 360×800 and 1440×1000 with two/six
+  accounts, long names, all-ins/side pots, reconnect and takeover. Expected: no horizontal
+  overflow; cards, pot and actionable controls remain readable; visible keyboard focus,
+  at least 44×44 touch targets, contrast and reduced-motion behavior pass inspection.
+  Run `pnpm --filter @poker/web exec playwright test tests/e2e/poker.spec.ts tests/e2e/release.spec.ts tests/e2e/accessibility.spec.ts`.
+  Keep sensitive captures local/ignored. Commit: `fix: clarify poker table controls and layout`.
+
+#### Task 3 — Code-only room invitations
+
+**Files:** modify `apps/web/src/features/rooms/{RoomExperience.tsx,RoomLobby.tsx,RoomLobby.test.tsx,Lobby.tsx,Lobby.test.tsx,invitation.ts,invitation.test.ts}`
+and `apps/web/tests/e2e/rooms.spec.ts`; extend `apps/server/test/rooms.e2e-spec.ts`
+only where new acceptance coverage is needed. Reuse existing `RoomReply.invitation.token`
+and `room:join { token }`; the backend already returns a token, while the frontend builds the URL.
+
+- [ ] Write failing assertions that generation/rotation displays a selectable invite
+  code and **Copy invite code** copies exactly that token, without origin/path/fragment.
+  Add copy-success/failure feedback and tests for joining via pasted code, whitespace,
+  empty/malformed/expired/rotated input and old-code rejection.
+- [ ] Run `pnpm --filter @poker/web test -- RoomLobby.test Lobby.test invitation.test`.
+  Expected RED: clipboard still contains a URL and code/feedback UI is absent.
+- [ ] Display/share the existing cryptographically random opaque token as the code;
+  do not replace it with a guessable short numeric code. Label the join input **Invite code**.
+  Preserve expiry, rotation, host-only token delivery, hashing and retry-safe commands.
+  Keep existing fragment-link parsing for previously shared invitations; new generation
+  must display/copy only the code. Code entry must never place tokens in query strings,
+  logs or persistent account storage; retain the bounded pending-sign-in storage rule.
+- [ ] Run unit GREEN, server room coverage and
+  `pnpm --filter @poker/web exec playwright test tests/e2e/rooms.spec.ts`.
+  Expected: host copies code, Guest joins by code; old links remain readable; rotation
+  invalidates the old code; non-host snapshots never expose it. Commit: `feat: share rooms with invite codes`.
+
+#### Task 4 — Two ready local accounts and accurate sign-in failures
+
+**Files:** modify `apps/web/scripts/e2e-stack.mjs`,
+`apps/web/tests/e2e/support/accounts.ts`, `apps/web/src/lib/{auth-client.ts,auth-client.test.ts}`,
+`apps/web/src/features/auth/{SignInButton.tsx,SignInButton.test.tsx}` and `README.md`;
+create `apps/web/scripts/local-mock-accounts.mjs` and
+`apps/web/tests/e2e/local-mock-accounts.spec.ts`; isolate the local entry controls in
+`apps/web/src/features/auth/{LocalMockAccounts.tsx,LocalMockAccounts.test.tsx}`.
+
+**Contract:** the loopback test harness prepares **Mock Host** and **Mock Guest** in
+its generated disposable database through ordinary auth signup, captured verification
+and native sign-in. Offer clearly labelled local **Play as Mock Host / Mock Guest**
+entry points; a harness-only same-origin POST helper may invoke native sign-in and
+forward its session cookie. The app still uses real verified sessions/HTTP/socket guards.
+No registration, inbox lookup or credential typing is required from the tester.
+
+- [ ] Write failing browser cases for both ready accounts in separate browser contexts,
+  stable distinct identities, create/join by code, sign-out and harness restart into
+  a fresh isolated database. Add tests rejecting unrecognised mock selectors and
+  invalid/missing Origin. Production must have no mock buttons, login helper or seeded
+  identities; enabling a frontend test flag alone must not grant backend access.
+- [ ] Correct sign-in error mapping with failing `auth-client.test.ts` cases: an
+  origin/proxy/other 403 must not say **That registration code is not valid**; only
+  the signup registration-code failure may use that message. Preserve wrong-password,
+  unverified-email, rate-limit and unavailable states. Local setup must clearly use
+  `http://127.0.0.1:3100`, not the untrusted `localhost` alias.
+- [ ] Run `pnpm --filter @poker/web test -- auth-client.test LocalMockAccounts.test`
+  and the new browser fixture cases to capture RED, then implement the fixture/helpers and accurate error copy.
+  Keep fixture creation/verification at the harness boundary; never add a production
+  auth bypass, runtime balance grants or fake room players. User starts two real contexts.
+- [ ] Document the Windows launch verified in this session:
+  `npm.cmd exec --yes --package=pnpm@10.33.0 --call "set npm_execpath=&& node apps/web/scripts/e2e-stack.mjs"`.
+  Verify the launcher and nested build commands use pnpm 10.33.0 even with a global
+  pnpm 12 installed. Do not edit the pinned packageManager merely to bypass its check.
+- [ ] Run focused GREEN and
+  `pnpm --filter @poker/web exec playwright test tests/e2e/local-mock-accounts.spec.ts tests/e2e/account-recovery.spec.ts`.
+  Inspect the production web build and authenticated real server transport to prove
+  mock helpers are absent and normal authentication remains enforced.
+  Commit: `test: provide ready local players and clarify sign-in errors`.
+
+#### Completion gate for M5.1a
+
+- [ ] Use pinned pnpm 10.33.0 and `pnpm install --frozen-lockfile`, then `pnpm check`
+  and the complete `CI=true` Chromium suite with zero retries. No lint script exists.
+  Check Linux OpenNext Worker CI for the final task head. Record actual commands/results
+  and scoped visual evidence; do not reuse prior passing counts for the changed candidate.
+- [ ] Review the whole task diff, update plan/checkpoint/release checklist, commit/push
+  task-owned changes and open/update a PR to `dev` for manual merge. Keep draft while
+  any gate is failing/unavailable. Re-fetch before handoff and report upstream drift.
+- [ ] Only after these new requirements pass, resume M5.2 remaining storage/key selection
+  and M5.3 authorized hosted acceptance. M6 production approval must name the new
+  verified candidate; M5.1a does not itself authorize live resources, email or deployment.
+
 ### M5.2 — Backup, restore and incident rehearsal
 
 **Files:** Create `docs/operations.md`, `scripts/verify-economy.mjs`, `scripts/verify-economy.test.mjs`, `scripts/support/economy-fixture.mjs` and `scripts/rehearse-backup.test.mjs`; modify `package.json`, `.github/workflows/ci.yml`, `docs/deployment.md` and `docs/release-checklist.md`.
@@ -230,7 +399,7 @@ failure diagnostics. Recheck the docs-only follow-up's final head before merge.
 
 **Files:** Update `docs/deployment.md`, `docs/release-checklist.md`, `plan.md` and checkpoint with dated evidence; extend `scripts/smoke-deployment.mjs` only for bounded non-destructive readiness checks.
 
-**Entry:** M3/M4 and M5.1–M5.2 local checks pass. Prepare exact resources, regions, hostnames, build SHA, migration/catalogue commands and secrets inventory before requesting deployment authorization. This task stays pending until authorized.
+**Entry:** M3/M4, M5.1, the newly required M5.1a local playtest improvements, and M5.2 local checks pass. Prepare exact resources, regions, hostnames, build SHA, migration/catalogue commands and secrets inventory before requesting deployment authorization. This task stays pending until authorized.
 
 - [ ] Prefer separate playtest Worker/service/database and test accounts. Confirm combined free-tier quotas before provisioning; use disposable isolated hosted resources sequentially if simultaneous environments exceed the budget. Never point automated test suites at the live progression database.
 - [ ] Recheck provider documentation below; retain actual OpenNext configuration, Node bind/PORT and `/health/deploy`. Configure fixed upstream/public origin, private proxy/auth/database secrets, restricted Atlas database user/network access, approved email settings and maintenance controls. Confirm the Render environment's outbound addresses; do not quietly substitute unrestricted database access.

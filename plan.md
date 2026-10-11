@@ -45,6 +45,16 @@ Sections 1–5 define the product and its initial tuning proposals. Sections 6�
 
 The product is Texas Hold'em with virtual currency and cosmetic-only gacha. No cosmetic changes cards, odds, available information, or poker strength. Poker chips cannot pay for pulls or convert into tickets.
 
+Pre-deployment improvements requested 2026-10-11: recover the caller's current
+room and keep ordinary app navigation at the table during active play; improve
+playing-room UX/UI; share room invitations as codes rather than generated URLs;
+provide two ready local mock accounts without manual registration/verification.
+The executable scope and acceptance are in
+[M5.1a of the implementation plan](docs/superpowers/plans/2026-09-30-m3-through-production.md#m51a--required-local-playtest-ux-improvements-before-deployment).
+This navigation lock retains explicit leave/sign-out and account recovery; mock
+entry is confined to the loopback disposable test stack and never bypasses production
+authentication. These new release gates are planned, not implemented or verified.
+
 Daily working hours and a release date have not been supplied. Delivery uses sequential milestones for the user working with Codex, without a calendar estimate.
 
 ## 2. First-release experience
@@ -505,6 +515,25 @@ Implementation prerequisites are concrete: prove the Cloudflare frontend/runtime
 Section 19 supplies the detailed M0/M1 implementation plan. Review it before execution. Build subsequent milestones sequentially, each with a usable frontend slice and its acceptance evidence. Keep all future implementation on a separate development branch so this planning branch retains its single-file purpose. This design task creates no application code, provider accounts, deployed resources, or paid subscriptions.
 
 ## 18. Checkpoint and resumption notes
+
+### Pre-deployment UX implementation-plan update — 2026-10-11 12:03 UTC
+
+Branch `codex/predeploy-ux-plan` starts from freshly fetched `origin/dev` `fc6cb0dc`.
+The user authorized restoring only Next-generated `apps/web/next-env.d.ts` changes
+before the clean branch start. No application code was changed in this task.
+Added M5.1a in the existing implementation plan, with task interfaces, files, regression
+cases and verification commands for active-room recovery/navigation lock, playing-room
+layout/control clarity, code-only invites and two ready local test accounts. The
+last task also fixes the reproduced sign-in 403 error-classification problem and
+records the verified Windows pinned-pnpm launch approach.
+
+Release checklist now treats these new items as blockers before the next hosted
+candidate and production; earlier gameplay checks do not verify them. All new
+implementation boxes remain unchecked. Provider accounts/storage/key selection
+and separately authorized hosted/production work still remain pending. Next step:
+review/merge the planning PR manually, then start Task 1 of M5.1a on a fresh task
+branch after status/usage/checkpoint/fetch checks. See CHECKPOINT.md for PR and validation.
+Usage observed 12:03 UTC: five-hour 76% remaining, weekly 91%; no reset credit used.
 
 ### M5.1 multiplayer gameplay acceptance — 2026-10-10 07:17 UTC
 

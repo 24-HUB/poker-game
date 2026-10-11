@@ -78,6 +78,25 @@ captures private and redact cookies, tokens and private cards before sharing evi
   remain. Review's pot finding is resolved; no remaining actionable findings.
   These scoped checks are not an exhaustive accessibility certification.
 
+## New pre-deployment UX gates — requested 2026-10-11
+
+Earlier passing gameplay evidence remains historical. The user requires these
+additional improvements before production; implement and verify them before the
+next hosted candidate using [M5.1a](superpowers/plans/2026-09-30-m3-through-production.md#m51a--required-local-playtest-ux-improvements-before-deployment).
+
+- [ ] Authenticated current-room recovery after refresh/sign-in; ordinary in-app
+  navigation stays at the playing table, with explicit leave/sign-out and safe
+  completion/restart/expired-session recovery.
+- [ ] Playing-room layout makes your cards, turn/timer, board/pot and betting controls
+  readable on desktop/phone; disabled actions and tab takeover explain the next step.
+- [ ] Invitation generation displays/copies only the secure invite code; Guest joins
+  by code; expiry, rotation, privacy and existing fragment-link compatibility remain verified.
+- [ ] Mock Host/Mock Guest can enter the loopback test stack without manual signup,
+  email verification or credential typing; production has no fixture login/seeded accounts.
+  Sign-in 403 errors no longer incorrectly report an invalid registration code.
+- [ ] New candidate passes relevant regressions, full aggregate/Chromium and Linux
+  Worker CI, with scoped visual evidence and a manually reviewed PR to `dev`.
+
 ## Hosted and recovery gates
 
 - [ ] Authorize the concrete Cloudflare/Render/Atlas playtest environment and revision.
