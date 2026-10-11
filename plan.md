@@ -532,8 +532,12 @@ candidate and production; earlier gameplay checks do not verify them. All new
 implementation boxes remain unchecked. Provider accounts/storage/key selection
 and separately authorized hosted/production work still remain pending. Next step:
 review/merge the planning PR manually, then start Task 1 of M5.1a on a fresh task
-branch after status/usage/checkpoint/fetch checks. See CHECKPOINT.md for PR and validation.
-Usage observed 12:03 UTC: five-hour 76% remaining, weekly 91%; no reset credit used.
+branch after status/usage/checkpoint/fetch checks. Planning commit `0f7f807c` is pushed
+in draft [PR #20](https://github.com/24-HUB/poker-game/pull/20), targeting `dev`;
+final fetch succeeded and the branch contains current `origin/dev` `fc6cb0dc`.
+See CHECKPOINT.md for validation and the exact next step.
+Usage observed 12:03 UTC: five-hour 76% remaining, weekly 91%; handoff observation
+12:08 UTC: five-hour 70%, weekly 90%. No reset credit used.
 
 ### M5.1 multiplayer gameplay acceptance — 2026-10-10 07:17 UTC
 

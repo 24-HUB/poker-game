@@ -18,13 +18,17 @@
   the repository, all 15 local documentation link targets exist, Markdown fences
   are balanced, and the complete four-file diff and `git diff --check` were reviewed.
   Application tests were not rerun for these prose-only changes.
-- Next: commit/push this planning task and create its PR targeting `dev`; the user
-  merges manually. After merge and an implementation request, start M5.1a Task 1
+- Planning commit `0f7f807c` is pushed in draft [PR #20](https://github.com/24-HUB/poker-game/pull/20),
+  targeting `dev`; this documentation follow-up records the handoff. Final fetch
+  succeeded and the branch contains current `origin/dev` `fc6cb0dc`.
+- Next: inspect PR #20's final-head CI and review/merge the plan manually. After
+  merge and an implementation request, start M5.1a Task 1
   with clean status/usage/fetch checks. Provider accounts, encrypted storage/key
   access and hosted authorization remain pending; no new deployed evidence is claimed.
 - Usage observed 2026-10-11 12:03 UTC: five-hour 76% remaining (reset
   2026-10-11 15:49:58 UTC), weekly 91% remaining (reset 2026-10-18 05:12:40 UTC).
-  No billing/reset action occurred.
+  Handoff observation 12:08 UTC: five-hour 70%, weekly 90% remaining, same reset
+  times. No billing/reset action occurred.
 
 ---
 
