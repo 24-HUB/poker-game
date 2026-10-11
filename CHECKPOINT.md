@@ -12,6 +12,9 @@
   via a deliberate leave flow; confirmation is limited to active-hand consequences.
 - Planning only: no application/database/deployment changes. Earlier gameplay
   evidence does not verify this specification; all implementation steps stay unchecked.
+- Specification/plan commit `76020ee7` is pushed to PR #20; its description now
+  covers the full specification. This checkpoint follow-up records the handoff.
+  Final fetch succeeded; the branch contains current `origin/dev` `fc6cb0dc`.
 - Documentation verification passed: reviewed the complete five-file follow-up diff
   and coverage of spec sections 1–9, checked data requirements against current engine/
   contracts/projection/persistence, balanced Markdown fences and all 20 local link
@@ -21,7 +24,8 @@
   access and hosted authorization remain pending.
 - Usage observed 2026-10-11 12:13 UTC: five-hour 65% remaining (reset
   2026-10-11 15:49:58 UTC), weekly 90% remaining (reset 2026-10-18 05:12:40 UTC).
-  No billing/reset action occurred.
+  Handoff observation 12:17 UTC: five-hour 61%, weekly 89% remaining, same reset
+  times. No billing/reset action occurred.
 
 ---
 

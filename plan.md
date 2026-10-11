@@ -532,9 +532,12 @@ Live metadata/history gaps have explicit server-read/projection tasks; no poker 
 or production authentication changes are planned. Task 1 now reconciles collapsed
 destinations and Back to lobby through deliberate leave with consequence-only confirmation.
 No application code changed; all new implementation gates remain unchecked.
+Specification/plan commit `76020ee7` is pushed to PR #20; final fetch succeeded
+and the branch contains current `origin/dev` `fc6cb0dc`.
 Next: review this planning follow-up in PR #20 and merge manually, then implement
 M5.1a Task 1 on its task branch when requested. See CHECKPOINT.md for validation.
 Usage observed 12:13 UTC: five-hour 65%, weekly 90% remaining; reset times unchanged.
+Handoff observation 12:17 UTC: five-hour 61%, weekly 89% remaining.
 
 ### Pre-deployment UX implementation-plan update — 2026-10-11 12:03 UTC
 
