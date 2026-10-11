@@ -12,6 +12,14 @@
 
 ## Baseline and sequence
 
+Current execution position, 2026-10-11: M0–M4 and the M5.1 local controls/gameplay
+slices are merged into `dev` at `fc6cb0dc`. Its Linux CI passed aggregate checks,
+encrypted restore, Worker packaging and full Chromium acceptance. M5.2 local
+recovery tooling is complete; external storage/key access and M5.3 hosted evidence
+remain pending. Continue with the preparation package in
+[deployment.md](../../deployment.md#hosted-playtest-preparation--2026-10-11).
+The dated baseline and old handoffs below are historical, not instructions to repeat M3.
+
 Repository inspected on 2026-09-30: freshly fetched `origin/dev` is `d3aa002b`, merging M2 PR #9. M0–M2 code is present. Historical evidence records green Linux CI and 12/12 local browser cases; those checks were not rerun for this documentation task. M0/M1/M2 deployed acceptance remains unperformed. No wallet, gacha, or collection subsystem is implemented by this plan.
 
 | Phase | Outcome | Entry and exit gate |

@@ -1,4 +1,4 @@
-# M0/M1 deployment preparation
+# Deployment preparation and hosted acceptance
 
 For the complete remaining release sequence, see the
 [M3 through production plan](superpowers/plans/2026-09-30-m3-through-production.md),
@@ -150,7 +150,7 @@ quiescence, encrypted backup, isolated namespace restore and incident response.
 an independent authenticated disposable replica set and checks metadata, sign-in
 and committed progression after restore. CI runs both without external credentials.
 The encrypted live storage location remains pending. M5.1 admission/maintenance
-controls are locally verified; expanded visual/gameplay acceptance, hosted restore,
+controls and expanded visual/gameplay acceptance are locally verified; hosted restore,
 provider/email acceptance and deployment remain separate gates.
 
 ```powershell
@@ -176,3 +176,117 @@ pnpm smoke:deployment
 The smoke command prints only shell/readiness status. It does not print the origin, cookies, credentials, response bodies, or environment secrets. A sleeping, unreachable, standby, or malformed deployment exits nonzero with a bounded generic error.
 
 Deployed M0/M1 acceptance: **not run—deployment not authorized**.
+
+## Hosted playtest preparation — 2026-10-11
+
+Source candidate: `fc6cb0dcbde5934b8d378579b3011108a064043f`, merged `dev` after
+PR #18. [Its Linux CI](https://github.com/24-HUB/poker-game/actions/runs/38034639007)
+passed every configured step, including the encrypted restore drill, Worker build
+and full Chromium suite. GitHub job-step results were inspected on 2026-10-11.
+CI builds are verification evidence; the workflow does not retain deployment
+artifacts. Actual Render deploy IDs and Cloudflare version IDs must be recorded
+after authorized builds from this same SHA. Recheck source freshness before approval;
+a changed application revision needs its own successful candidate checks.
+
+### Proposed isolated resources
+
+These are proposals for operator confirmation, not existing resources. Keep playtest
+accounts and progression separate from any later production launch.
+
+| Resource | Proposed selection | Details required before authorization |
+| --- | --- | --- |
+| Cloudflare | Workers Free, `poker-anime-gacha-playtest` | Account, workers.dev subdomain and exact assigned HTTPS origin |
+| Render | One Free Node web service, `poker-anime-gacha-playtest-server`, Singapore | Workspace, availability, exact backend origin and service outbound CIDRs |
+| Atlas | Free replica set near Singapore; application database `poker_playtest` | Project/cluster, supported nearby region, server version, scoped users and network rules |
+| Restore | Separate empty database `poker_playtest_restore` | Explicit target approval, separate credentials and no production email/proxy access |
+| Email | Existing approved Brevo Free sender | Account and verified sender reference, intended test recipients and remaining daily allowance |
+| Backup | Operator-selected encrypted external storage | Destination reference, capacity, budget, separate key custody and demonstrated recovery access |
+
+The committed Render blueprint uses the original service name; create an isolated
+service with the proposed name while retaining its build/start/health settings.
+The Worker configuration also uses its original name. Any CLI upload for playtest
+must explicitly target `poker-anime-gacha-playtest`; do not upload to the original
+Worker by accident. Configure its public/backend origins and shared proxy secret
+using the inventory above, plus the three Brevo settings on Render (which are
+documented here and in `.env.example`, but not in the blueprint).
+
+The operator remains the user. Missing account IDs, origins, outbound ranges,
+backup location and sender details block a final deployment approval package.
+Only non-secret references belong in this document. Store credentials in provider
+secret storage or private operator configuration, never in chat or committed files.
+
+### Provider constraints checked 2026-10-11
+
+- [Cloudflare Workers Free](https://developers.cloudflare.com/workers/platform/limits/)
+  permits 100,000 requests per day and 10 ms CPU per HTTP request. Measure actual
+  Next rendering and proxy use before declaring the free tier sufficient.
+- [Render Free](https://render.com/docs/free) shares 750 instance hours per workspace
+  per month, sleeps after 15 minutes without inbound HTTP/WebSocket traffic and has
+  an ephemeral filesystem. Confirm other services' usage and billing/spend settings;
+  free compute does not establish a zero total bill. Render advises against production
+  use; the later private cutover requires explicit acceptance of these interruptions.
+- Obtain the selected service's full [outbound CIDR list](https://render.com/docs/outbound-ip-addresses/)
+  from Connect > Outbound and allow it in Atlas. These ranges are shared within the
+  region; database credentials must still be scoped. Add only the operator's approved
+  temporary address for controlled migrations/backup, never an unrestricted IP rule.
+- [Atlas Free limits](https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/)
+  include one Free cluster per project, 100 operations per second, no managed backup
+  and no supported primary-failover or regional-outage simulation. Use supported
+  application restart/access interruption tests and the quiescent dump/restore runbook.
+- [Brevo Free](https://help.brevo.com/hc/en-us/articles/208580669-FAQs-What-are-the-limits-of-the-Free-plan)
+  provides 300 email sends per day. Check shared account usage and verify actual
+  verification/reset delivery before opening invitations.
+
+Account headroom, region availability and hosted CPU/latency remain unmeasured.
+Use one isolated hosted environment initially; do not assume simultaneous production
+and playtest services fit the shared free allowances.
+
+### Authorized execution order
+
+1. Record approval for the named resources, exact SHA, test email recipients,
+   database migrations/catalogue publication, backup/restore target and $0 budget.
+   Confirm storage/key access, restricted network rules and provider credentials.
+   Keep automatic deploys off and both startup controls false. Use the existing
+   build commands; the server binds to `0.0.0.0` and Render's supplied `PORT`.
+2. From the approved clean candidate checkout, use Node 22.16.0 and pnpm 10.33.0.
+   Run `pnpm install --frozen-lockfile` and `pnpm build:server`. In a private
+   operator context set the explicit approved Atlas URI/database, then run
+   `pnpm db:migrate` twice and `pnpm --filter @poker/server catalogue:publish`.
+   Confirm migrations 001–005 and immutable `celestial-v1`. These are live database
+   actions only after authorization; never run the automated local suites against Atlas.
+3. Manually deploy the Render candidate with `/health/deploy`. On first deploy
+   there is no old hosted revision. Record Render deploy ID/SHA; public authority
+   readiness is checked after the corresponding Worker is deployed in steps 4–5.
+4. On the approved Linux build host run `pnpm --filter @poker/web build:worker`.
+   From `apps/web`, use the pinned adapter's
+   `pnpm exec opennextjs-cloudflare deploy --name poker-anime-gacha-playtest`
+   only after verifying its configured target account, origins and secret bindings.
+   Record Cloudflare version/deployment IDs and the exact SHA. Windows Worker
+   packaging remains subject to its documented symlink limitation.
+5. Set `PUBLIC_ORIGIN` to the assigned playtest HTTPS origin and run
+   `pnpm smoke:deployment`. This proves shell/readiness only. Keep controls closed
+   while checking secure cookies, verified-account recovery, direct-backend denial,
+   exact proxy routes and Socket.IO polling/upgrade with designated accounts.
+6. After operator approval to open test gameplay, restart with both controls true.
+   Use ordinary earned tickets for two- and six-player poker → earn → pull → equip
+   → sign out/in. Check recipient cards, reconnect/takeover and receipt replay.
+   Do not seed balances or use the disposable local E2E harness against hosted data.
+7. Exercise natural sleep/wake, controlled restart mid-hand and after commit,
+   approved database access interruption and replacement authority fencing. Record
+   timings and verify interrupted hands earn no tickets while committed progress survives.
+   Do not create keepalive traffic or unsupported Atlas failover tests.
+8. Stop all writers and prevent wake-up traffic as required by [operations.md](operations.md).
+   Take an encrypted external backup, rehearse separately retained-key access, restore
+   into the approved isolated target and compare metadata, counts, economy, identity,
+   receipts and equipment. Measure recovery through safe reopening against the targets.
+9. Record provider quota/CPU/memory/storage/connection use, desktop/phone friends
+   feedback and known issues in the release checklist and checkpoint. Mark M5 verified
+   only after all hosted and recovery gates pass. Prepare M6 approval using these results.
+
+At any failed gate keep admission/purchases closed, preserve committed progression
+and record the failed step. Before replacement, retain a tested compatible backend
+and Worker revision pair with their provider IDs. Roll back both only when approved
+and compatible with additive migrations; a binary rollback preserves ledger data.
+For the first hosted release, no validated earlier pair exists: contain traffic and
+prepare a forward fix instead of claiming rollback is already available. Restoring
+a live database requires separate incident approval and an explicit loss window.

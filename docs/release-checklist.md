@@ -9,18 +9,23 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 
 - M5.1 CI/build correction merged in [PR #15](https://github.com/24-HUB/poker-game/pull/15).
   M5.2 local recovery implementation merged in [PR #16](https://github.com/24-HUB/poker-game/pull/16).
-  [Merged dev CI](https://github.com/24-HUB/poker-game/actions/runs/37771118582)
-  passed on `08e67c82` on 2026-10-08. Final release candidate remains pending M5 gates.
-  M5.1 controls: `c4462714`, draft [PR #17](https://github.com/24-HUB/poker-game/pull/17)
-  targets `dev`; inspect its final-head checks separately.
+  M5.1 controls merged in [PR #17](https://github.com/24-HUB/poker-game/pull/17).
+  Gameplay acceptance merged in [PR #18](https://github.com/24-HUB/poker-game/pull/18).
+  Candidate source is `fc6cb0dcbde5934b8d378579b3011108a064043f`.
+  [Merged candidate CI](https://github.com/24-HUB/poker-game/actions/runs/38034639007)
+  completed successfully; its individual steps were inspected through GitHub's API
+  on 2026-10-11, including migration idempotency, aggregate checks, encrypted restore,
+  Linux Worker packaging and full Chromium acceptance. Hosted release remains pending.
 - Runtime: Node 22.16.0 and pnpm 10.33.0, pinned in the repository.
-- Local gameplay acceptance: `d4c2373c`, draft [PR #18](https://github.com/24-HUB/poker-game/pull/18),
-  base `dev`, from `5decc3eb` (controls PR #17 merged). Final-head candidate CI
-  remains pending; local evidence below does not authorize deployment.
+- Local gameplay acceptance: `d4c2373c`, merged in PR #18. The local evidence below
+  and merged candidate CI do not authorize deployment.
 - Frontend adapter: OpenNext Cloudflare 1.20.6; Next.js 16.3.6.
 - Reward policy: v1; catalogue: immutable `celestial-v1`.
 - Environments and encrypted backup destination: pending. The user is the backup
   operator; recovery/retention targets approved 2026-10-07 are in [operations.md](operations.md).
+  The proposed resources, commands and required operator details are in the
+  [hosted playtest preparation package](deployment.md#hosted-playtest-preparation--2026-10-11).
+  Provider deployment/version IDs and a compatible hosted rollback pair do not yet exist.
 
 ## Local and CI gates
 

@@ -1,5 +1,40 @@
 # Checkpoint — Remaining phases through production
 
+## M5 hosted release preparation — 2026-10-11 06:24 UTC
+
+- Task branch `codex/m5-hosted-release-preparation`, created clean from freshly
+  fetched `origin/dev` `fc6cb0dc`, which merges PR #18. The user requested continuing
+  the remaining plan. Concrete hosted actions still require the resource/revision
+  authorization specified by AGENTS.md; account/storage details were requested.
+- Inspected GitHub API results for merged-dev CI run `38034639007`: completed
+  successfully, including every migration/aggregate/backup/Worker/Chromium step.
+  Updated current candidate records while preserving dated historical handoffs.
+- Prepared an isolated hosted playtest package in `docs/deployment.md`: proposed
+  resource names and regions, actual build/migration/catalogue commands, secret
+  names, provider constraints with current official sources, acceptance order,
+  backup/key gates and first-release containment without an invented rollback pair.
+  No provider deployment IDs or retained artifacts exist yet; CI does not upload them.
+- Pending: operator's external encrypted destination/budget/separate key custody,
+  provider accounts/assigned origins/Atlas region/Render outbound CIDRs, verified
+  Brevo sender and intended email recipients. Hosted provisioning, email sends,
+  database operations, playtest and M6 cutover have not run. M7 remains an operator
+  cadence; no recurring automation was requested or created.
+- Verification is documentation-only: inspect repository scripts/configuration,
+  pinned OpenNext CLI help/source and official provider docs; review complete diff
+  and run `git diff --check` before commit. Application checks were not rerun for
+  prose-only changes. Initial sandbox denied Git branch writes and pnpm's store
+  lock; the approved scoped retries succeeded. `gh` is absent; existing Git
+  credentials work with the GitHub API and were kept in memory, never printed.
+- Next: commit/push this preparation and open a draft PR to `dev`; then use the
+  operator's non-secret answers to fill the exact environment package, confirm
+  candidate freshness and obtain explicit approval of its named hosted actions.
+  Do not repeat completed local tooling or label M5 verified before hosted evidence.
+- Usage observed 2026-10-11 06:24 UTC: five-hour 87% remaining (reset
+  2026-10-11 10:12:40 UTC), weekly 98% remaining (reset 2026-10-18 05:12:40 UTC).
+  No billing/reset action occurred.
+
+---
+
 ## M5.1 multiplayer gameplay acceptance — 2026-10-10 07:17 UTC
 
 - Resumed `codex/m5-gameplay-acceptance` from `origin/dev` `5decc3eb` (PR #17 merged), preserving its unfinished `release.spec.ts`. Implementation `d4c2373c` is committed and pushed; draft [PR #18](https://github.com/24-HUB/poker-game/pull/18) targets `dev`. Fetch succeeded at start and during verification; the branch contains current dev. This documentation follow-up records the handoff. The user merges manually.
