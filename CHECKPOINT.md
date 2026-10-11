@@ -19,14 +19,16 @@
   Brevo sender and intended email recipients. Hosted provisioning, email sends,
   database operations, playtest and M6 cutover have not run. M7 remains an operator
   cadence; no recurring automation was requested or created.
-- Verification is documentation-only: inspect repository scripts/configuration,
-  pinned OpenNext CLI help/source and official provider docs; review complete diff
-  and run `git diff --check` before commit. Application checks were not rerun for
+- Verification is documentation-only: inspected repository scripts/configuration,
+  pinned OpenNext CLI help/source and official provider docs; reviewed complete diff,
+  verified 21 local documentation links and passed `git diff --check`. Application checks were not rerun for
   prose-only changes. Initial sandbox denied Git branch writes and pnpm's store
   lock; the approved scoped retries succeeded. `gh` is absent; existing Git
   credentials work with the GitHub API and were kept in memory, never printed.
-- Next: commit/push this preparation and open a draft PR to `dev`; then use the
-  operator's non-secret answers to fill the exact environment package, confirm
+- Preparation commit `a54c3efc` is pushed; draft [PR #19](https://github.com/24-HUB/poker-game/pull/19)
+  targets `dev`. This documentation follow-up records the handoff. The user merges manually.
+- Next: inspect final-head PR #19 CI, then use the operator's non-secret answers
+  to fill the exact environment package, confirm
   candidate freshness and obtain explicit approval of its named hosted actions.
   Do not repeat completed local tooling or label M5 verified before hosted evidence.
 - Usage observed 2026-10-11 06:24 UTC: five-hour 87% remaining (reset

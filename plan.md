@@ -509,7 +509,11 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 ### M5 hosted release preparation — 2026-10-11 06:24 UTC
 
 Task branch `codex/m5-hosted-release-preparation` started clean from fresh
-`origin/dev` `fc6cb0dc` (PR #18 merged). GitHub API inspection confirmed
+`origin/dev` `fc6cb0dc` (PR #18 merged). Preparation commit `a54c3efc` is pushed;
+draft [PR #19](https://github.com/24-HUB/poker-game/pull/19) targets `dev`.
+The user merges manually. Documentation link checks (21 targets), complete diff
+review and `git diff --check` passed; application checks were not rerun for prose.
+GitHub API inspection confirmed
 [merged candidate CI](https://github.com/24-HUB/poker-game/actions/runs/38034639007)
 and every configured step succeeded, including encrypted restore, Worker build
 and Chromium. Current release records now distinguish this evidence from the
