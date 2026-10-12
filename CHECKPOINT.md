@@ -1,5 +1,34 @@
 # Checkpoint — Remaining phases through production
 
+## M5.2 backup destination readiness — 2026-10-12 12:11 Bangkok (05:11 UTC)
+
+- User requested the next step after PR #22 was manually merged. Fresh fetch and
+  GitHub confirm `origin/dev` **`1bb1b639`**; its
+  [CI](https://github.com/24-HUB/poker-game/actions/runs/38204673280) completed
+  successfully, including the disposable backup drill, Worker and Chromium gates.
+  Last completed implementation **`d66e6f2d`**, documentation **`a1621591`**.
+- New clean task branch `codex/m5-backup-readiness` from this fetched baseline.
+  PR creation to `dev` pending; keep draft while operator inputs/evidence are missing.
+- Prepared non-secret storage/key acceptance fields and a retained-archive recovery
+  procedure in `docs/operations.md`; updated the release checklist to reflect normal
+  local account login and the verified merged candidate. Only documentation changes.
+  Diff/whitespace review passed before this save-point update; recheck before commit.
+  No application tests rerun for documentation-only edits.
+- Blocker: operator has not selected an encrypted archive destination, staging
+  location, separate key store or confirmed storage cost/capacity. The previous
+  temporary local drill does not verify retained key retrieval or external access.
+  A concise input request is pending; never record secrets in the repository.
+- Exact next step: record the operator's non-secret selections in the operations
+  acceptance table, verify authorized access/capacity, and rehearse retrieval,
+  checksum/decryption and isolated restore of a retained disposable archive. Until
+  supplied, preserve this preparation in a draft PR; M5.2 remains incomplete.
+- Usage observed at session start (about 05:08 UTC /12:08 Bangkok): five-hour
+  **35% remaining**, reset 2026-10-12 08:14:49 UTC (15:14:49 Bangkok); weekly
+  **53% remaining**, reset 2026-10-18 05:12:40 UTC (12:12:40 Bangkok).
+  No deployment, live database, email delivery, storage provisioning or billing action.
+
+---
+
 ## Local test account password login — 2026-10-12 11:31 Bangkok (04:31 UTC)
 
 - User requested normal email/password login for prepared local users and removal

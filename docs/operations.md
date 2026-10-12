@@ -31,6 +31,45 @@ copies and storage trash/version history under that provider's disposal rules.
 Record deletion dates; do not discard the latest known-good recovery point after
 a failed backup. Rehearse recovery-key access before release.
 
+## M5.2 storage and key acceptance record
+
+Prepared from merged `dev` revision `1bb1b639` on 2026-10-12. The operator's
+destination/key selection is still pending; the local rehearsal below used
+temporary storage and an ephemeral key, so it does not satisfy this gate.
+Record only non-secret references here. Keep keys, passwords, database tool
+configs and the detailed backup manifest in restricted operator storage.
+
+| Required selection/evidence | Current state |
+| --- | --- |
+| Encrypted archive destination outside repo and hosting service disks | Pending operator location |
+| Encrypted plaintext staging volume and restricted folder | Pending operator location and access check |
+| Available storage and cost for seven session backups, pre-release backup and rehearsal space | Pending operator confirmation and measured archive sizes |
+| Encryption tool/format and public recipient reference | Pending operator selection; the runbook's `age` command is an example |
+| Separate recovery-key store and emergency access procedure | Pending operator selection; never put the key beside archives |
+| Backup operator | User, already confirmed 2026-10-07 |
+| Destination write/read access and recovery-key retrieval | Not run for a retained destination |
+| Downloaded/copied archive checksum, authenticated decryption and isolated restore | Not run for a retained destination |
+| Retention/disposal access, including remote trash/version history | Not checked for a selected destination |
+
+After the operator supplies these locations and confirms the budget:
+
+1. Record the non-secret selections and verify access/capacity. Do not select a
+   paid tier or provision storage from this preparation alone.
+2. With authorized destination access, use disposable test data to follow the
+   consistent backup procedure below with the selected encryption format.
+   Retain the encrypted archive and encrypted manifest at that destination,
+   record their checksums, and securely remove temporary plaintext staging.
+3. In a fresh operator session, retrieve the recovery key from its separate
+   store and copy/download the retained archive. Verify the stored checksum
+   and authenticated decryption before restoring into a separate isolated
+   replica-set database. Do not use the playtest/production database as a target.
+4. Follow the restore gates below: compare metadata and counts, verify economy,
+   sign-in, receipt replay, ownership and equipment. Record UTC times, archive
+   size, recovery duration and loss, with sanitized evidence. The existing
+   `pnpm test:backup` is a disposable local drill, not this retained-key test.
+5. Mark the storage/key gate complete only after those results pass. Keep
+   M5.3 hosted recovery and provider acceptance pending until separately run.
+
 ## Read-only economy verification
 
 Build the pinned contracts first (`pnpm --filter @poker/contracts build`), supply

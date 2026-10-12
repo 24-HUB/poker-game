@@ -520,6 +520,21 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### M5.2 backup destination readiness — 2026-10-12 12:11 Bangkok (05:11 UTC)
+
+User requested the next step after manually merging PR #22. Fresh fetch and
+GitHub confirm merge revision `1bb1b639`; its
+[dev CI](https://github.com/24-HUB/poker-game/actions/runs/38204673280) succeeded.
+Clean task branch `codex/m5-backup-readiness` starts from that revision.
+Prepared the storage/key acceptance record and retained recovery procedure in
+`docs/operations.md`, corrected the release checklist's obsolete shortcut-login
+requirement, and recorded the verified merged local candidate. Documentation only;
+the previous disposable drill is not evidence of retained storage/key access.
+Destination, budget, separate key store and access rehearsal remain pending the
+operator's response. Next: record those non-secret selections, then rehearse a
+retained disposable archive with authorized destination access. M5.3 hosted work
+and production deployment remain pending; see `CHECKPOINT.md` for task/PR state.
+
 ### Local test account password login — 2026-10-12 11:31 Bangkok (04:31 UTC)
 
 User decision: prepare local test accounts, then let the user enter email/password

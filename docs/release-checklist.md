@@ -7,6 +7,17 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 
 ## Candidate record
 
+- Current merged local baseline: `1bb1b639`, PR #22, confirmed by fresh fetch
+  and Git history on 2026-10-12. Prepared local accounts now use ordinary
+  email/password login; shortcut UI/endpoints are removed. Historical candidate
+  records below retain their original evidence.
+  [Merged dev CI](https://github.com/24-HUB/poker-game/actions/runs/38204673280)
+  completed successfully on that revision, including backup/restore, Worker
+  packaging and Chromium acceptance. This is not a deployed release.
+- M5.2 storage/key acceptance is the next incomplete gate. Its selections and
+  retained-archive/key retrieval procedure are in
+  [operations.md](operations.md#m52-storage-and-key-acceptance-record).
+  Destination, budget, key access and retained restore evidence remain pending.
 - M5.1 CI/build correction merged in [PR #15](https://github.com/24-HUB/poker-game/pull/15).
   M5.2 local recovery implementation merged in [PR #16](https://github.com/24-HUB/poker-game/pull/16).
   [Merged dev CI](https://github.com/24-HUB/poker-game/actions/runs/37771118582)
@@ -110,12 +121,15 @@ next hosted candidate using [M5.1a](superpowers/plans/2026-09-30-m3-through-prod
   uses deliberate leave, confirming only active-hand consequences; host ending stays visible.
 - [x] Invitation generation displays/copies only the secure invite code; Guest joins
   by code; expiry, rotation, privacy and existing fragment-link compatibility remain verified.
-- [x] Mock Host/Mock Guest can enter the loopback test stack without manual signup,
-  email verification or credential typing; production has no fixture login/seeded accounts.
+- [x] Prepared Host/Guest accounts use the normal email/password form in the loopback
+  test stack without manual signup or email verification. PR #22 removes shortcut
+  login; credentials are in an ignored, non-public local file and rotate on launch.
+  Production has no fixture login/seeded accounts.
   Sign-in 403 errors no longer incorrectly report an invalid registration code.
-- [ ] New candidate passes relevant regressions, full aggregate/Chromium and Linux
+- [x] New candidate passes relevant regressions, full aggregate/Chromium and Linux
   Worker CI, with scoped visual evidence and a manually reviewed PR to `dev`.
-  Automated/visual parts passed on `6f358fa1`; owner review and manual merge remain.
+  Automated/visual parts passed on `6f358fa1`; PRs #21 and #22 are now merged.
+  Merged revision `1bb1b639` CI passed on 2026-10-12; see the candidate record.
 
 ## Hosted and recovery gates
 
