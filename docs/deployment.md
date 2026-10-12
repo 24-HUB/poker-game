@@ -12,6 +12,10 @@ Deployment is intentionally manual. This repository prepares configuration and s
 
 - Cloudflare Workers serves the Next.js application and proxies only `/api/*` and `/socket.io/*` to the fixed Render backend.
 - Render runs the NestJS server from `render.yaml`. Automatic deploys are disabled and `/health/deploy` is the deployment health check.
+- Render Free rejects an explicit `maxShutdownDelaySeconds` setting, including
+  `30`. Omit it and use the provider's default shutdown period. If Blueprint
+  creation reports this error, load the corrected `dev` revision after manual
+  PR merge and retry validation before provisioning.
 - MongoDB Atlas supplies a replica-set connection. Do not use the local Docker database or a standalone server for deployment.
 
 ## Required configuration

@@ -520,6 +520,22 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Render Free Blueprint validation fix — 2026-10-12
+
+The operator's Render creation screen rejected `services[0].maxShutdownDelaySeconds`
+because explicit shutdown-delay configuration is unsupported on Free services.
+Clean task branch `codex/render-free-blueprint` starts from freshly fetched
+`origin/dev` `1bb1b639`. Remove only that field and retain the Free plan, Singapore,
+manual deployments and closed admission/economy controls. Configuration inspection
+reproduced the incompatible pair before removal; hosted revalidation remains pending
+manual PR merge and operator refresh. See `CHECKPOINT.md` for verification/handoff.
+Implementation `78b655ba` is pushed in draft
+[PR #24](https://github.com/24-HUB/poker-game/pull/24), base `dev`.
+YAML parsing and semantic comparison confirm this is the only service config
+change; full diff review and `git diff --check` pass. Application tests not rerun;
+normal PR CI and operator-hosted revalidation remain pending.
+No provider creation, deployment, secrets or live database operations performed.
+
 ### Local test account password login — 2026-10-12 11:31 Bangkok (04:31 UTC)
 
 User decision: prepare local test accounts, then let the user enter email/password

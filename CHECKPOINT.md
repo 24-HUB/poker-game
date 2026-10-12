@@ -1,5 +1,29 @@
 # Checkpoint — Remaining phases through production
 
+## Render Free Blueprint validation fix — 2026-10-12 19:49 Bangkok (12:49 UTC)
+
+- Clean task branch `codex/render-free-blueprint` from fetched `origin/dev`
+  `1bb1b639`. Render's operator screenshot rejects explicit
+  `maxShutdownDelaySeconds` on Free; local configuration inspection reproduced
+  that incompatible pair before the fix. Remove the field and use Render's
+  default shutdown period. Document the limitation in `docs/deployment.md`.
+- Implementation commit `78b655ba` is pushed in draft
+  [PR #24](https://github.com/24-HUB/poker-game/pull/24), base `dev`.
+  YAML parsing and semantic comparison passed: removing the unsupported field
+  is the only service configuration change. Full diff review and
+  `git diff --check` passed. The first comparison attempt was blocked by Node
+  child-process permissions; rerun with Git output piped to Node passed.
+  Application tests were not rerun for this provider-only field removal.
+- Hosted Blueprint validation and normal PR CI remain pending; keep draft until
+  required evidence is available. Next: inspect PR checks, manually merge the
+  corrected revision into `dev`, refresh the operator's Render Blueprint setup
+  and confirm validation before provisioning/deployment.
+- Usage observed at session start: five-hour 85% remaining (reset 2026-10-12
+  13:52:41 UTC /20:52:41 Bangkok); weekly 47% remaining (reset 2026-10-18
+  05:12:40 UTC /12:12:40 Bangkok). No provider/deployment/live database/billing action.
+
+---
+
 ## Local test account password login — 2026-10-12 11:31 Bangkok (04:31 UTC)
 
 - User requested normal email/password login for prepared local users and removal
