@@ -520,6 +520,21 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Local test account password login — 2026-10-12 11:31 Bangkok (04:31 UTC)
+
+User decision: prepare local test accounts, then let the user enter email/password
+in the normal form; remove shortcut login buttons/endpoints. Branch
+`codex/local-test-login` starts clean from fetched `origin/dev` `66b36fcc` after
+PR #21 merged. Implementation `d66e6f2d`, draft
+[PR #22](https://github.com/24-HUB/poker-game/pull/22), base `dev`. The loopback harness
+saves generated credentials to an ignored local file outside public assets, rotates
+them on fresh launch and keeps native signup/verification/identity checks. No
+credentials in source, logs or HTTP endpoints. Local acceptance 19/19 Chromium with
+zero retries; frozen install and aggregate check pass 381 tests/types/builds.
+Reviewer found no major issue; the credential spec disables tracing to prevent
+password retention. Exact-head Linux CI pending; see `CHECKPOINT.md` for next steps
+and usage. Owner signs in and merges manually; no deployment/live data/billing change.
+
 ### M5.1a room UI refinement — 2026-10-12 11:02 Bangkok (04:02 UTC)
 
 Following the user's live-preview feedback, continue `codex/m5-predeploy-ux` and
