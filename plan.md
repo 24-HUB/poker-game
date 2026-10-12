@@ -532,6 +532,10 @@ outside this change. See `docs/deployment.md` for migration/Blueprint-sync pause
 and active-play drain before a release. Operator reports hosted setup progress,
 but this task does not claim hosted acceptance or perform provider/live-data work.
 Verification and PR handoff are recorded in `CHECKPOINT.md`.
+Implementation `a4b8ac7e` is pushed in draft
+[PR #25](https://github.com/24-HUB/poker-game/pull/25), base `dev`.
+YAML/CI parsing, semantic comparison and diff checks passed; normal PR CI and
+hosted activation remain pending. User merges manually.
 
 ### Render Free Blueprint validation fix — 2026-10-12
 

@@ -14,8 +14,10 @@
   changes, `dev` remains linked and has push CI with `pnpm check`. Complete task
   diff review and `git diff --check` passed. No application code changes or local
   application tests rerun. Normal PR CI and hosted auto-deploy evidence pending.
-- Next: commit/push and create a PR targeting `dev`; inspect CI, then owner
-  reviews/merges manually and confirms Render's synced setting.
+- Implementation commit `a4b8ac7e` is pushed in draft
+  [PR #25](https://github.com/24-HUB/poker-game/pull/25), base `dev`.
+  Next: inspect final-head CI, then owner reviews/merges manually and confirms
+  Render's synced setting is **After CI Checks Pass** for `dev`.
 - Usage observed at 14:15 UTC: five-hour 96% remaining; weekly 44% remaining.
 
 ---
