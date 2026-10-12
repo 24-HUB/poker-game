@@ -1,7 +1,7 @@
 import { createHash, randomUUID } from 'node:crypto';
 
-import { Inject, Injectable, type OnApplicationShutdown } from '@nestjs/common';
-import type { CommandOutcome, GameCommand, GameReply, Result } from '@poker/contracts' with { 'resolution-mode': 'import' };
+import { ForbiddenException, Inject, Injectable, ServiceUnavailableException, type OnApplicationShutdown } from '@nestjs/common';
+import type { CommandOutcome, GameCommand, GameReply, HandHistoryPage, Result } from '@poker/contracts' with { 'resolution-mode': 'import' };
 import { applyAction, assertDeck, legalActions, startHand } from '@poker/poker-engine';
 
 import { AuthorityLease } from '../../authority/authorityLease';
@@ -57,6 +57,36 @@ export class GameService implements OnApplicationShutdown {
 
   public subscribeUpdates(listener: (roomId: string) => void): void { this.updateListener = listener; }
   public subscribeRewards(listener: (accountIds: string[]) => void): void { this.rewardListener = listener; }
+
+  public async history(accountId: string, roomId: string, sessionId: string, beforeHandNumber?: number): Promise<HandHistoryPage> {
+    const token = this.authority.currentToken();
+    if (!token) throw new ServiceUnavailableException('Game authority is unavailable.');
+    try {
+      return await this.registry.enqueue(roomId, async () => {
+        const current = await this.rooms.currentRoom(accountId, token);
+        if (!current || current.roomId !== roomId) throw new ForbiddenException('Only current room members can read hand history.');
+        const page = await this.sessions.history(accountId, roomId, sessionId, beforeHandNumber);
+        const authority = this.authority.currentToken();
+        if (!authority || authority.bootId !== token.bootId || authority.epoch !== token.epoch) throw new Error('Authority changed');
+        return { ...page, hands: page.hands.map((result) => ({
+          handId: result.handId, sessionId: result.sessionId, handNumber: result.handNumber,
+          completedAt: result.completedAt, completedDateUtc: result.completedDateUtc, rulesVersion: result.rulesVersion,
+          contributions: result.contributions, payouts: result.payouts, finalStacks: result.finalStacks,
+          manualActionAccountIds: result.manualActionAccountIds, winners: result.winners, revealedCards: result.revealedCards,
+          ...(result.rewardReceipts ? { rewardReceipts: result.rewardReceipts.filter((receipt) => receipt.accountId === accountId).map((receipt) => ({
+            handId: receipt.handId, accountId: receipt.accountId, policyVersion: receipt.policyVersion,
+            completedDateUtc: receipt.completedDateUtc, qualified: receipt.qualified, reason: receipt.reason,
+            requestedParticipation: receipt.requestedParticipation, requestedBonus: receipt.requestedBonus,
+            grantedParticipation: receipt.grantedParticipation, grantedBonus: receipt.grantedBonus,
+          })) } : {}),
+        })) };
+      });
+    } catch (error) {
+      if (error instanceof ForbiddenException) throw error;
+      if (error instanceof SessionError && error.code === 'FORBIDDEN') throw new ForbiddenException(error.message);
+      throw new ServiceUnavailableException('Completed hands could not be loaded. Try again shortly.');
+    }
+  }
 
   public async execute(context: GameContext, command: GameCommand): Promise<Result<GameReply>> {
     if (this.disposed) return fail('SERVICE_UNAVAILABLE', 'The game is shutting down.');

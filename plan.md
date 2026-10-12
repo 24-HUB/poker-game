@@ -520,6 +520,119 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### M5.1a room UI refinement — 2026-10-12 11:02 Bangkok (04:02 UTC)
+
+Following the user's live-preview feedback, continue `codex/m5-predeploy-ux` and
+draft [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`, last commit
+implementation `a1bc9fa4` following `4ed3f977`; fresh fetch still contains `origin/dev` `623749f0`. The room now has
+visible equipped/default portraits, an acting-seat timer ring, larger private cards,
+readable chip/dealer/blind markers, optional four-colour suits, dashed board slots,
+fixed Fold/Call-or-Check/Raise positions, collapsed off-turn amount controls and
+server-clamped pot/all-in presets. Clear Lobby confirmation and gear options replace
+ambiguous navigation. Numbered dismissible results never label the next live hand;
+the ended-session final result remains visible. Backend authority/privacy/economy
+are preserved. Focused tests 29/29; desktop/mobile captures and original geometry
+gates pass. Full browser run 18/19 exposed a legacy absence assertion for observer
+Check, now correctly expecting disabled state. Final release rerun 2/2 passes,
+including 4.5:1 control contrast. Frozen install and aggregate check pass 383 tests,
+types/builds; final web follow-up passes 116 tests/build. The final public showdown
+comes from the selected committed result when the live hand clears. New-head CI
+pending; see `CHECKPOINT.md` for precise evidence and next commands.
+No deployment or live data/billing changes. Owner merge remains manual.
+
+### M5.1a final acceptance — 2026-10-12 10:12 Bangkok (03:12 UTC)
+
+`codex/m5-predeploy-ux`, [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`:
+implementation/test head `2f73ba30` passed [Linux CI](https://github.com/24-HUB/poker-game/actions/runs/38198327488),
+including 374 tests, typechecks/builds, migration idempotency, encrypted backup/isolated
+restore, Worker packaging and 19/19 Chromium with zero retries. Docker is healthy;
+three unchanged local collection repeats and the diagnostic run pass. The preceding
+intermittent collection failure has unproven cause and remains documented; added
+strict commit/status diagnostics without changing product code or timeout bounds.
+Inspect final documentation-head CI, fetch/check freshness (`origin/dev` `623749f0`
+included at last fetch), then leave the PR for manual owner review/merge. See
+`CHECKPOINT.md` for evidence, deferred minor, usage and next steps. Hosted/provider
+work remains separately authorized; no deployment or live data/billing changes.
+
+### M5.1a collection recovery investigation — 2026-10-12 10:03 Bangkok (03:03 UTC)
+
+Continue `codex/m5-predeploy-ux`, draft [PR #21](https://github.com/24-HUB/poker-game/pull/21),
+base `dev`, last commit `d442a329`; fresh fetch still contains `origin/dev` `623749f0`.
+Although application `6f358fa1` passed all Linux gates, the Markdown-only rerun on
+`d442a329` finished Chromium 18/19: the committed-pull reload did not reveal within
+the original five-second assertion. Cause unproven. Three unchanged local repeats
+passed 3/3 with zero retries. Test-only diagnostics now validate HTTP 201 and the
+strict receipt before reload and report status codes/named recovery states on failure;
+no timeout relaxation or speculative product fix. Web typecheck and diagnostic
+browser run 1/1 pass; new-head CI pending. See `CHECKPOINT.md` for exact next steps and usage
+(five-hour 24%, weekly 65% remaining at investigation start). Keep the PR draft until
+new-head checks pass. Owner merge and hosted/provider work remain separate.
+
+### M5.1a verified implementation — 2026-10-12 09:41 Bangkok (02:41 UTC)
+
+Tasks 1–4 are implemented and verified on `codex/m5-predeploy-ux` /
+[PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`. Application commit
+`6f358fa1` passed [Linux CI](https://github.com/24-HUB/poker-game/actions/runs/38196054989):
+374 aggregate tests, types/builds, migrations, backup/restore rehearsal, Worker
+packaging and 19/19 Chromium with zero retries. Mobile own-turn/waiting geometry,
+private cards, timer/controls, long names and 1280×720 visibility retain the original
+acceptance bounds. Initial auth loading no longer loses an opened form. See
+CHECKPOINT.md for exact evidence, inspected captures and the deferred cached-history
+minor. Final fetch succeeded; the branch contains current `origin/dev` `623749f0`.
+
+The user reviews/merges manually. Next milestones remain storage/key selection
+and separately authorized hosted playtesting; no live deployment/database/billing
+work occurred. A Markdown-only follow-up records the completed application gates.
+
+### M5.1a resumed local verification — 2026-10-12 08:58 Bangkok (01:58 UTC)
+
+Continued `codex/m5-predeploy-ux` / [PR #21](https://github.com/24-HUB/poker-game/pull/21),
+base `dev`, preserving `f7619764` and `032f885c`; fresh `origin/dev` is still `623749f0`.
+Resolved mobile table/control overlap, desktop action overflow and truncated caller
+identification, with real own-turn/observer geometry assertions that run in CI.
+Fixed the initial-authentication lobby remount race with a RED→GREEN regression.
+Full local Chromium passed 19/19 with zero retries; final aggregate passed 372 tests,
+types/builds, followed by native history HTTP guard coverage and server typecheck
+(identity 18/18). Production chunks exclude mock controls/helper strings. Local
+captures were inspected at all required breakpoints. Restart recovery now passes
+at original bounds on fresh services; its earlier historical failure cause remains
+unproven and no production restart fix is claimed. See CHECKPOINT.md for details.
+
+Follow-up `2f09c749` passed Linux aggregate, backup and Worker steps but failed the
+new mobile viewport assertion (828px versus 800px); 17 browser cases passed and one
+was skipped. Corrected redundant turn rows and header width sharing without relaxing the
+gate; the next Linux run must verify the correction. Remote Linux CI remains the
+final gate before marking the PR ready. Latest local aggregate passed 374 tests,
+types/builds; scoped final capture flows and isolated reconnect passed. A Windows
+socket-buffer error in one capture was traced and recorded, not treated as a server
+failure or masked with a weaker assertion. The user
+merges manually; no deployment/live database/billing work occurred. Continue the
+same branch and PR if CI reports a failure. Hosted M5/friends gates remain pending.
+
+### M5.1a implementation save point — 2026-10-11 13:32 UTC
+
+Tasks 1–4 are implemented on `codex/m5-predeploy-ux` from freshly fetched
+`origin/dev` `623749f0`. Current-room recovery/leave, legal poker controls/metadata,
+committed private history, code-only invitations and native loopback mock accounts
+have focused passing evidence. Review regressions and the history receipt projection
+were corrected. Final poker/history/reconnect Chromium passed 3/3, but full-suite
+restart-after-game recovery is unresolved. Visual inspection found mobile panel/card
+overlap and 1280×720 controls below the viewport. Keep M5.1a release gates unchecked
+and save a draft PR targeting `dev`; the user merges manually. Final `pnpm check`
+passed 370 tests, types and production builds; mock UI/helper strings are absent
+from production browser chunks. Commit and PR are recorded in CHECKPOINT.md.
+No deployment occurred.
+
+Implementation commit `f7619764` is pushed in draft
+[PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`. Continue this
+branch/PR for the remaining acceptance work; do not create another implementation.
+
+Read CHECKPOINT.md for exact evidence, local captures and resume commands. Next:
+fix responsive layout with real viewport assertions, diagnose the isolated
+active-room + backend-restart sequence, then run full CI-mode Chromium, aggregate
+checks and Linux Worker CI. Usage at 13:32 UTC: five-hour 9%, weekly 81% remaining;
+reset 2026-10-11 15:49:58 UTC and 2026-10-18 05:12:40 UTC respectively.
+
 ### Detailed poker-room UX/UI specification added — 2026-10-11 12:13 UTC
 
 Resumed clean `codex/predeploy-ux-plan` on draft

@@ -123,6 +123,25 @@ starts its own backend, frontend, proxy, and isolated database; it covers accoun
 recovery, room and poker flows, ticket wallets, pulls, and equipment. There is
 no lint script.
 
+For a manual local playtest on Windows, start the disposable browser harness with
+the pinned pnpm version (after starting the local replica-set services):
+
+```powershell
+npm.cmd exec --yes --package=pnpm@10.33.0 --call "set npm_execpath=&& node apps/web/scripts/e2e-stack.mjs"
+```
+
+Open `http://127.0.0.1:3100` in two separate browser profiles or private contexts.
+In **Sign in**, choose **Play as Mock Host** in one and **Play as Mock Guest** in
+the other. Both are verified native accounts in this launch's disposable database;
+no manual registration or verification is needed. Create a room, copy its invite
+code, and paste it into **Join Room** in the other context. Use **Use this tab to
+play** before controlling a seat. Sharing one browser context shares its session.
+
+The helper requires the exact loopback origin above. It keeps generated passwords
+in memory and exposes no credentials. Restarting the harness creates a fresh
+database and fresh mock accounts. Its endpoints exist only in the harness; the
+normal production build defaults the mock UI flag to false.
+
 | Command | Purpose |
 | --- | --- |
 | `pnpm typecheck` | Build shared packages and check workspace types |

@@ -93,6 +93,13 @@ export const roomViewSchema = z.object({
 
 export type RoomView = z.infer<typeof roomViewSchema>;
 
+export const currentRoomSchema = z.object({
+  roomId: identifierSchema,
+  title: roomTitleSchema,
+  phase: z.enum(['waiting', 'playing']),
+}).strict();
+export type CurrentRoom = z.infer<typeof currentRoomSchema>;
+
 export const invitationReplySchema = z.object({
   token: z.string().min(1),
   expiresAt: z.iso.datetime(),

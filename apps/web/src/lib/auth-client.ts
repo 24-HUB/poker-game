@@ -92,11 +92,15 @@ async function submitAuth(path: string, input: SignInInput | SignUpInput, fetche
     if (providerError.code === 'EMAIL_NOT_VERIFIED') {
       throw new AuthRequestError('EMAIL_NOT_VERIFIED', 'Verify your email before signing in. You can resend the verification link below.');
     }
-    throw new AuthRequestError('INVALID_REGISTRATION_CODE', 'That registration code is not valid.');
+    if (path === '/api/auth/sign-up/email' && providerError.code === 'INVALID_REGISTRATION_CODE') {
+      throw new AuthRequestError('INVALID_REGISTRATION_CODE', 'That registration code is not valid.');
+    }
+    throw new AuthRequestError('FORBIDDEN', 'Sign-in was blocked. Open the trusted app address and try again.');
   }
   if (response.status === 422) {
     throw new AuthRequestError(providerError.code, providerError.message);
   }
+  if (response.status === 429) throw new AuthRequestError('RATE_LIMITED', 'Please wait a minute before trying again.');
   throw new AuthRequestError('SERVICE_UNAVAILABLE', 'The server could not complete sign-in. Try again shortly.');
 }
 

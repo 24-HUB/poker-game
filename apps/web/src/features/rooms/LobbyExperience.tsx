@@ -6,6 +6,8 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useStore } from 'zustand';
 
 import { useSession } from '../auth/SessionBoundary';
+import Link from 'next/link';
+import { useActiveRoom } from './ActiveRoomBoundary';
 import {
   clearPendingInvitation,
   readInvitationFragment,
@@ -20,6 +22,7 @@ const transientErrorCodes = new Set(['COMMAND_UNCERTAIN', 'SERVICE_UNAVAILABLE',
 
 export function LobbyExperience() {
   const router = useRouter();
+  const boundary = useActiveRoom();
   const { session } = useSession();
   const { status, pendingCommand, authorityBootId, canRetryPending, retryPending, send } = useRoomConnection(null);
   const interruption = useStore(roomStore, (state) => state.interruption);
@@ -95,6 +98,10 @@ export function LobbyExperience() {
   }
 
   return (
+    <>
+    {boundary?.current?.phase === 'waiting' ? <p className="current-room-entry">
+      You are seated in {boundary.current.title}. <Link href={`/rooms/${encodeURIComponent(boundary.current.roomId)}`}>Return to room</Link>
+    </p> : null}
     <Lobby
       onCreate={createRoom}
       onJoin={joinRoom}
@@ -107,5 +114,6 @@ export function LobbyExperience() {
         handleRoomResult(await retryPending(), attemptedInvitation);
       }}
     />
+    </>
   );
 }

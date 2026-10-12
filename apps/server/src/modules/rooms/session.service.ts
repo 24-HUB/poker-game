@@ -65,6 +65,14 @@ export class SessionService {
     private readonly authority: AuthorityLease,
   ) {}
 
+  public async history(accountId: string, roomId: string, sessionId: string, beforeHandNumber?: number) {
+    const session = await this.repository.findSession(sessionId);
+    if (!session || session.roomId !== roomId || !session.participants.some((player) => player.accountId === accountId)) {
+      throw new SessionError('FORBIDDEN', 'Only participants can read this session’s completed hands.');
+    }
+    return this.repository.listCommittedHands(sessionId, beforeHandNumber);
+  }
+
   public async startInQueue(context: RoomContext, command: Extract<GameCommand, { type: 'session:start' }>): Promise<SessionRuntime> {
     const authority = this.authority.currentToken();
     if (!authority) throw new SessionError('SERVICE_UNAVAILABLE', 'Room authority is unavailable.');

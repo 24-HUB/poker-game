@@ -1,5 +1,265 @@
 # Checkpoint — Remaining phases through production
 
+## M5.1a room UI refinement — 2026-10-12 11:02 Bangkok (04:02 UTC)
+
+- User requested a second room pass after trying the live preview. Continue the
+  existing `codex/m5-predeploy-ux` task and [PR #21](https://github.com/24-HUB/poker-game/pull/21)
+  (base `dev`), returned to draft while this follow-up is verified. Last completed
+  implementation commit **`a1bc9fa4`** follows baseline `4ed3f977`; fetch succeeded,
+  `origin/dev` remains `623749f0`.
+- Visible equipped/default portraits at all seats/mobile, acting-seat deadline
+  ring and explicit label, readable dealer/blind/chip markers, larger private cards,
+  optional four-colour suits, dashed undealt board slots and reduced-motion-aware
+  card arrival. Fold/Call-or-Check/Raise always keep their positions; amount controls
+  collapse off turn, raises are solid cobalt, presets outlined and server-clamped.
+  Half-pot/pot sizing includes the call first; presets never submit a command.
+- Lobby button confirms active-room departure. Gear options retain session end,
+  deliberate collection/invitation departure and suit preference. Mobile playing
+  title is hidden as requested; desktop title is compact. A single felt frame,
+  safe-area padding and clearer cosmetic-ticket eligibility replace clutter.
+  The local Next dev badge is disabled using its documented setting.
+- Previous committed result is shown only for its matching live hand, or the final
+  numbered hand of an ended session; it is dismissible and disappears at a new
+  hand. Regression caught and fixed the ended-session live-ID-clearing case; the
+  final public showdown comes from the selected committed result, not a cleared
+  live-card field.
+  Private-card projection, persistent economy and game authority are unchanged.
+- Focused tests **29/29** pass. Core requirements first failed 5 tests, then passed;
+  final-result/showdown regressions also proved RED→GREEN. Server/browser clock-skew
+  coverage catches the atomic time-sampling issue. Frozen installation and aggregate
+  `pnpm check` passed **383 tests**, typechecks and production builds. Final web
+  test/build after the showdown follow-up passes **116 tests** and production build.
+  Production chunks contain no mock UI/helper strings.
+  Mechanical layout scan returned no findings; reviewer found no major product
+  defect, and stale visible-text assertions were updated to accessible labels.
+- Real six-player captures were inspected together at 360×800, 1280×720 and 900×900,
+  then confirmed once after the waiting-row/result fix. Cards, avatars, 12px seat
+  labels, pot/bet separation and primary controls pass original viewport bounds.
+  Full Chromium run: **18 passed, 1 failed** on a legacy observer-Check absence
+  assertion; updated to verify disabled authority instead. Final release rerun
+  **2/2** passed including takeover and **4.5:1** control contrast, at zero retries.
+  New-head Linux CI is pending. Do not call this ready to merge yet.
+- Next: push these reviewed task-owned commits and inspect exact-head CI. Restart the
+  disposable preview afterward. Browser control of the old preview tab was rejected
+  by its URL policy; no browser-policy workaround was attempted. Isolated acceptance
+  captures remain under `apps/web/.artifacts/room-refinement-final/`.
+- Usage observed before aggregate verification: five-hour 69% remaining (reset 2026-10-12
+  08:14:49 UTC /15:14:49 Bangkok); weekly 58% (reset 2026-10-18 05:12:40 UTC /
+  12:12:40 Bangkok). No deployment, live database, email delivery or billing changes.
+
+---
+
+## M5.1a final acceptance — 2026-10-12 10:12 Bangkok (03:12 UTC)
+
+- Task branch `codex/m5-predeploy-ux`, [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`.
+  Latest verified implementation/test commit **`2f73ba30`** passed
+  [Linux CI](https://github.com/24-HUB/poker-game/actions/runs/38198327488): frozen
+  install, backend build, disposable MongoDB/replica setup, migration idempotency,
+  **374 aggregate tests**, typechecks/production builds, encrypted backup/isolated
+  restore, Worker packaging and **19/19 Chromium cases with zero retries**.
+- Docker containers are healthy. Local collection recovery passed three unchanged
+  repeats plus the diagnostic run; web typecheck and whitespace review passed.
+  The intermittent prior Linux collection failure remains recorded below with
+  cause unproven. Diagnostic assertions require a valid committed receipt and
+  report only HTTP codes/named UI states; no product fix or relaxed timeout claimed.
+- The final documentation commit changes no executable files. Inspect its normal
+  CI before marking the PR ready, then fetch and verify branch freshness/clean status.
+  Last fetched `origin/dev` is `623749f0`, included by the task branch.
+- Next: owner reviews/merges manually once final-head checks pass. Deferred minor:
+  cached history remains after a permission-denied refetch. M5.2/M5.3 hosted and
+  provider work still requires operator inputs/authorization. No deployment,
+  production database, email delivery or billing action occurred.
+- Usage last observed: five-hour 20% remaining, reset 2026-10-12 03:14:47 UTC
+  (10:14:47 Bangkok); weekly 64%, reset 2026-10-18 05:12:40 UTC (12:12:40 Bangkok).
+
+---
+
+## M5.1a collection recovery investigation — 2026-10-12 10:03 Bangkok (03:03 UTC)
+
+- Continue `codex/m5-predeploy-ux`, draft [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`.
+  Last completed commit is `d442a329`; fresh fetch contains `origin/dev` `623749f0`.
+- Application commit `6f358fa1` passed all Linux checks below. The Markdown-only
+  `d442a329` rerun passed all preceding checks but Chromium finished **18/19**:
+  collection recovery did not show its final reveal within the original five-second
+  assertion. [Failed run](https://github.com/24-HUB/poker-game/actions/runs/38197017820).
+  Its cause remains unproven; do not describe the current PR as ready to merge.
+- Fresh Docker services work. Three unchanged local collection repeats passed
+  **3/3**, with zero retries. Added test-only diagnostics: require HTTP 201 and a
+  strict committed receipt before reload, then report only recovery status codes
+  and named UI states on failure. No timing relaxation or speculative product fix.
+  Web typecheck and the diagnostic collection browser run **1/1** passed.
+  New-head CI is pending.
+- Next: commit/push these reviewed task-owned test/docs changes and inspect new-head CI.
+  Keep the PR draft if it fails; investigate the reported recovery state.
+- Usage at investigation start: five-hour 24% remaining, reset 2026-10-12
+  03:14:46 UTC (10:14:46 Bangkok); weekly 65%, reset 2026-10-18 05:12:40 UTC
+  (12:12:40 Bangkok). No deployment, live database or billing action.
+
+---
+
+## M5.1a verified implementation — 2026-10-12 09:41 Bangkok (02:41 UTC)
+
+- Completed Tasks 1–4 on `codex/m5-predeploy-ux`, existing
+  [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`.
+  Verified application commit **`6f358fa1`** follows `f7619764` and `2f09c749`.
+  Final fetch succeeded; this branch contains current `origin/dev` **`623749f0`**.
+- [Linux CI run](https://github.com/24-HUB/poker-game/actions/runs/38196054989)
+  passed on `6f358fa1`: frozen installation, uncached backend build, replica-set
+  setup, migration idempotency, **374 aggregate tests**, types/production builds,
+  encrypted backup/authenticated restore rehearsal, OpenNext Worker packaging and
+  **19/19 Chromium cases with zero retries**. The mobile geometry assertion remains
+  at 360×800 and controls fit above 800px; desktop 1280×720 also passes. No weakened gate.
+- Local evidence: aggregate 374; native history HTTP guard 18/18; boundary 7/7;
+  table 9/9; action panel 9/9; full CI-mode Chromium 19/19 before final timer grouping;
+  final scoped capture flows and isolated reconnect pass. Final captures in
+  `apps/web/.artifacts/ux-linux-followup/` were inspected, including actual mobile
+  own turn and waiting state. Production chunks contain no mock UI/helper strings.
+- Fixed compact layout, stable caller marker, initial-authentication form reset,
+  and Linux font-sensitive overflow by giving the title its own row and keeping
+  the timer beside one turn label. Observer actor context and private-card/control
+  rules remain intact. Earlier Windows socket-buffer failure and historical restart
+  diagnostics are preserved below; no production restart/network fix is claimed.
+- Fresh read-only review reported no Important/Critical findings; remaining minor
+  is retained cached history after a refetch permission error (already-received
+  client data, not new server disclosure). Owner review/merge remains manual.
+- This final documentation follow-up records the completed gates; only Markdown
+  changes follow the verified application commit. Review its diff and
+  `git diff --check`; its normal GitHub workflow may run again. Do not change code
+  or rerun completed implementation merely because a documentation commit follows.
+- Next: user reviews/merges PR #21 manually. M5.2 storage destination/key access and
+  M5.3 hosted acceptance require the operator's inputs and separate authorization.
+  No deployment, live database, email delivery or billing changes occurred.
+- Usage observed before handoff: five-hour 35% remaining, reset 2026-10-12 03:14:47 UTC
+  (10:14:47 Bangkok); weekly 67%, reset 2026-10-18 05:12:40 UTC (12:12:40 Bangkok).
+  No reset-credit or billing action.
+
+---
+
+## M5.1a resumed local verification — 2026-10-12 08:58 Bangkok (01:58 UTC)
+
+- Continued clean `codex/m5-predeploy-ux` and existing
+  [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`; fetched
+  `origin/dev` remains `623749f0`. Preserve prior implementation `f7619764` and
+  checkpoint `032f885c`. No deployment, live database, billing or unrelated changes.
+- Fixed the recorded layout blockers: compact app/room headers, stable control
+  placement without bottom-sticky overlay, preserved card sizes, and enough room
+  between the center pot and inward bets. Long names truncate independently of the
+  always-visible `(you)` marker. Numeric input/slider/presets retain legal behavior.
+- New real-browser geometry assertions first failed on mobile overlap and then
+  1280×720 overflow; they now pass for waiting and actual own-turn mobile panels,
+  desktop/tablet, private-card visibility and pot/bet separation. These assertions
+  run in CI, not only during screenshot capture. Final six-player captures are
+  local/ignored under `apps/web/.artifacts/ux-completed/`; mobile own turn, 1280×720,
+  900×900 and 1440×1000 were inspected. No exhaustive accessibility certification.
+- Full Chromium under `CI=true` passed **19/19, zero retries**. A prior resumed
+  run passed 18/19 and exposed an initial-authentication form reset: lobby controls
+  were clickable before session resolution, then the membership check remounted
+  the form. The boundary now withholds interactive destinations during initial
+  loading; the regression proved RED→GREEN. Existing recovery/account-isolation
+  coverage remains passing (boundary 7/7; table 9/9).
+- The previous restart-after-game failure did not reproduce with fresh Docker
+  services: isolated sequence 3/3 and both resumed full browser runs passed restart
+  recovery at the original bounds. Temporary harness timing showed lease expiry in
+  4–9 ms and prompt relaunch; diagnostics were removed. No production restart fix
+  is claimed, and the original historical cause remains unproven. Earlier failures
+  during this resumption were Docker-startup setup failures, not acceptance results.
+- Frozen install used pnpm 10.33.0. Final local `pnpm check` passed **372 tests**,
+  typechecks and production builds. A further native HTTP history guard test passed
+  with server typecheck and identity suite **18/18**: outsider 403, malformed cursor 400,
+  anonymous 401 and revoked 401. Rebuilt production chunks contain no mock UI/helper
+  strings. Global pnpm outside the workspace is 12.6.0; the documented Windows wrapper
+  selects 10.33.0. Next's generated type imports returned to unchanged production form.
+- Mechanical layout detector returned no findings. Fresh read-only review found no
+  Important/Critical findings. Deferred minor remains: cached hand outcomes stay
+  visible after a refetch authorization error; this is already-received client data,
+  not a new server disclosure. Hosted playtest/provider gates remain separate.
+- Follow-up implementation `2f09c749` was pushed. Its Linux CI passed aggregate,
+  backup rehearsal and Worker packaging; Chromium finished 17 passed, 1 failed and
+  1 skipped. The new mobile assertion exposed a panel bottom of 828px in an 800px viewport.
+  Kept the original viewport gate: remove redundant turn labels, keep timer beside
+  the mobile turn label, and give the room title its own grid row rather than sharing
+  width with options. Actor context remains visible for observer/transport states.
+  The semantic turn-label regression proved RED→GREEN. New-head Linux CI remains
+  required before declaring this PR ready; record its evidence before final handoff.
+- Correction verification: the semantic turn-label unit suite passes 9/9; full local
+  CI-mode Chromium passed 19/19 before the final mobile timer-grid grouping. The
+  final poker/history/six-player capture flows passed; one reconnect capture attempt
+  failed before the server on Windows `net::ERR_NO_BUFFER_SPACE`, confirmed from
+  the local trace. Its isolated rerun passed unchanged at the original bound. Scoped
+  final mobile own-turn/waiting captures were inspected. Latest `pnpm check` passed
+  **374 tests**, types and production builds. No unrelated application/network fix
+  was introduced for the host socket-buffer failure.
+- Next: inspect the new GitHub CI run after push. If it fails, read its actual failed
+  step/logs and repair the cause on this same branch; do not relax acceptance bounds,
+  merge, deploy or create another implementation branch. User merges manually.
+
+---
+
+## M5.1a implementation save point — 2026-10-11 13:32 UTC
+
+- Task: implement the newly merged pre-deployment UX plan, Tasks 1–4. Clean start
+  and fetch succeeded; branch `codex/m5-predeploy-ux` starts at `origin/dev`
+  `623749f0` (merged planning PR #20). No unrelated work, deployment, live database
+  or billing changes. Final fetch succeeded and the base remains `623749f0`.
+- Implemented: authenticated no-store current-room lookup and active navigation
+  recovery/explicit destination leave; waiting-room Return entry; compact poker
+  table with stable caller-relative seats, authoritative hand/blind/current-bet
+  metadata, legal amount input/slider/presets and duplicate submission protection;
+  member/participant-only paginated committed history; selectable/copyable secure
+  invite codes; two verified native mock accounts in the disposable loopback harness;
+  accurate sign-in 403/429 mapping and documented pinned Windows launcher.
+- Evidence: initial frozen installation and `pnpm check` passed types, tests and
+  production builds. Focused server rooms 23/23, identity HTTP 17/17 and expanded
+  poker 20/20 passed; boundary regressions 6/6 passed. Final poker/history/release
+  Chromium 3/3 passed with zero retries, including actual history schema validation
+  after reload, six-player unequal all-ins/chip conservation and heads-up reconnect/
+  takeover. Separate mock/restart/accessibility run passed 4/5 (both native mock
+  cases and both restart cases); accessibility was corrected to await authenticated
+  UI and passed in the later full run. Collection and both room browser cases passed
+  in the focused gameplay batch. These separate runs do not constitute full-suite GREEN.
+- Review: one fresh read-only reviewer found stale waiting snapshots masking play
+  and null membership clearing an uncertain leave. Polling now reconciles phase only
+  against an unchanged room snapshot; pending leave survives null polling for explicit
+  command reconciliation. Regression tests pass. The initially successful history
+  HTTP response contained Mongo-mutated reward receipt `_id`; explicit nested public
+  projection fixed it and real browser/schema regression now passes.
+- Remaining blockers: (1) at 360×800 the bottom-sticky action panel overlays lower
+  seats/private cards; (2) at 1280×720 actions extend below the viewport; tighten
+  header/layout and preserve card visibility, add actual viewport/non-overlap assertions;
+  (3) full suite's backend restart after active-room gameplay returns 502 and misses
+  its 5-second recovery bound, cascading to later tests. Isolated active-room + restart
+  reproduced 1 failure/2 passes; restart + mock without prior gameplay passed.
+  Local diagnostic cleanup of the latest disposable database eventually passed but
+  was delayed; root cause is unproven. Do not mask it by relaxing bounds or claiming
+  a production fix. Linux Worker CI and full `CI=true` Chromium remain pending.
+- Visual evidence is local/ignored at
+  `apps/web/.artifacts/ux-captures/release-six-players-settle-c4946-d-keep-mobile-cards-private-chromium/`.
+  Inspected 360×800, 900×900, 1280×720 and 1440×1000 hand captures. No exhaustive
+  accessibility claim. Reviewer minor deferred: history retains cached outcomes on
+  a refetch permission error; assess hiding them without claiming server data leakage.
+- Final `pnpm check` passed **370 tests**, all configured typechecks and production
+  builds after correcting a test-only CommonJS/ESM import. No lint script exists.
+  Rebuilt production chunks contain no `LocalMockAccounts`, `Play as Mock` or
+  `/__e2e/mock-login` strings. `git diff --check` and staged diff check passed;
+  build regenerated Next development imports back to the unchanged production file.
+- Implementation commit **`f7619764`** is pushed on `codex/m5-predeploy-ux` in
+  **draft [PR #21](https://github.com/24-HUB/poker-game/pull/21)**, explicitly targeting
+  `dev`. This documentation follow-up records the save point. The user merges
+  manually; no required UX gate is complete. No task-owned application changes
+  remain uncommitted after this follow-up is saved.
+- Resume: check usage/status, fetch origin, remain on this task branch and read this
+  save point. Fix responsive blockers first, then run
+  `npm.cmd exec --yes --package=pnpm@10.33.0 --call "set npm_execpath=&& pnpm --filter @poker/web exec playwright test tests/e2e/poker.spec.ts tests/e2e/release.spec.ts --output=.artifacts/ux-captures"`.
+  Inspect screenshots and add mobile overlap/1280×720 viewport assertions. Diagnose
+  restart with `playwright test tests/e2e/active-room.spec.ts tests/e2e/backend-recovery.spec.ts`
+  via the same pinned pnpm invocation, then full `CI=true` Chromium and `pnpm check`;
+  regenerate production types after dev harness exits and update this existing PR.
+- Usage observed 2026-10-11 13:32 UTC: five-hour **9% remaining**, reset
+  2026-10-11 15:49:58 UTC; weekly **81% remaining**, reset 2026-10-18 05:12:40 UTC.
+  This is a save point due to the repository's below-10% rule, not task completion.
+
+---
+
 ## Detailed poker-room UX/UI specification added — 2026-10-11 12:13 UTC
 
 - Resumed clean `codex/predeploy-ux-plan` on draft

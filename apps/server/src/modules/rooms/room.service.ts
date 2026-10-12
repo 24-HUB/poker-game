@@ -1,7 +1,7 @@
 import { createHash, randomBytes } from 'node:crypto';
 
-import { Inject, Injectable, Optional, type OnApplicationShutdown } from '@nestjs/common';
-import type { Result, RoomCommand, RoomReply } from '@poker/contracts' with { 'resolution-mode': 'import' };
+import { Inject, Injectable, Optional, ServiceUnavailableException, type OnApplicationShutdown } from '@nestjs/common';
+import type { CurrentRoom, Result, RoomCommand, RoomReply } from '@poker/contracts' with { 'resolution-mode': 'import' };
 
 import { AuthorityLease } from '../../authority/authorityLease';
 import type { VerifiedAccountIdentity } from '../identity/identity.service';
@@ -151,6 +151,19 @@ export class RoomService implements OnApplicationShutdown {
       reply,
     );
     return reply;
+  }
+
+  public async currentRoom(accountId: string): Promise<CurrentRoom | null> {
+    const token = this.authority.currentToken();
+    if (!token) throw new ServiceUnavailableException('Room authority is temporarily unavailable.');
+    try {
+      const room = await this.repository.currentRoom(accountId, token);
+      const current = this.authority.currentToken();
+      if (!current || current.bootId !== token.bootId || current.epoch !== token.epoch) throw new Error('Authority changed');
+      return room;
+    } catch {
+      throw new ServiceUnavailableException('Your current room could not be checked. Try again shortly.');
+    }
   }
 
   public async disconnect(connectionId: string): Promise<string[]> {

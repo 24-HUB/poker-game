@@ -14,9 +14,12 @@ import { RoomRegistry } from './roomRegistry';
 import { ROOM_SERVICE_OPTIONS, RoomService } from './room.service';
 import { SessionRepository } from './session.repository';
 import { SessionService } from './session.service';
+import { CurrentRoomController } from './current-room.controller';
+import { HandHistoryController } from './hand-history.controller';
 
 @Module({
   imports: [AuthorityModule, IdentityModule, SettlementModule, ReleaseControlsModule],
+  controllers: [CurrentRoomController, HandHistoryController],
   providers: [
     RoomRepository,
     SessionRepository,

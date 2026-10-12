@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import type { PullReceipt } from '@poker/contracts';
+import { pullReceiptSchema, type PullReceipt } from '@poker/contracts';
 import { createAccountThroughNativeApi } from './support/accounts';
 
 test('earn → interrupted pull → recover → equip → next hand → sign in again', async ({ browser }) => {
@@ -20,16 +20,16 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     await host.getByLabel('Room title').fill('Celestial table');
     await host.getByRole('button', { name: 'Create private room' }).click();
     await expect(host.getByRole('heading', { name: 'Celestial table' })).toBeVisible();
-    await host.getByRole('button', { name: 'Copy room link' }).click();
+    await host.getByRole('button', { name: 'Copy invite code' }).click();
     const invitation = await host.evaluate(() => navigator.clipboard.readText());
     const roomUrl = host.url();
-    await guest.goto(invitation);
+    await guest.goto('/#invite=' + encodeURIComponent(invitation));
     await expect(host.getByText('2 of 6 members')).toBeVisible();
-    await host.getByRole('button', { name: 'Claim control in this tab' }).click();
+    await host.getByRole('button', { name: 'Use this tab to play' }).click();
     await host.getByRole('button', { name: 'Start poker session' }).click();
     await expect(guest.getByRole('region', { name: 'Poker table' })).toBeVisible();
     for (let i = 0; i < 5; i += 1) {
-      const guestClaim = guest.getByRole('button', { name: 'Claim control', exact: true });
+      const guestClaim = guest.getByRole('button', { name: 'Use this tab to play', exact: true });
       if (await guestClaim.isVisible()) await guestClaim.click();
       const hostFold = host.getByRole('button', { name: 'Fold', exact: true });
       const guestCall = guest.getByRole('button', { name: /^Call / });
@@ -39,9 +39,9 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
         const states = [];
         for (const page of [host, guest]) {
           states.push({
-            phase: await page.locator('.poker-table__header > div:first-child > p:last-child').allTextContents(),
-            turn: await page.locator('.poker-table__action-panel > [role="status"]').allTextContents(),
-            claim: await page.getByRole('button', { name: 'Claim control', exact: true }).count(),
+            phase: await page.locator('.poker-table__details > p').allTextContents(),
+            turn: await page.locator('.poker-turn > [role="status"]').allTextContents(),
+            claim: await page.getByRole('button', { name: 'Use this tab to play', exact: true }).count(),
             pending: await page.getByRole('button', { name: 'Reconcile pending game action' }).count(),
           });
         }
@@ -52,7 +52,8 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
         await guest.getByRole('button', { name: /^Call / }).click();
       }
       await expect(host.getByRole('button', { name: 'Fold', exact: true })).toBeEnabled();
-      if (i === 4) { host.once('dialog', (dialog) => void dialog.accept()); await host.getByRole('button', { name: 'End after this hand' }).click(); }
+      if (i === 4) { host.once('dialog', (dialog) => void dialog.accept()); await host.getByLabel('Room options', { exact: true }).click();
+    await host.getByRole('button', { name: 'End after this hand' }).click(); }
       await host.getByRole('button', { name: 'Fold', exact: true }).click();
       await expect(host.getByLabel(`${i + 1} tickets, ${19 - i} can be earned today`)).toBeVisible();
     }
@@ -72,13 +73,16 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     await host.setViewportSize({ width: 1280, height: 850 });
 
     let captured: PullReceipt | null = null;
+    let purchaseStatus = 0;
+    let purchasePayload: unknown;
     let markCommitted!: () => void;
     let releaseResponse!: () => void;
     const committed = new Promise<void>((resolve) => { markCommitted = resolve; });
     const release = new Promise<void>((resolve) => { releaseResponse = resolve; });
     await host.route('**/api/pulls', async (route) => {
       const response = await route.fetch();
-      captured = (await response.json()).data as PullReceipt;
+      purchaseStatus = response.status();
+      purchasePayload = (await response.json()).data;
       markCommitted();
       await release;
       await route.fulfill({ response }).catch(() => undefined);
@@ -86,6 +90,12 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     if (process.env.M4_CAPTURE === '1') { await host.clock.install(); await host.clock.pauseAt(new Date()); }
     await host.getByRole('button', { name: 'Open 1 — 5 tickets' }).click();
     await committed;
+    expect(purchaseStatus, 'The interrupted purchase must commit before reload').toBe(201);
+    captured = pullReceiptSchema.parse(purchasePayload);
+    const recoveryStatuses: number[] = [];
+    host.on('response', (response) => {
+      if (new URL(response.url()).pathname.startsWith('/api/pulls/')) recoveryStatuses.push(response.status());
+    });
     await host.reload();
     releaseResponse();
     await host.unroute('**/api/pulls');
@@ -101,7 +111,21 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
       await host.setViewportSize({ width: 1280, height: 850 });
       await host.clock.resume();
     }
-    await expect(host.getByRole('heading', { name: 'Your invitations', exact: true })).toBeVisible();
+    try {
+      await expect(host.getByRole('heading', { name: 'Your invitations', exact: true })).toBeVisible();
+    } catch (cause) {
+      // Report only flow states/status codes; never dump cookies, request IDs or cosmetic payloads.
+      const states = {
+        recoveryStatuses,
+        pending: await host.getByRole('button', { name: 'Recover existing invitation' }).count(),
+        reveal: await host.getByRole('region', { name: 'Committed invitation results' }).count(),
+        accessCheck: await host.getByText('Checking private access…', { exact: true }).count(),
+        roomCheck: await host.getByText('Recovering your current room…', { exact: true }).count(),
+        roomUnavailable: await host.getByText('Your current room could not be checked. Reconnect to continue.', { exact: true }).count(),
+        storageUnavailable: await host.getByRole('alert').filter({ hasText: 'cannot safely save' }).count(),
+      };
+      throw new Error(`Committed pull recovery states: ${JSON.stringify(states)}`, { cause });
+    }
     expect(captured).not.toBeNull();
     const receipt = captured! as PullReceipt;
     const recovered = await (await hostContext.request.get(`/api/pulls/${receipt.requestId}`)).json();
@@ -128,10 +152,10 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     await host.setViewportSize({ width: 1280, height: 850 });
     await host.goto(roomUrl);
     await expect(host.getByRole('region', { name: 'Poker table' })).toBeVisible();
-    const claim = host.getByRole('button', { name: 'Claim control', exact: true });
+    const claim = host.getByRole('button', { name: 'Use this tab to play', exact: true });
     if (await claim.isVisible()) await claim.click();
     // Navigating away transferred host control to the guest who stayed at the table.
-    const guestControl = guest.getByRole('button', { name: 'Claim control', exact: true });
+    const guestControl = guest.getByRole('button', { name: 'Use this tab to play', exact: true });
     if (await guestControl.isVisible()) await guestControl.click();
     await guest.getByRole('button', { name: 'Start new session' }).click();
     const observer = item.slot === 'avatar' ? host : guest;
@@ -140,6 +164,7 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     expect(cards).not.toContain(item.name);
     // Finish this second session before the next test needs the global admission slot.
     guest.once('dialog', (dialog) => void dialog.accept());
+    await guest.getByLabel('Room options', { exact: true }).click();
     await guest.getByRole('button', { name: 'End after this hand' }).click();
     await expect(guest.getByText('The session will end after this hand.')).toBeVisible();
     await expect(host.getByRole('button', { name: 'Fold', exact: true })).toBeEnabled();

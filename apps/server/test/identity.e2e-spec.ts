@@ -1,4 +1,4 @@
-import { createHash } from 'node:crypto';
+import { createHash, randomUUID } from 'node:crypto';
 
 import type { INestApplication } from '@nestjs/common';
 import type { MongoClient } from 'mongodb';
@@ -9,6 +9,8 @@ import { applyMigrations } from '../src/database/migrate';
 import { MONGO_CLIENT } from '../src/database/database.tokens';
 import { createApplication } from '../src/main';
 import { createTestDatabase, type TestDatabase } from './support/testDatabase';
+import { RoomService } from '../src/modules/rooms/room.service';
+import { AuthorityLease } from '../src/authority/authorityLease';
 
 const mongoUri = process.env.TEST_MONGODB_URI ?? 'mongodb://127.0.0.1:27018/?replicaSet=rs0&directConnection=true';
 const proxySecret = 'test-proxy-secret';
@@ -48,6 +50,51 @@ describe('identity', () => {
 
     expect(response.status).toBe(403);
     expect(await database.db.collection('user').countDocuments()).toBe(0);
+  });
+
+  it('protects current-room discovery with the real caller session and excludes private data', async () => {
+    const host = await signUp('room-host@example.com', 'Host');
+    const guest = await signUp('room-outsider@example.com', 'Outsider');
+    const authority = application.get(AuthorityLease).currentToken()!;
+    const created = await application.get(RoomService).execute({
+      identity: { accountId: host.body.user.id, displayName: 'Host', sessionId: 'test', expiresAt: new Date(Date.now() + 60_000) }, connectionId: 'host-tab',
+    }, { type: 'room:create', title: 'Private', commandId: randomUUID(), authorityBootId: authority.bootId, issuedAt: new Date().toISOString() });
+    const own = await request(application.getHttpServer()).get(`/api/rooms/current?accountId=${guest.body.user.id}`)
+      .set('cookie', host.headers['set-cookie']?.[0] ?? '').set('x-poker-proxy-secret', proxySecret);
+    expect(own.status).toBe(200);
+    expect(own.headers['cache-control']).toBe('no-store');
+    expect(own.body).toEqual({ data: { roomId: created.data!.room!.roomId, title: 'Private', phase: 'waiting' }, error: null });
+    const outsider = await request(application.getHttpServer()).get(`/api/rooms/current?accountId=${host.body.user.id}`)
+      .set('cookie', guest.headers['set-cookie']?.[0] ?? '').set('x-poker-proxy-secret', proxySecret);
+    expect(outsider.status).toBe(200);
+    expect(outsider.body).toEqual({ data: null, error: null });
+    const anonymous = await request(application.getHttpServer()).get('/api/rooms/current').set('x-poker-proxy-secret', proxySecret);
+    expect(anonymous.status).toBe(401);
+    expect((await database.db.collection('session').deleteOne({ token: host.body.token })).deletedCount).toBe(1);
+    const revoked = await request(application.getHttpServer()).get('/api/rooms/current')
+      .set('cookie', host.headers['set-cookie']?.[0] ?? '').set('x-poker-proxy-secret', proxySecret);
+    expect(revoked.status).toBe(401);
+    expect(revoked.body.error.code).toBe('UNAUTHENTICATED');
+  });
+
+  it('guards completed-hand HTTP reads and validates pagination before accessing history', async () => {
+    const account = await signUp('history-member@example.com', 'History reader');
+    const cookie = account.headers['set-cookie']?.[0] ?? '';
+    const endpoint = '/api/rooms/private-room/hands?sessionId=private-session';
+    const outsider = await request(application.getHttpServer()).get(endpoint)
+      .set('cookie', cookie).set('x-poker-proxy-secret', proxySecret);
+    expect(outsider.status).toBe(403);
+    expect(outsider.body.data).toBeNull();
+    const malformed = await request(application.getHttpServer()).get(`${endpoint}&beforeHandNumber=0`)
+      .set('cookie', cookie).set('x-poker-proxy-secret', proxySecret);
+    expect(malformed.status).toBe(400);
+    const anonymous = await request(application.getHttpServer()).get(endpoint).set('x-poker-proxy-secret', proxySecret);
+    expect(anonymous.status).toBe(401);
+    expect((await database.db.collection('session').deleteOne({ token: account.body.token })).deletedCount).toBe(1);
+    const revoked = await request(application.getHttpServer()).get(endpoint)
+      .set('cookie', cookie).set('x-poker-proxy-secret', proxySecret);
+    expect(revoked.status).toBe(401);
+    expect(revoked.body.error.code).toBe('UNAUTHENTICATED');
   });
 
   it('creates an account through the native auth response without persisting the registration code', async () => {

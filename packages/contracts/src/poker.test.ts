@@ -52,6 +52,7 @@ describe('poker contracts', () => {
     const view = {
       roomId: 'room-a', authorityBootId: 'boot-a', sessionId: 'session-a', handId: 'hand-a',
       snapshotRevision: 4, gameVersion: 3, sessionPhase: 'playing', handPhase: 'flop',
+      handNumber: 2, smallBlind: 10, bigBlind: 20, smallBlindSeat: 0, bigBlindSeat: 1, currentBet: 20,
       participants: [
         { accountId: 'account-a', displayName: 'Alice', seat: 0, stack: 980, streetContribution: 20,
           totalContribution: 20, folded: false, allIn: false, connected: true },
@@ -61,7 +62,7 @@ describe('poker contracts', () => {
       board: [1, 2, 3], pots: [{ amount: 40, eligibleAccountIds: ['account-a'] }], buttonSeat: 0,
       actorAccountId: 'account-a', serverTime: '2026-09-29T00:00:00.000Z',
       deadline: '2026-09-29T00:00:30.000Z', holeCards: [4, 5], revealedCards: [],
-      legalActions: { canFold: true, canCheck: false, callAmount: 20, raise: { minRaiseTo: 40, maxRaiseTo: 1000, shortAllInOnly: false } },
+      legalActions: { canFold: true, canCheck: false, callAmount: 20, raise: { minRaiseTo: 40, maxRaiseTo: 1000, amountStep: 1, shortAllInOnly: false } },
       control: { isController: true, epoch: 2 }, handResult: null, sessionResult: null,
     };
     expect(gameViewSchema.safeParse(view).success).toBe(true);

@@ -31,7 +31,7 @@ export function SessionProvider({
   useEffect(() => {
     if (session.status === 'authenticated' || session.status === 'unauthenticated') {
       const currentAccountId = session.status === 'authenticated' ? session.account.accountId : null;
-      const oldWallets = { predicate: (entry: { queryKey: readonly unknown[] }) => ['wallet', 'collection', 'equipment'].includes(String(entry.queryKey[0])) && entry.queryKey[1] !== currentAccountId };
+      const oldWallets = { predicate: (entry: { queryKey: readonly unknown[] }) => ['wallet', 'collection', 'equipment', 'current-room', 'hand-history'].includes(String(entry.queryKey[0])) && entry.queryKey[1] !== currentAccountId };
       void queryClient.cancelQueries(oldWallets);
       queryClient.removeQueries(oldWallets);
     }
@@ -49,6 +49,10 @@ export function SessionProvider({
       queryClient.removeQueries({ queryKey: ['wallet'] });
       queryClient.removeQueries({ queryKey: ['collection'] });
       queryClient.removeQueries({ queryKey: ['equipment'] });
+      await queryClient.cancelQueries({ queryKey: ['current-room'] });
+      queryClient.removeQueries({ queryKey: ['current-room'] });
+      await queryClient.cancelQueries({ queryKey: ['hand-history'] });
+      queryClient.removeQueries({ queryKey: ['hand-history'] });
       queryClient.setQueryData(['session'], { status: 'unauthenticated' } satisfies SessionState);
     },
   };

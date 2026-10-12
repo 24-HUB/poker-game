@@ -11,6 +11,7 @@ test('mobile lobby keeps named keyboard targets, reduced motion, and long-accoun
     });
     const page = await context.newPage();
     await page.goto('/');
+    await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
 
     const create = page.getByRole('button', { name: 'Create Room' });
     await create.focus();
