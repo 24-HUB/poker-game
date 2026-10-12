@@ -520,6 +520,22 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### M5.1a verified implementation — 2026-10-12 09:41 Bangkok (02:41 UTC)
+
+Tasks 1–4 are implemented and verified on `codex/m5-predeploy-ux` /
+[PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`. Application commit
+`6f358fa1` passed [Linux CI](https://github.com/24-HUB/poker-game/actions/runs/38196054989):
+374 aggregate tests, types/builds, migrations, backup/restore rehearsal, Worker
+packaging and 19/19 Chromium with zero retries. Mobile own-turn/waiting geometry,
+private cards, timer/controls, long names and 1280×720 visibility retain the original
+acceptance bounds. Initial auth loading no longer loses an opened form. See
+CHECKPOINT.md for exact evidence, inspected captures and the deferred cached-history
+minor. Final fetch succeeded; the branch contains current `origin/dev` `623749f0`.
+
+The user reviews/merges manually. Next milestones remain storage/key selection
+and separately authorized hosted playtesting; no live deployment/database/billing
+work occurred. A Markdown-only follow-up records the completed application gates.
+
 ### M5.1a resumed local verification — 2026-10-12 08:58 Bangkok (01:58 UTC)
 
 Continued `codex/m5-predeploy-ux` / [PR #21](https://github.com/24-HUB/poker-game/pull/21),

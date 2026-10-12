@@ -85,9 +85,10 @@ are corrected, actual mobile own-turn and 1280×720 visibility assertions pass, 
 full local CI-mode Chromium is 19/19 with zero retries. Final aggregate passes 372
 tests/types/builds, plus direct native history HTTP guard coverage. Restart recovery
 passes at original bounds on fresh services; its earlier historical cause is unproven.
-Linux CI verified aggregate, backup and Worker packaging, but caught a font-sensitive
-mobile overflow; compact turn/header grouping addresses it without weakening the
-viewport assertion. New-head remote Linux CI remains pending. See `CHECKPOINT.md`.
+Linux CI on `6f358fa1` passed 374 aggregate tests, backup/restore, Worker packaging
+and 19/19 Chromium at unchanged viewport bounds. See
+[the verified run](https://github.com/24-HUB/poker-game/actions/runs/38196054989)
+and `CHECKPOINT.md`. Automated gates are complete; owner review/merge stays manual.
 
 Earlier passing gameplay evidence remains historical. The user requires these
 additional improvements before production; implement and verify them before the
@@ -114,6 +115,7 @@ next hosted candidate using [M5.1a](superpowers/plans/2026-09-30-m3-through-prod
   Sign-in 403 errors no longer incorrectly report an invalid registration code.
 - [ ] New candidate passes relevant regressions, full aggregate/Chromium and Linux
   Worker CI, with scoped visual evidence and a manually reviewed PR to `dev`.
+  Automated/visual parts passed on `6f358fa1`; owner review and manual merge remain.
 
 ## Hosted and recovery gates
 

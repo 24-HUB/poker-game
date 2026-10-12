@@ -1,5 +1,43 @@
 # Checkpoint — Remaining phases through production
 
+## M5.1a verified implementation — 2026-10-12 09:41 Bangkok (02:41 UTC)
+
+- Completed Tasks 1–4 on `codex/m5-predeploy-ux`, existing
+  [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`.
+  Verified application commit **`6f358fa1`** follows `f7619764` and `2f09c749`.
+  Final fetch succeeded; this branch contains current `origin/dev` **`623749f0`**.
+- [Linux CI run](https://github.com/24-HUB/poker-game/actions/runs/38196054989)
+  passed on `6f358fa1`: frozen installation, uncached backend build, replica-set
+  setup, migration idempotency, **374 aggregate tests**, types/production builds,
+  encrypted backup/authenticated restore rehearsal, OpenNext Worker packaging and
+  **19/19 Chromium cases with zero retries**. The mobile geometry assertion remains
+  at 360×800 and controls fit above 800px; desktop 1280×720 also passes. No weakened gate.
+- Local evidence: aggregate 374; native history HTTP guard 18/18; boundary 7/7;
+  table 9/9; action panel 9/9; full CI-mode Chromium 19/19 before final timer grouping;
+  final scoped capture flows and isolated reconnect pass. Final captures in
+  `apps/web/.artifacts/ux-linux-followup/` were inspected, including actual mobile
+  own turn and waiting state. Production chunks contain no mock UI/helper strings.
+- Fixed compact layout, stable caller marker, initial-authentication form reset,
+  and Linux font-sensitive overflow by giving the title its own row and keeping
+  the timer beside one turn label. Observer actor context and private-card/control
+  rules remain intact. Earlier Windows socket-buffer failure and historical restart
+  diagnostics are preserved below; no production restart/network fix is claimed.
+- Fresh read-only review reported no Important/Critical findings; remaining minor
+  is retained cached history after a refetch permission error (already-received
+  client data, not new server disclosure). Owner review/merge remains manual.
+- This final documentation follow-up records the completed gates; only Markdown
+  changes follow the verified application commit. Review its diff and
+  `git diff --check`; its normal GitHub workflow may run again. Do not change code
+  or rerun completed implementation merely because a documentation commit follows.
+- Next: user reviews/merges PR #21 manually. M5.2 storage destination/key access and
+  M5.3 hosted acceptance require the operator's inputs and separate authorization.
+  No deployment, live database, email delivery or billing changes occurred.
+- Usage observed before handoff: five-hour 35% remaining, reset 2026-10-12 03:14:47 UTC
+  (10:14:47 Bangkok); weekly 67%, reset 2026-10-18 05:12:40 UTC (12:12:40 Bangkok).
+  No reset-credit or billing action.
+
+---
+
 ## M5.1a resumed local verification — 2026-10-12 08:58 Bangkok (01:58 UTC)
 
 - Continued clean `codex/m5-predeploy-ux` and existing

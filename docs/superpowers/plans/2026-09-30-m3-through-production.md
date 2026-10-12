@@ -221,13 +221,13 @@ failure diagnostics. Recheck the docs-only follow-up's final head before merge.
 
 ### M5.1a — Required local playtest UX improvements before deployment
 
-**Local verification (2026-10-12):** Tasks 1–4 are implemented on
-`codex/m5-predeploy-ux` / PR #21. Responsive own-turn/observer geometry and full
-local CI-mode Chromium (19/19) pass. Final local aggregate passes 372 tests plus
-additional native history HTTP guard coverage; production excludes mock UI/helper
-strings. The historical restart failure did not recur on fresh services at the
-original bounds; its original cause remains unproven. New-head remote Linux CI is
-the final gate. Read `CHECKPOINT.md`; do not repeat completed implementation.
+**Verified implementation (2026-10-12):** Tasks 1–4 are complete on
+`codex/m5-predeploy-ux` / PR #21. Application commit `6f358fa1` passed
+[Linux CI](https://github.com/24-HUB/poker-game/actions/runs/38196054989): 374 tests,
+types/builds, backup/restore, Worker packaging and 19/19 Chromium with zero retries.
+Own-turn/waiting geometry keeps the original 360×800 and 1280×720 gates. Production
+excludes mock UI/helper strings. Owner review/merge remains manual; hosted work
+requires separate authorization. Read CHECKPOINT.md rather than repeat implementation.
 
 **User requirements confirmed 2026-10-11:** keep a player at the current playing
 room instead of letting ordinary app navigation lose the table; improve playing-room
@@ -261,22 +261,22 @@ account. An active boundary uses this summary to recover the room route, then ex
 `room:sync` / game sync obtain recipient-authorized snapshots. Current-room reads must
 not allocate a seat, claim tab control or expose invitations/private cards.
 
-- [ ] Write failing server cases: own waiting/playing membership returns its summary;
+- [x] Write failing server cases: own waiting/playing membership returns its summary;
   outsider/unauthenticated callers cannot discover it; closed/left/old-boot rooms
   return null; a revoked session cannot query; database outage returns unavailable,
   not an invented empty membership. Write client cases for account switches and
   stale requests so one account's redirect cannot affect another.
-- [ ] Run `pnpm --filter @poker/server test --runTestsByPath test/rooms.e2e-spec.ts`
+- [x] Run `pnpm --filter @poker/server test --runTestsByPath test/rooms.e2e-spec.ts`
   and `pnpm --filter @poker/web test -- current-room.test ActiveRoomBoundary.test`.
   Expected RED: missing current-room read/boundary behavior, rather than setup failures.
-- [ ] Implement the read and routing boundary. While phase is `playing` (including
+- [x] Implement the read and routing boundary. While phase is `playing` (including
   an ending session until durable completion), keep navigation inside that room:
   collapse navigation while keeping Lobby/Collection/Pulls discoverable through
   the explicit leave flow with a reason; redirect unconfirmed direct app routes,
   browser Back and reload/sign-in recovery to `/rooms/<own roomId>`. A waiting room
   gets a visible **Return to room** entry in the lobby instead of a navigation lock.
   Do not rely only on in-memory room state or preserve private cards in storage.
-- [ ] Provide explicit **Leave room** and **Back to lobby**, plus sign-out.
+- [x] Provide explicit **Leave room** and **Back to lobby**, plus sign-out.
   Selecting a destination during play uses this same leave flow; confirm only
   when leaving has consequences for an active hand. Cancellation or failed leave
   stays in the room; successful leave/sign-out releases the lock. Waiting/finished
@@ -285,7 +285,7 @@ not allocate a seat, claim tab control or expose invitations/private cards.
   remain usable when access expires. Browser/tab closing cannot be prohibited;
   reconnect must recover membership and request explicit control when needed.
   Unavailable reads show a bounded reconnect state, not redirect loops or fake logout.
-- [ ] Run focused GREEN suites plus
+- [x] Run focused GREEN suites plus
   `pnpm --filter @poker/web exec playwright test tests/e2e/active-room.spec.ts`.
   Expected: two real accounts remain isolated; Back/direct navigation/reload recover
   the same playing room; destination/leave cancellation stays at the table; confirmed
@@ -333,16 +333,16 @@ or data from an unrelated room/session. History shows committed outcomes, not ac
 stable seats after fold/disconnect; uncertain submissions without duplicate actions;
 history privacy and stale results after account/session change. Each is tested below.
 
-- [ ] Add failing behavior cases for actionable takeover, start blocked with fewer
+- [x] Add failing behavior cases for actionable takeover, start blocked with fewer
   than two seated players, waiting for another player, disconnected transport,
   pending action and session ending. Every disabled action must have an adjacent
   explanation. No observer/superseded tab may start or act, including Start new session.
-- [ ] Add failing contract/server cases for live hand number advancing, authoritative
+- [x] Add failing contract/server cases for live hand number advancing, authoritative
   blinds/markers/current bet/increments, heads-up and short-blind cases, history
   pagination/reload, and outsider/left/revoked/cross-session denial. Assert hidden
   cards/candidate data/other-player receipts are absent; unavailable history is not
   silently rendered empty. Client tests discard previous account/session history.
-- [ ] Add failing action-panel cases: **Your turn** vs opponent name; Check vs Call
+- [x] Add failing action-panel cases: **Your turn** vs opponent name; Check vs Call
   amount; Bet vs Raise with total **Raise to** semantics; input/slider synchronization;
   presets change the selection without firing `onAction`; invalid/non-integer/out-of-range
   and short-all-in-only amounts block submission with inline errors. Timer/unrelated
@@ -350,30 +350,30 @@ history privacy and stale results after account/session change. Each is tested b
   silently submitting or replacing it. Double-click/pending sends one command; failed
   or stale commands show an error and sync legal actions. Uncertain acknowledgements
   retain the existing command identity/reconciliation flow, never blind resubmission.
-- [ ] Run `pnpm --filter @poker/server test --runTestsByPath test/poker.e2e-spec.ts`,
+- [x] Run `pnpm --filter @poker/server test --runTestsByPath test/poker.e2e-spec.ts`,
   `pnpm --filter @poker/contracts test` and
   `pnpm --filter @poker/web test -- PokerTable.test RoomLobby.test PokerActionPanel.test HandHistory.test hand-history.test`.
   Expected RED: missing metadata/history/editing/control behavior, not setup failures
   or assertions tied only to changed class names.
-- [ ] Implement the authoritative metadata and bounded history read, updating strict
+- [x] Implement the authoritative metadata and bounded history read, updating strict
   schemas and existing test fixtures. Keep all poker actions/rules, settlement/reward
   writes and recipient card privacy unchanged. History opens/collapses below the action
   panel without navigation, with loading/error/retry/empty states and committed winner,
   payout and result details; after reload it reads actual committed results.
-- [ ] Implement the specified page order: compact app header; actual room title,
+- [x] Implement the specified page order: compact app header; actual room title,
   hand/phase/blinds, connection indicator plus text and room-options menu; table;
   stable action panel; collapsed history. Apply Task 1's deliberate lobby/leave route.
   Keep host **End after this hand** in room options and visibly mark ending requested.
   Separate secondary/leave controls from betting; explain observer mode and label
   takeover **Use this tab to play**. Remove revision/control jargon from primary copy.
-- [ ] Arrange seats relative to the caller: You at bottom, heads-up opponent at top,
+- [x] Arrange seats relative to the caller: You at bottom, heads-up opponent at top,
   up to six seats around the perimeter in stable hand-seat order. Folding, acting,
   disconnect/reconnect and ordinary updates must not move a seat. Center the board/pot
   with subtle undealt slots; each bet sits inward near its seat. Show name/You, remaining
   stack, authorized visible/concealed cards, dealer/SB/BB markers and Folded/All-in/
   Disconnected status without overlap. Actor highlight includes text/timer as well as
   visual treatment; stack, current bet and total pot have distinct labels/positions.
-- [ ] Implement the stable panel below the table: readable secondary Fold, dynamic
+- [x] Implement the stable panel below the table: readable secondary Fold, dynamic
   Check/Call amount, Bet/Raise selected amount, numeric input, synchronized slider and
   legal Minimum/Maximum presets that only edit. Derive bounds/step from legal actions,
   timer from server deadline/time, and Bet/Raise from authoritative current bet; convert
@@ -382,7 +382,7 @@ history privacy and stale results after account/session change. Each is tested b
   feedback. Opponent turns/reconnecting/settling keep the panel stable and stale actions
   disabled with explanations; waiting explains player requirements; complete hands show
   winner/results/tickets. Announce actor/phase changes accessibly, not each timer tick.
-- [ ] Verify unit/server/contract GREEN and real browser flows at desktop 1440×1000
+- [x] Verify unit/server/contract GREEN and real browser flows at desktop 1440×1000
   and 1280×720, tablet 900×900, and mobile 360×800 with two/six accounts, long names,
   all-ins/side pots, reconnect, takeover, history and leave cancellation. Expected:
   table and primary actions together without desktop scrolling; no overlapping cards,
@@ -403,19 +403,19 @@ and `apps/web/tests/e2e/rooms.spec.ts`; extend `apps/server/test/rooms.e2e-spec.
 only where new acceptance coverage is needed. Reuse existing `RoomReply.invitation.token`
 and `room:join { token }`; the backend already returns a token, while the frontend builds the URL.
 
-- [ ] Write failing assertions that generation/rotation displays a selectable invite
+- [x] Write failing assertions that generation/rotation displays a selectable invite
   code and **Copy invite code** copies exactly that token, without origin/path/fragment.
   Add copy-success/failure feedback and tests for joining via pasted code, whitespace,
   empty/malformed/expired/rotated input and old-code rejection.
-- [ ] Run `pnpm --filter @poker/web test -- RoomLobby.test Lobby.test invitation.test`.
+- [x] Run `pnpm --filter @poker/web test -- RoomLobby.test Lobby.test invitation.test`.
   Expected RED: clipboard still contains a URL and code/feedback UI is absent.
-- [ ] Display/share the existing cryptographically random opaque token as the code;
+- [x] Display/share the existing cryptographically random opaque token as the code;
   do not replace it with a guessable short numeric code. Label the join input **Invite code**.
   Preserve expiry, rotation, host-only token delivery, hashing and retry-safe commands.
   Keep existing fragment-link parsing for previously shared invitations; new generation
   must display/copy only the code. Code entry must never place tokens in query strings,
   logs or persistent account storage; retain the bounded pending-sign-in storage rule.
-- [ ] Run unit GREEN, server room coverage and
+- [x] Run unit GREEN, server room coverage and
   `pnpm --filter @poker/web exec playwright test tests/e2e/rooms.spec.ts`.
   Expected: host copies code, Guest joins by code; old links remain readable; rotation
   invalidates the old code; non-host snapshots never expose it. Commit: `feat: share rooms with invite codes`.
@@ -436,25 +436,25 @@ entry points; a harness-only same-origin POST helper may invoke native sign-in a
 forward its session cookie. The app still uses real verified sessions/HTTP/socket guards.
 No registration, inbox lookup or credential typing is required from the tester.
 
-- [ ] Write failing browser cases for both ready accounts in separate browser contexts,
+- [x] Write failing browser cases for both ready accounts in separate browser contexts,
   stable distinct identities, create/join by code, sign-out and harness restart into
   a fresh isolated database. Add tests rejecting unrecognised mock selectors and
   invalid/missing Origin. Production must have no mock buttons, login helper or seeded
   identities; enabling a frontend test flag alone must not grant backend access.
-- [ ] Correct sign-in error mapping with failing `auth-client.test.ts` cases: an
+- [x] Correct sign-in error mapping with failing `auth-client.test.ts` cases: an
   origin/proxy/other 403 must not say **That registration code is not valid**; only
   the signup registration-code failure may use that message. Preserve wrong-password,
   unverified-email, rate-limit and unavailable states. Local setup must clearly use
   `http://127.0.0.1:3100`, not the untrusted `localhost` alias.
-- [ ] Run `pnpm --filter @poker/web test -- auth-client.test LocalMockAccounts.test`
+- [x] Run `pnpm --filter @poker/web test -- auth-client.test LocalMockAccounts.test`
   and the new browser fixture cases to capture RED, then implement the fixture/helpers and accurate error copy.
   Keep fixture creation/verification at the harness boundary; never add a production
   auth bypass, runtime balance grants or fake room players. User starts two real contexts.
-- [ ] Document the Windows launch verified in this session:
+- [x] Document the Windows launch verified in this session:
   `npm.cmd exec --yes --package=pnpm@10.33.0 --call "set npm_execpath=&& node apps/web/scripts/e2e-stack.mjs"`.
   Verify the launcher and nested build commands use pnpm 10.33.0 even with a global
   pnpm 12 installed. Do not edit the pinned packageManager merely to bypass its check.
-- [ ] Run focused GREEN and
+- [x] Run focused GREEN and
   `pnpm --filter @poker/web exec playwright test tests/e2e/local-mock-accounts.spec.ts tests/e2e/account-recovery.spec.ts`.
   Inspect the production web build and authenticated real server transport to prove
   mock helpers are absent and normal authentication remains enforced.
@@ -462,11 +462,11 @@ No registration, inbox lookup or credential typing is required from the tester.
 
 #### Completion gate for M5.1a
 
-- [ ] Use pinned pnpm 10.33.0 and `pnpm install --frozen-lockfile`, then `pnpm check`
+- [x] Use pinned pnpm 10.33.0 and `pnpm install --frozen-lockfile`, then `pnpm check`
   and the complete `CI=true` Chromium suite with zero retries. No lint script exists.
   Check Linux OpenNext Worker CI for the final task head. Record actual commands/results
   and scoped visual evidence; do not reuse prior passing counts for the changed candidate.
-- [ ] Review the whole task diff, update plan/checkpoint/release checklist, commit/push
+- [x] Review the whole task diff, update plan/checkpoint/release checklist, commit/push
   task-owned changes and open/update a PR to `dev` for manual merge. Keep draft while
   any gate is failing/unavailable. Re-fetch before handoff and report upstream drift.
 - [ ] Only after these new requirements pass, resume M5.2 remaining storage/key selection
