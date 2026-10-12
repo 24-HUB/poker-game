@@ -1,5 +1,27 @@
 # Checkpoint — Remaining phases through production
 
+## Automatic Render deployment — 2026-10-12 21:15 Bangkok (14:15 UTC)
+
+- User requested automatic Render updates. New clean branch
+  `codex/render-auto-deploy` from fetched `origin/dev` `0975b321` after PR #24 merge.
+  Configure `autoDeployTrigger: checksPass`; the existing GitHub CI runs on `dev`
+  pushes. No new deploy workflow or provider credentials required.
+- Preserve manual owner PR merge and document native Blueprint sync, schema-change
+  deployment pause, live migration prerequisites and active-play drain. Cloudflare
+  automation remains separate. No live deployment, provider update or Atlas operation.
+- Baseline assertion failed as expected (`off` instead of `checksPass`). Final
+  YAML/CI parsing and semantic comparison passed: only the deployment trigger
+  changes, `dev` remains linked and has push CI with `pnpm check`. Complete task
+  diff review and `git diff --check` passed. No application code changes or local
+  application tests rerun. Normal PR CI and hosted auto-deploy evidence pending.
+- Implementation commit `a4b8ac7e` is pushed in draft
+  [PR #25](https://github.com/24-HUB/poker-game/pull/25), base `dev`.
+  Next: inspect final-head CI, then owner reviews/merges manually and confirms
+  Render's synced setting is **After CI Checks Pass** for `dev`.
+- Usage observed at 14:15 UTC: five-hour 96% remaining; weekly 44% remaining.
+
+---
+
 ## Render Free Blueprint validation fix — 2026-10-12 19:49 Bangkok (12:49 UTC)
 
 - Clean task branch `codex/render-free-blueprint` from fetched `origin/dev`

@@ -5,7 +5,7 @@ services:
     plan: free
     region: singapore
     branch: dev
-    autoDeployTrigger: "off"
+    autoDeployTrigger: checksPass
     buildCommand: corepack enable && corepack prepare pnpm@10.33.0 --activate && pnpm install --frozen-lockfile && pnpm build:server
     startCommand: pnpm --filter @poker/server start
     healthCheckPath: /health/deploy

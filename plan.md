@@ -520,6 +520,23 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Automatic Render deployment requested — 2026-10-12
+
+The user requested automatic backend updates after asking about manual Render
+deployment. Branch `codex/render-auto-deploy` starts clean from freshly fetched
+`origin/dev` `0975b321` (PR #24 merged). Change `render.yaml` to
+`autoDeployTrigger: checksPass` for `dev`; the existing CI push trigger supplies
+the checks. Owner PR merge remains manual. Native Render deployment needs no
+GitHub deploy workflow or provider credential in CI. Cloudflare automation is
+outside this change. See `docs/deployment.md` for migration/Blueprint-sync pauses
+and active-play drain before a release. Operator reports hosted setup progress,
+but this task does not claim hosted acceptance or perform provider/live-data work.
+Verification and PR handoff are recorded in `CHECKPOINT.md`.
+Implementation `a4b8ac7e` is pushed in draft
+[PR #25](https://github.com/24-HUB/poker-game/pull/25), base `dev`.
+YAML/CI parsing, semantic comparison and diff checks passed; normal PR CI and
+hosted activation remain pending. User merges manually.
+
 ### Render Free Blueprint validation fix — 2026-10-12
 
 The operator's Render creation screen rejected `services[0].maxShutdownDelaySeconds`

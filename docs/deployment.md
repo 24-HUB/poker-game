@@ -6,12 +6,19 @@ especially M5 hosted acceptance, M6 authorized production cutover, and M7
 operations. The steps below remain the original preparation baseline, not
 evidence of a live deployment. The actual frontend adapter is OpenNext.
 
-Deployment is intentionally manual. This repository prepares configuration and smoke checks but does not authorize creating provider resources, applying migrations to a live database, uploading secrets, or deploying either service.
+The user requested automatic Render deployments on 2026-10-12. After this
+configuration is manually merged into `dev` and synced by the existing Render
+Blueprint, Render deploys that branch after its GitHub CI checks pass. PR merges
+remain manual. This change does not provision services, upload secrets or apply
+live database migrations; Cloudflare deployment behavior is configured separately.
 
 ## Provider layout
 
 - Cloudflare Workers serves the Next.js application and proxies only `/api/*` and `/socket.io/*` to the fixed Render backend.
-- Render runs the NestJS server from `render.yaml`. Automatic deploys are disabled and `/health/deploy` is the deployment health check.
+- Render runs the NestJS server from `render.yaml`. `autoDeployTrigger: checksPass`
+  waits for the linked `dev` commit's CI checks; `/health/deploy` remains its
+  deployment health check. The existing GitHub Actions workflow runs on pushes
+  to `dev`, so no deploy hook, Render API key or additional workflow is needed.
 - Render Free rejects an explicit `maxShutdownDelaySeconds` setting, including
   `30`. Omit it and use the provider's default shutdown period. If Blueprint
   creation reports this error, load the corrected `dev` revision after manual
@@ -39,7 +46,23 @@ Configure these values in provider dashboards; never commit their live values.
 | Render | `BREVO_SENDER_EMAIL` | Sender address controlled and verified by the release operator |
 | Render | `BREVO_SENDER_NAME` | Sender display name; defaults to Looking Glass Club |
 
-Wrangler keeps dashboard-defined variables during builds. The repository contains no deploy workflow and no Cloudflare or Render credentials. When deployment is separately authorized, scope provider tokens to the single service and run migrations as a controlled step before the manual Render deploy; the free Render plan does not provide a pre-deploy migration step.
+Wrangler keeps dashboard-defined variables during builds. The repository contains
+no provider-deploy workflow and no Cloudflare or Render credentials. Render's
+native CI integration reads the existing workflow results. In the Render service
+settings, confirm the linked branch is `dev` and Auto-Deploy says **After CI Checks
+Pass** after Blueprint sync. Render treats successful, neutral and skipped GitHub
+checks as passing; zero detected checks or a failed check blocks automatic deploys.
+See [Render's CI integration](https://render.com/docs/deploys#integrating-with-ci).
+
+Before merging a schema-dependent release, disable Auto-Deploy and pause automatic
+Blueprint sync so the merge cannot re-enable deployment while migrations are
+pending. Drain active play, take the required backup, apply approved migrations
+from an operator context and verify compatibility before resuming deployment.
+Render Free has no pre-deploy migration command. Never add live Atlas credentials
+to the disposable CI migration step. For an ordinary backend release, finish active
+play before merging: replacement can abort an unfinished hand, while committed
+progress survives. Cloudflare and Render releases are independent, not an atomic
+rollout; coordinate compatible frontend/backend changes explicitly.
 
 ## Session admission and maintenance
 
