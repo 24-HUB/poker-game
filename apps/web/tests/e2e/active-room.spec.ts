@@ -39,9 +39,9 @@ test('waiting recovery and active navigation use the real caller membership and 
     await guest.getByRole('button', { name: 'Use this tab to play' }).click();
     await expect(guest.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     guest.once('dialog', (dialog) => void dialog.dismiss());
-    await guest.getByRole('button', { name: 'Back to lobby' }).click();
+    await guest.getByRole('button', { name: 'Lobby', exact: true }).click();
     await expect(guest.getByRole('region', { name: 'Poker table' })).toBeVisible();
-    await guest.getByText('Leave table to navigate', { exact: true }).click();
+    await guest.getByLabel('Room options', { exact: true }).click();
     guest.once('dialog', (dialog) => void dialog.accept());
     await guest.getByRole('button', { name: 'Collection', exact: true }).click();
     await expect(guest).toHaveURL(/\/collection$/);
@@ -49,7 +49,7 @@ test('waiting recovery and active navigation use the real caller membership and 
     // The left seat remains in the hand; normal timeout/settlement ends the session.
     await host.getByRole('button', { name: 'Use this tab to play' }).click();
     host.once('dialog', (dialog) => void dialog.accept());
-    await host.getByText('Room options', { exact: true }).click();
+    await host.getByLabel('Room options', { exact: true }).click();
     await host.getByRole('button', { name: 'End after this hand' }).click();
     await host.getByRole('button', { name: 'Fold' }).click();
     await expect(host.getByRole('heading', { name: 'Session standings' })).toBeVisible({ timeout: 40_000 });

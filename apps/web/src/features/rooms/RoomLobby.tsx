@@ -2,7 +2,7 @@
 
 import type { RoomView } from '@poker/contracts';
 import { useState } from 'react';
-import { Copy, Link2, LogOut, RefreshCw, ShieldCheck, UserRound } from 'lucide-react';
+import { Copy, Link2, LogOut, RefreshCw, ShieldCheck } from 'lucide-react';
 
 import { Icon } from '../../components/ui/Icon';
 import type { RoomConnectionStatus } from './useRoomConnection';
@@ -67,7 +67,7 @@ export function RoomLobby({
                   <span className="room-seat__number">Seat {seat + 1}</span>
                   {member ? (
                     <>
-                      <span className="room-seat__avatar"><Icon icon={UserRound} /></span>
+                      <img className="room-seat__avatar" src="/art/hostess.png" alt={`${member.displayName}'s default avatar`} width="48" height="48" />
                       <strong>{member.displayName}{member.accountId === accountId ? ' (you)' : ''}</strong>
                       <small>{member.connected ? 'Connected' : 'Reconnecting'}{member.accountId === room.hostAccountId ? ' · Host' : ''}</small>
                     </>

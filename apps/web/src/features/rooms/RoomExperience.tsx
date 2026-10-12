@@ -110,7 +110,7 @@ export function RoomExperience({ roomId }: { roomId: string }) {
     const bootId = requireBootId();
     const activeHand = activeRoom.phase === 'playing' && game?.handId &&
       game.handPhase !== null && !['result', 'settling'].includes(game.handPhase);
-    if (!bootId || (activeHand && !window.confirm('Leave this room? Your seat stays in the current session until it ends.'))) return;
+    if (!bootId || (activeRoom.phase === 'playing' && !window.confirm(activeHand ? 'Leave table? Your seat stays in this session until it ends.' : 'Leave table and return to the lobby?'))) return;
     leaveDestination.current = destination;
     void run(createMutationCommand('room:leave', bootId, {
       roomId, controlEpoch: activeRoom.control.epoch,
@@ -138,7 +138,7 @@ export function RoomExperience({ roomId }: { roomId: string }) {
   }
 
   if (currentRoom.phase === 'playing' || game?.sessionPhase === 'ended') {
-    return <>{exitControls}<PokerTable room={currentRoom} game={game} accountId={accountId} status={status}
+    return <>{pendingCommand ? exitControls : null}<PokerTable room={currentRoom} game={game} accountId={accountId} status={status}
       pending={pendingGameCommand !== null} message={message} onAction={act} onEnd={endSession}
       onStart={startSession} onLeave={() => leave()} onClaimControl={claimControl}
       onRetryPending={() => void retryPendingGame().then((result) => {

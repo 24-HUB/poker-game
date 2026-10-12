@@ -17,12 +17,30 @@ const game: GameView = {
 const props = { game, accountId: 'a', status: 'connected' as const, pending: false, message: null, onAction: vi.fn(), onRetryPending: vi.fn() };
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
 describe('PokerActionPanel', () => {
+  it('keeps three disabled action positions while hiding the amount editor off turn', () => {
+    render(<PokerActionPanel {...props} game={{ ...game, actorAccountId: 'b', legalActions: { canFold: false, canCheck: false, callAmount: 0, raise: null } }} />);
+    expect(screen.getByRole('button', { name: 'Fold' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Call 10' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Raise' })).toBeDisabled();
+    expect(screen.queryByRole('spinbutton')).not.toBeInTheDocument();
+    expect(screen.queryByRole('slider')).not.toBeInTheDocument();
+  });
+  it('sizes pot presets after calling and clamps them to server-authorized bounds', () => {
+    render(<PokerActionPanel {...props} game={{ ...game, pots: [{ amount: 100, eligibleAccountIds: ['a', 'b'] }] }} />);
+    fireEvent.click(screen.getByRole('button', { name: '½ pot' }));
+    expect(screen.getByRole('spinbutton')).toHaveValue(75);
+    fireEvent.click(screen.getByRole('button', { name: 'Pot' }));
+    expect(screen.getByRole('spinbutton')).toHaveValue(130);
+    fireEvent.click(screen.getByRole('button', { name: 'All-in' }));
+    expect(screen.getByRole('spinbutton')).toHaveValue(1000);
+    expect(props.onAction).not.toHaveBeenCalled();
+  });
   it('names the turn once during play while retaining actor context for an observer', () => {
     const view = render(<PokerActionPanel {...props} />);
     expect(screen.getByText('Your turn')).toBeVisible();
     expect(screen.queryByText('Turn: Alice')).not.toBeInTheDocument();
     view.rerender(<PokerActionPanel {...props} game={{ ...game, actorAccountId: 'b' }} />);
-    expect(screen.getByText('Waiting for Bob')).toBeVisible();
+    expect(screen.getByText('Bob is acting')).toBeVisible();
     expect(screen.queryByText('Turn: Bob')).not.toBeInTheDocument();
     view.rerender(<PokerActionPanel {...props} game={{ ...game, actorAccountId: 'b', control: { isController: false, epoch: 2 } }} />);
     expect(screen.getByText('Turn: Bob')).toBeVisible();
@@ -31,7 +49,7 @@ describe('PokerActionPanel', () => {
   it('blocks betting for an aborted session even if an old snapshot retains legal actions', () => {
     render(<PokerActionPanel {...props} game={{ ...game, sessionPhase: 'aborted' }} />);
     expect(screen.getByRole('button', { name: 'Fold' })).toBeDisabled();
-    expect(screen.getByRole('button', { name: 'Raise 40' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Raise to 40' })).toBeDisabled();
     expect(screen.getByText(/Session interrupted/)).toBeVisible();
   });
   it('edits using input, slider and presets without submitting; preserves ordinary edits', () => {
@@ -45,14 +63,14 @@ describe('PokerActionPanel', () => {
     expect(screen.getByRole('spinbutton', { name: 'Raise to' })).toHaveValue(200);
     fireEvent.click(screen.getByRole('button', { name: 'Maximum' }));
     expect(props.onAction).not.toHaveBeenCalled();
-    fireEvent.click(screen.getByRole('button', { name: 'Raise 1000' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Raise 1000' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Raise to 1000' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Raise to 1000' }));
     expect(props.onAction).toHaveBeenCalledExactlyOnceWith({ type: 'raise', raiseTo: 1000 });
   });
   it.each(['', '39', '1001', '40.5'])('rejects invalid amount %s with inline feedback', (value) => {
     render(<PokerActionPanel {...props} />);
     fireEvent.change(screen.getByRole('spinbutton', { name: 'Raise to' }), { target: { value } });
-    expect(screen.getByRole('button', { name: /^Raise \d|^Raise$/ })).toBeDisabled();
+    expect(screen.getByRole('button', { name: /^Raise to \d|^Raise$/ })).toBeDisabled();
     expect(screen.getByText(/Enter a whole-chip amount/)).toBeVisible();
   });
   it('revalidates limits without silently replacing the selection and enforces short all-in', () => {
@@ -60,9 +78,9 @@ describe('PokerActionPanel', () => {
     fireEvent.change(screen.getByRole('spinbutton', { name: 'Raise to' }), { target: { value: '200' } });
     view.rerender(<PokerActionPanel {...props} game={{ ...game, legalActions: { ...game.legalActions, raise: { minRaiseTo: 55, maxRaiseTo: 55, amountStep: 1, shortAllInOnly: true } } }} />);
     expect(screen.getByRole('spinbutton', { name: 'Raise to' })).toHaveValue(200);
-    expect(screen.getByRole('button', { name: 'Raise 200' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Raise to 200' })).toBeDisabled();
     fireEvent.click(screen.getByRole('button', { name: 'Minimum' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Raise 55' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Raise to 55' }));
     expect(props.onAction).toHaveBeenCalledWith({ type: 'raise', raiseTo: 55 });
   });
   it('shows opponent and transport explanations and derives Bet/Check from legal state', () => {
@@ -70,7 +88,7 @@ describe('PokerActionPanel', () => {
     expect(screen.getByRole('button', { name: 'Check' })).toBeEnabled();
     expect(screen.getByRole('button', { name: 'Bet 40' })).toBeEnabled();
     view.rerender(<PokerActionPanel {...props} game={{ ...game, actorAccountId: 'b' }} />);
-    expect(screen.getByText('Waiting for Bob')).toBeVisible();
+    expect(screen.getByText('Bob is acting')).toBeVisible();
     expect(screen.getByRole('button', { name: 'Fold' })).toBeDisabled();
     view.rerender(<PokerActionPanel {...props} status="reconnecting" />);
     expect(screen.getByText(/Reconnecting.*actions are unavailable/)).toBeVisible();

@@ -31,6 +31,36 @@ const props: PokerTableProps = { room, game, accountId: 'host', status: 'connect
 
 describe('PokerTable', () => {
   afterEach(cleanup);
+  it('marks the acting portrait urgent in the final five seconds with a visible acting label', () => {
+    const now = Date.now();
+    render(<PokerTable {...props} game={{ ...game, serverTime: new Date(now).toISOString(), deadline: new Date(now + 4000).toISOString() }} />);
+    expect(screen.getByRole('img', { name: /Host's default avatar/ }).parentElement).toHaveClass('poker-seat__portrait--acting', 'poker-seat__portrait--urgent');
+    expect(screen.getByText('Acting · 4s')).toBeVisible();
+  });
+  it('shows default player portraits and empty community slots instead of hidden board cards', () => {
+    render(<PokerTable {...props} />);
+    expect(screen.getByRole('img', { name: /Host's default avatar/ })).toBeVisible();
+    expect(screen.getAllByLabelText('Empty community card slot')).toHaveLength(5);
+    expect(screen.queryByLabelText('Undealt card')).not.toBeInTheDocument();
+  });
+  it('does not announce an earlier hand winner during the next hand', () => {
+    render(<PokerTable {...props} game={{ ...game, handResult: { handId: 'previous', handNumber: 1, winners: ['guest'] } as NonNullable<GameView['handResult']> }} />);
+    expect(screen.queryByText(/Winner:/)).not.toBeInTheDocument();
+  });
+  it('retains the final numbered result when the ended session clears its live hand ID', () => {
+    render(<PokerTable {...props} game={{ ...game, sessionPhase: 'ended', handId: null, handPhase: null, handResult: { handId: 'hand-a', handNumber: 1, winners: ['guest'], revealedCards: [{ accountId: 'guest', cards: [0, 13] }] } as NonNullable<GameView['handResult']> }} />);
+    expect(screen.getByRole('heading', { name: 'Hand 1 result' })).toBeVisible();
+    expect(screen.getByText('Winner: Guest')).toBeVisible();
+    expect(screen.getByText('Showdown: Guest 2♣ 2♦')).toBeVisible();
+  });
+  it('offers four-colour suits without changing the ranks or exposing hidden cards', () => {
+    render(<PokerTable {...props} />);
+    fireEvent.click(screen.getByText('Room options', { exact: true }));
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Four-colour suits' }));
+    expect(screen.getByRole('region', { name: 'Poker table' })).toHaveClass('poker-table--four-colour');
+    expect(screen.getByLabelText('Your cards')).toHaveTextContent('2♣2♦');
+    expect(screen.getByLabelText('Hidden cards')).not.toHaveTextContent('2♣');
+  });
   it('keeps the caller marker separate from a long player name', () => {
     render(<PokerTable {...props} game={{ ...game, participants: game.participants.map((player) => player.accountId === 'host' ? { ...player, displayName: 'Alexandria Through the Looking Glass' } : player) }} />);
     expect(screen.getByText('(you)', { exact: true })).toBeVisible();
@@ -77,9 +107,9 @@ describe('PokerTable', () => {
     view.rerender(<PokerTable {...props} onAction={onAction} game={{ ...game, gameVersion: 1 }} />);
     const input = screen.getByRole('spinbutton', { name: /raise to/i });
     fireEvent.change(input, { target: { value: '39' } });
-    expect(screen.getByRole('button', { name: 'Raise 39' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Raise to 39' })).toBeDisabled();
     fireEvent.change(input, { target: { value: '40' } });
-    fireEvent.click(screen.getByRole('button', { name: 'Raise 40' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Raise to 40' }));
     expect(onAction).toHaveBeenCalledWith({ type: 'raise', raiseTo: 40 });
   });
 
@@ -87,7 +117,7 @@ describe('PokerTable', () => {
     render(<PokerTable {...props} room={{ ...room, control: { isController: false, epoch: 1 } }}
       game={{ ...game, control: { isController: false, epoch: 1 },
       legalActions: { canFold: false, canCheck: false, callAmount: 0, raise: null } }} />);
-    expect(screen.queryByRole('button', { name: 'Call 10' })).not.toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Call 10' })).toBeDisabled();
     expect(screen.getByRole('button', { name: 'Use this tab to play' })).toBeVisible();
     expect(screen.getByLabelText('Your cards')).toHaveTextContent('2♣');
     expect(screen.getByLabelText('Hidden cards')).not.toHaveTextContent('2♣');

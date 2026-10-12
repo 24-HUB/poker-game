@@ -1,7 +1,11 @@
 'use client';
 
 import type { GameView, PokerAction, RoomView } from '@poker/contracts';
+import { useState } from 'react';
+import { ArrowLeft, Coins, Settings, X } from 'lucide-react';
 import { PokerActionPanel } from './PokerActionPanel';
+import { useTurnClock } from './useTurnClock';
+import { useActiveRoom } from './ActiveRoomBoundary';
 
 import type { RoomConnectionStatus } from './useRoomConnection';
 import { HandReward } from '../wallet/HandReward';
@@ -29,21 +33,31 @@ export type PokerTableProps = {
 
 export function PokerTable({ room, game, accountId, status, pending, message,
   onAction, onEnd, onStart, onLeave, onClaimControl, onRetryPending }: PokerTableProps) {
+  const [fourColour, setFourColour] = useState(false);
+  const [dismissedResult, setDismissedResult] = useState<string | null>(null);
+  const seconds = useTurnClock(game);
+  const navigation = useActiveRoom();
   const host = room.hostAccountId === accountId;
   const canStart = host && room.phase === 'waiting' && room.members.filter((member) => member.seat !== null).length >= 2;
 
-  return <section className="poker-table" aria-label="Poker table">
+  const committed = game?.handResult;
+  const result = committed && game && (committed.handId === game.handId || game.sessionPhase === 'ended' && committed.handNumber === game.handNumber)
+    && committed.handId !== dismissedResult ? committed : null;
+  return <section className={`poker-table${fourColour ? ' poker-table--four-colour' : ''}`} aria-label="Poker table">
     <header className="poker-table__header">
+      <button type="button" className="poker-lobby-button" onClick={onLeave}><ArrowLeft aria-hidden="true" /> Lobby</button>
       <div><h1 title={room.title}>{room.title}</h1>
-        <div className="poker-table__details"><p>Hand {game?.handNumber ?? '…'} · {game?.handPhase ?? 'Waiting for the next hand'} · Blinds {game?.smallBlind ?? '…'}/{game?.bigBlind ?? '…'}</p>
+        <div className="poker-table__details"><p>Hand {game?.handNumber ?? '…'} <span className="poker-street">{game?.handPhase ?? 'Waiting'}</span> <span aria-label="Blinds">{game?.smallBlind ?? '…'}/{game?.bigBlind ?? '…'}</span></p>
         <span className={`connection-state connection-state--${status}`}>{status === 'connected' ? 'Connected' : status === 'unavailable' ? 'Service unavailable' : 'Reconnecting'}</span></div></div>
       <div className="poker-table__session-actions">
         {canStart ? <button type="button" className="primary-button" disabled={pending || status !== 'connected' || !room.control.isController} onClick={onStart}>Start new session</button> : null}
         {!room.control.isController ? <><p>You are watching from this tab. Take over to play or leave.</p><button type="button" className="secondary-button" disabled={pending || status !== 'connected'} onClick={onClaimControl}>Use this tab to play</button></> : null}
-        <details className="room-options"><summary>Room options</summary>
+        <details className="room-options"><summary aria-label="Room options"><Settings aria-hidden="true" /><span className="sr-only">Room options</span></summary>
+          <label className="poker-suit-option"><input type="checkbox" checked={fourColour} onChange={(event) => setFourColour(event.target.checked)} /> Four-colour suits</label>
           {host && game?.sessionPhase !== 'ended' ? <><button type="button" className="secondary-button" disabled={pending || !room.control.isController || status !== 'connected' || game?.sessionPhase === 'ending'} onClick={onEnd}>End after this hand</button>
             {game?.sessionPhase === 'ending' ? <p>Ending requested. This hand will finish first.</p> : !room.control.isController ? <p>Use this tab to play to manage the session.</p> : null}</> : null}
           <button type="button" className="text-button" disabled={pending || status !== 'connected' || !room.control.isController} onClick={onLeave}>Leave room</button>
+          {navigation ? <><button type="button" className="text-button" onClick={() => navigation.navigate('/collection')}>Collection</button><button type="button" className="text-button" onClick={() => navigation.navigate('/pulls')}>Invitations</button></> : null}
         </details>
       </div>
     </header>
@@ -52,8 +66,8 @@ export function PokerTable({ room, game, accountId, status, pending, message,
         <div className="poker-table__center">
         <div className="poker-table__board" aria-label="Community cards">
           {Array.from({ length: 5 }, (_, index) => game.board[index] === undefined
-            ? <span className="poker-card poker-card--back" key={index} aria-label="Undealt card">✦</span>
-            : <span className={`poker-card poker-card--${cardColor(game.board[index]!)}`} key={index}>{cardLabel(game.board[index]!)}</span>)}
+            ? <span className="poker-card poker-card--empty" key={index} aria-label="Empty community card slot" />
+            : <Card card={game.board[index]!} key={`${index}:${game.board[index]}`} community />)}
         </div>
         <p className="poker-table__pot">{game.handPhase === 'result' || game.sessionResult
           ? game.pots.map((pot, index) =>
@@ -63,27 +77,32 @@ export function PokerTable({ room, game, accountId, status, pending, message,
         <ul className="poker-table__seats" aria-label="Players">
           {seatPositions(game, accountId).map(({ participant, position }) => <li key={participant.accountId} data-position={position}
             className={participant.accountId === game.actorAccountId ? 'poker-seat poker-seat--acting' : 'poker-seat'}>
-            {participant.equipment?.avatar ? <img className="poker-seat__avatar" src={participant.equipment.avatar.assetUrl} alt={`${participant.displayName}'s ${participant.equipment.avatar.name} avatar`} width="48" height="48" /> : null}
+            <div className={`poker-seat__portrait${participant.accountId === game.actorAccountId ? ' poker-seat__portrait--acting' : ''}${seconds !== null && seconds <= 5 ? ' poker-seat__portrait--urgent' : ''}`}>
+              <img className="poker-seat__avatar" src={participant.equipment?.avatar?.assetUrl ?? '/art/hostess.png'} alt={`${participant.displayName}'s ${participant.equipment?.avatar?.name ?? 'default'} avatar`} width="48" height="48" />
+              {participant.accountId === game.actorAccountId && seconds !== null ? <svg className="poker-seat__clock" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="26" pathLength="100" /><circle cx="28" cy="28" r="26" pathLength="100" strokeDasharray={`${Math.min(100, seconds / 30 * 100)} 100`} /></svg> : null}
+            </div>
             <strong title={participant.displayName}><span className="poker-seat__name">{participant.displayName}</span>{participant.accountId === accountId ? <span className="poker-seat__you"> (you)</span> : null}</strong>
-            <span className="poker-seat__stack">Stack: {participant.stack} chips</span>
-            <span className="poker-seat__bet">Bet: {participant.streetContribution}</span>
-            <small>{participant.folded ? 'Folded' : participant.allIn ? 'All-in' : participant.connected ? 'At table' : 'Disconnected'}
-              {participant.accountId === game.actorAccountId ? ' · Acting' : ''}
-              {participant.seat === game.buttonSeat ? ' · Dealer' : ''}
-              {participant.seat === game.smallBlindSeat ? ' · SB' : ''}
-              {participant.seat === game.bigBlindSeat ? ' · BB' : ''}</small>
+            <span className="poker-seat__stack" aria-label={`Stack: ${participant.stack} chips`}><Coins aria-hidden="true" />{participant.stack}</span>
+            {participant.streetContribution > 0 ? <span className="poker-seat__bet" aria-label={`${participant.displayName}'s bet: ${participant.streetContribution}`}><Coins aria-hidden="true" />{participant.streetContribution}</span> : null}
+            <span className="poker-seat__markers">
+              {participant.folded ? <span>Folded</span> : participant.allIn ? <span>All-in</span> : !participant.connected ? <span>Disconnected</span> : null}
+              {participant.accountId === game.actorAccountId ? <span className="poker-seat__acting-label">Acting{seconds === null ? '' : ` · ${seconds}s`}</span> : null}
+              {participant.seat === game.buttonSeat ? <span className="poker-dealer" aria-label="Dealer">D</span> : null}
+              {participant.seat === game.smallBlindSeat ? <span className="poker-blind" aria-label="Small blind">SB</span> : null}
+              {participant.seat === game.bigBlindSeat ? <span className="poker-blind" aria-label="Big blind">BB</span> : null}
+            </span>
             {participant.accountId === accountId && game.holeCards ? <span className="poker-seat__cards" aria-label="Your cards">
-              {game.holeCards.map((card) => <span className={`poker-card poker-card--${cardColor(card)}`} key={card}>{cardLabel(card)}</span>)}
+              {game.holeCards.map((card) => <Card card={card} key={card} />)}
             </span> : <span className="poker-seat__cards" aria-label="Hidden cards">{[0, 1].map((index) => <span className="poker-card poker-card--back" key={index}>
               {participant.equipment?.cardBack ? <img src={participant.equipment.cardBack.assetUrl} alt="" width="35" height="48" /> : '✦'}</span>)}</span>}
           </li>)}
         </ul>
       </div>
       <PokerActionPanel key={`${accountId}:${game.sessionId}:${game.handId}`} game={game} accountId={accountId} status={status} pending={pending} message={message} onAction={onAction} onRetryPending={onRetryPending} />
-      {game.handResult ? <div className="poker-table__result"><h2>Hand result</h2>
-        <p>Winner: {game.handResult.winners.map((id) => game.participants.find((player) => player.accountId === id)?.displayName ?? id).join(', ')}</p>
-        <HandReward receipt={game.handResult.rewardReceipts?.find((receipt) => receipt.accountId === accountId)} />
-        {game.revealedCards.length ? <p>Showdown: {game.revealedCards.map((entry) => `${game.participants.find((player) => player.accountId === entry.accountId)?.displayName ?? entry.accountId} ${entry.cards.map(cardLabel).join(' ')}`).join(' · ')}</p> : null}
+      {result ? <div className="poker-table__result poker-result-toast" role="status"><button type="button" aria-label="Dismiss hand result" onClick={() => setDismissedResult(result.handId)}><X aria-hidden="true" /></button><h2>Hand {result.handNumber} result</h2>
+        <p>Winner: {result.winners.map((id) => game.participants.find((player) => player.accountId === id)?.displayName ?? id).join(', ')}</p>
+        <HandReward receipt={result.rewardReceipts?.find((receipt) => receipt.accountId === accountId)} />
+        {result.revealedCards.length ? <p>Showdown: {result.revealedCards.map((entry) => `${game.participants.find((player) => player.accountId === entry.accountId)?.displayName ?? entry.accountId} ${entry.cards.map(cardLabel).join(' ')}`).join(' · ')}</p> : null}
       </div> : null}
       {game.sessionResult ? <div className="poker-table__result"><h2>Session standings</h2>
         <ol>{[...game.sessionResult.standings].sort((a, b) => b.stack - a.stack).map((entry) => <li key={entry.accountId}>
@@ -91,6 +110,10 @@ export function PokerTable({ room, game, accountId, status, pending, message,
         </li>)}</ol></div> : null}
     </>}
   </section>;
+}
+
+function Card({ card, community = false }: { card: number; community?: boolean }) {
+  return <span aria-label={cardLabel(card)} className={`poker-card poker-card--${cardColor(card)} poker-card--suit-${Math.floor(card / 13)}${community ? ' poker-card--dealt' : ''}`}><span>{ranks[card % 13]}</span><span>{suits[Math.floor(card / 13)]}</span></span>;
 }
 
 function seatPositions(game: GameView, accountId: string) {

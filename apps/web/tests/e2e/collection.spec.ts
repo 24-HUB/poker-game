@@ -52,7 +52,7 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
         await guest.getByRole('button', { name: /^Call / }).click();
       }
       await expect(host.getByRole('button', { name: 'Fold', exact: true })).toBeEnabled();
-      if (i === 4) { host.once('dialog', (dialog) => void dialog.accept()); await host.getByText('Room options', { exact: true }).click();
+      if (i === 4) { host.once('dialog', (dialog) => void dialog.accept()); await host.getByLabel('Room options', { exact: true }).click();
     await host.getByRole('button', { name: 'End after this hand' }).click(); }
       await host.getByRole('button', { name: 'Fold', exact: true }).click();
       await expect(host.getByLabel(`${i + 1} tickets, ${19 - i} can be earned today`)).toBeVisible();
@@ -164,7 +164,7 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     expect(cards).not.toContain(item.name);
     // Finish this second session before the next test needs the global admission slot.
     guest.once('dialog', (dialog) => void dialog.accept());
-    await guest.getByText('Room options', { exact: true }).click();
+    await guest.getByLabel('Room options', { exact: true }).click();
     await guest.getByRole('button', { name: 'End after this hand' }).click();
     await expect(guest.getByText('The session will end after this hand.')).toBeVisible();
     await expect(host.getByRole('button', { name: 'Fold', exact: true })).toBeEnabled();

@@ -80,9 +80,24 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
       const height = await page.evaluate(() => innerHeight);
       expect(ownCards!.y + ownCards!.height, 'Private cards fit above the controls').toBeLessThanOrEqual(actions!.y);
       expect(actions!.y + actions!.height, 'Primary controls fit in the viewport').toBeLessThanOrEqual(height);
-      const bet = await page.locator('.poker-seat[data-position="bottom"] .poker-seat__bet').boundingBox();
+      const ownBet = page.locator('.poker-seat[data-position="bottom"] .poker-seat__bet');
+      const bet = await ownBet.count() ? await ownBet.boundingBox() : null;
       const center = await page.locator('.poker-table__center').boundingBox();
-      expect(center!.y + center!.height, 'The pot and inward bet do not overlap').toBeLessThanOrEqual(bet!.y);
+      if (bet) expect(center!.y + center!.height, 'The pot and inward bet do not overlap').toBeLessThanOrEqual(bet.y);
+      await expect(page.locator('.poker-seat__avatar')).toHaveCount(6);
+      expect(await page.locator('.poker-seat__avatar').evaluateAll((images) => images.every((image) => getComputedStyle(image).display !== 'none'))).toBe(true);
+      expect(await page.locator('.poker-seat__markers > span').evaluateAll((labels) => labels.every((label) => parseFloat(getComputedStyle(label).fontSize) >= 12))).toBe(true);
+      const controlContrast = await page.locator('.poker-table__actions button, .poker-amount-presets button').evaluateAll((buttons) => {
+        const luminance = (colour: string) => colour.match(/\d+/g)!.slice(0, 3).map(Number).map((value) => value / 255)
+          .map((value) => value <= .04045 ? value / 12.92 : ((value + .055) / 1.055) ** 2.4)
+          .reduce((sum, value, index) => sum + value * [.2126, .7152, .0722][index]!, 0);
+        return buttons.map((button) => {
+          const style = getComputedStyle(button);
+          const foreground = luminance(style.color), background = luminance(style.backgroundColor);
+          return (Math.max(foreground, background) + .05) / (Math.min(foreground, background) + .05);
+        });
+      });
+      expect(Math.min(...controlContrast), 'Action and preset text, including disabled controls, meets 4.5:1').toBeGreaterThanOrEqual(4.5);
     }
     await assertTableVisibility(host);
     const feltContrast = await host.locator('.poker-table__felt').evaluate((felt) => {
@@ -125,17 +140,17 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
       await expect(actor.getByRole('list', { name: 'Players' }).getByRole('listitem')
         .filter({ hasText: '(you)' }).getByText('Folded', { exact: false })).toBeVisible();
     }
-    await expect(host.getByRole('heading', { name: 'Hand result' })).toBeVisible();
+    await expect(host.getByRole('heading', { name: /^Hand \d+ result$/ })).toBeVisible();
     const actor = await actingPage(pages);
     host.once('dialog', (dialog) => void dialog.accept());
-    await host.getByText('Room options', { exact: true }).click();
+    await host.getByLabel('Room options', { exact: true }).click();
     await host.getByRole('button', { name: 'End after this hand' }).click();
     await expect(host.getByText('The session will end after this hand.')).toBeVisible();
     const raiseInput = actor.getByRole('spinbutton', { name: /Raise to/ });
     const maximum = await raiseInput.getAttribute('max');
     expect(maximum).not.toBeNull();
     await raiseInput.fill(maximum!);
-    const raiseButton = actor.getByRole('button', { name: /^Raise \d+$/, exact: true });
+    const raiseButton = actor.getByRole('button', { name: /^Raise to \d+$/, exact: true });
     await raiseInput.press('Tab');
     await expect(actor.getByRole('slider', { name: 'Raise amount' })).toBeFocused();
     await actor.keyboard.press('Tab');
@@ -143,6 +158,12 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
     await actor.keyboard.press('Tab');
     await expect(actor.getByRole('button', { name: 'Maximum' })).toBeFocused();
     await actor.keyboard.press('Tab');
+    await expect(actor.getByRole('button', { name: '½ pot' })).toBeFocused();
+    await actor.keyboard.press('Tab');
+    await expect(actor.getByRole('button', { name: 'Pot', exact: true })).toBeFocused();
+    await actor.keyboard.press('Tab');
+    await expect(actor.getByRole('button', { name: 'All-in' })).toBeFocused();
+    await raiseButton.focus();
     await expect(raiseButton).toBeFocused();
     expect(await raiseButton.evaluate((button) => getComputedStyle(button).outlineStyle)).toBe('solid');
     const target = await raiseButton.boundingBox();
@@ -153,7 +174,7 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
       const caller = await actingPage(pages);
       await caller.getByRole('button', { name: /^Call / }).click();
       // A covering stack can retain chips after calling a shorter all-in.
-      await expect(caller.getByRole('button', { name: 'Fold', exact: true })).toHaveCount(0);
+      await expect(caller.getByRole('button', { name: 'Fold', exact: true })).toBeDisabled();
     }
     for (const page of pages) {
       await expect(page.getByRole('heading', { name: 'Session standings' })).toBeVisible({ timeout: 10_000 });
@@ -219,11 +240,11 @@ test('heads-up reconnect restores private cards and takeover removes old-tab bet
     await expect(guest.getByRole('button', { name: 'Use this tab to play', exact: true })).toBeVisible();
     await host.getByRole('button', { name: /^Call / }).click();
     await expect(newTab.getByRole('button', { name: 'Check', exact: true })).toBeEnabled();
-    await expect(guest.getByRole('button', { name: 'Check', exact: true })).toHaveCount(0);
+    await expect(guest.getByRole('button', { name: 'Check', exact: true })).toBeDisabled();
     await expect(newTab.getByLabel('Your cards')).toHaveText(privateCards!);
 
     host.once('dialog', (dialog) => void dialog.accept());
-    await host.getByText('Room options', { exact: true }).click();
+    await host.getByLabel('Room options', { exact: true }).click();
     await host.getByRole('button', { name: 'End after this hand' }).click();
     await expect(host.getByText('The session will end after this hand.')).toBeVisible();
     await newTab.getByRole('button', { name: 'Fold', exact: true }).click();

@@ -21,16 +21,7 @@ export function GameShell({ children, active = 'lobby' }: { children: ReactNode;
           </div>
           <AccountAccess />
         </header>
-        {boundary?.locked ? <aside className="active-room-navigation">
-          <details><summary>Leave table to navigate</summary>
-            <p>Leave the room to visit another destination. Your session seat follows the room’s leave rules.</p>
-            <nav aria-label="Main navigation">
-              <button type="button" onClick={() => boundary.navigate('/')}>Lobby</button>
-              <button type="button" onClick={() => boundary.navigate('/collection')}>Collection</button>
-              <button type="button" onClick={() => boundary.navigate('/pulls')}>Pulls</button>
-            </nav>
-          </details>
-        </aside> : <aside className="sidebar">
+        {boundary?.locked ? null : <aside className="sidebar">
           <nav aria-label="Main navigation">
             <Link href="/" aria-current={active === 'lobby' ? 'page' : undefined}><Icon icon={Home} /><span>Lobby</span></Link>
             <Link href="/collection" aria-current={active === 'collection' ? 'page' : undefined}><Icon icon={Images} /><span>Collection</span></Link>
