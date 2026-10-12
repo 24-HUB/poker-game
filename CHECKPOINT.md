@@ -1,5 +1,38 @@
 # Checkpoint — Remaining phases through production
 
+## Local test account password login — 2026-10-12 11:31 Bangkok (04:31 UTC)
+
+- User requested normal email/password login for prepared local users and removal
+  of shortcut buttons. New clean task branch `codex/local-test-login` from freshly
+  fetched `origin/dev` `66b36fcc` (PR #21 merged). Implementation **`d66e6f2d`**;
+  draft [PR #22](https://github.com/24-HUB/poker-game/pull/22), base `dev`.
+- Removed local shortcut UI/components, its `NEXT_PUBLIC_` flag and both mock-login
+  HTTP endpoints. The disposable loopback harness still creates verified native
+  Host/Guest accounts. Generated email/password pairs are saved only in ignored
+  `apps/web/.artifacts/local-test-accounts.json`, outside public assets, with owner
+  file permissions where supported. No credentials or session cookies in commits,
+  HTTP responses, program logs or PR descriptions. Passwords rotate on fresh launch.
+- Acceptance signs in through normal forms in separate contexts, joins a room and
+  verifies sign-out/re-sign-in identity. Old endpoints and credential-file URL return
+  404. The old-running harness demonstrated expected failures (200 shortcut and
+  missing credential file), followed by **19/19 full Chromium passing, zero retries**.
+  Initial test-loader error was corrected before behavioral evidence was recorded.
+- Frozen pnpm 10.33.0 installation and aggregate `pnpm check` pass: **381 tests**, all
+  types and production builds. Two obsolete shortcut component tests were removed.
+  Read-only review found no major issues; its password-trace-retention minor was
+  fixed by disabling tracing specifically for the local credential acceptance test.
+  Existing backend restart helper/parser and account preparation checks are intact.
+- Next: inspect exact documentation-head CI and keep the PR draft if it fails;
+  restart the isolated preview, provide current local credentials to the owner,
+  confirm fresh fetch/clean status, then hand off for manual review/merge. No auto
+  login into the owner's browser. No production auth/deployment/live-data/billing
+  changes. README explains normal login and the ignored credential path.
+- Usage observed before final verification: five-hour 49% remaining, reset
+  2026-10-12 08:14:49 UTC (15:14:49 Bangkok); weekly 55%, reset
+  2026-10-18 05:12:40 UTC (12:12:40 Bangkok). No reset credit or billing action.
+
+---
+
 ## M5.1a room UI refinement — 2026-10-12 11:02 Bangkok (04:02 UTC)
 
 - User requested a second room pass after trying the live preview. Continue the
