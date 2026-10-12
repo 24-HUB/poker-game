@@ -131,16 +131,18 @@ npm.cmd exec --yes --package=pnpm@10.33.0 --call "set npm_execpath=&& node apps/
 ```
 
 Open `http://127.0.0.1:3100` in two separate browser profiles or private contexts.
-In **Sign in**, choose **Play as Mock Host** in one and **Play as Mock Guest** in
-the other. Both are verified native accounts in this launch's disposable database;
-no manual registration or verification is needed. Create a room, copy its invite
+The harness prepares verified **Mock Host** and **Mock Guest** accounts and writes
+their generated email/password pairs to the ignored local file
+`apps/web/.artifacts/local-test-accounts.json`. Open **Sign in** and enter those
+credentials through the normal email/password form; there are no shortcut login
+buttons. No manual registration or verification is needed. Create a room, copy its invite
 code, and paste it into **Join Room** in the other context. Use **Use this tab to
 play** before controlling a seat. Sharing one browser context shares its session.
 
-The helper requires the exact loopback origin above. It keeps generated passwords
-in memory and exposes no credentials. Restarting the harness creates a fresh
-database and fresh mock accounts. Its endpoints exist only in the harness; the
-normal production build defaults the mock UI flag to false.
+These credentials belong only to the disposable loopback database and are never
+served over HTTP, logged or committed. Restarting the harness creates a fresh
+database and rotates both passwords; reopen the local file for the current values.
+Normal production signup/sign-in is unchanged.
 
 | Command | Purpose |
 | --- | --- |

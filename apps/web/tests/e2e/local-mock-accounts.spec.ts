@@ -1,21 +1,30 @@
 import { expect, test } from '@playwright/test';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
 
-test('local mock helper rejects missing/invalid origins and unknown player selectors', async ({ request }) => {
-  expect((await request.post('/__e2e/mock-login', { data: { player: 'host' } })).status()).toBe(403);
-  expect((await request.post('/__e2e/mock-login', { headers: { origin: 'http://localhost:3100' }, data: { player: 'host' } })).status()).toBe(403);
-  expect((await request.post('/__e2e/mock-login', { headers: { origin: 'http://127.0.0.1:3100' }, data: { player: 'unknown' } })).status()).toBe(400);
+// These generated credentials also serve manual playtesting; do not retain them in traces.
+test.use({ trace: 'off' });
+
+test('local account credentials and shortcut login are never served over HTTP', async ({ request }) => {
+  expect((await request.post('/__e2e/mock-login', { headers: { origin: 'http://127.0.0.1:3100' }, data: { player: 'host' } })).status()).toBe(404);
+  expect((await request.get('/__e2e/mock-accounts')).status()).toBe(404);
+  expect((await request.get('/.artifacts/local-test-accounts.json')).status()).toBe(404);
 });
 
 test('two ready players use real distinct verified sessions and join by invite code', async ({ browser }) => {
+  const accounts = JSON.parse(await readFile(resolve(process.cwd(), '.artifacts/local-test-accounts.json'), 'utf8')) as Record<'host' | 'guest', { email: string; password: string }>;
   const hostContext = await browser.newContext({ permissions: ['clipboard-read', 'clipboard-write'] });
   const guestContext = await browser.newContext();
   try {
     const host = await hostContext.newPage();
     const guest = await guestContext.newPage();
-    for (const [page, name] of [[host, 'Mock Host'], [guest, 'Mock Guest']] as const) {
+    for (const [page, player] of [[host, 'host'], [guest, 'guest']] as const) {
       await page.goto('/');
       await page.getByRole('button', { name: 'Sign in', exact: true }).click();
-      await page.getByRole('button', { name: `Play as ${name}` }).click();
+      await expect(page.getByRole('button', { name: /Play as Mock/ })).toHaveCount(0);
+      await page.getByRole('dialog').getByLabel('Email', { exact: true }).fill(accounts[player].email);
+      await page.getByRole('dialog').getByLabel('Password', { exact: true }).fill(accounts[player].password);
+      await page.getByRole('button', { name: 'Sign in to your club' }).click();
       await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible();
     }
     const hostIdentity = (await (await hostContext.request.get('/api/me')).json()).data;
@@ -38,7 +47,9 @@ test('two ready players use real distinct verified sessions and join by invite c
     await guest.getByRole('button', { name: 'Leave room', exact: true }).click();
     await guest.getByRole('button', { name: 'Sign out' }).click();
     await guest.getByRole('button', { name: 'Sign in', exact: true }).click();
-    await guest.getByRole('button', { name: 'Play as Mock Guest' }).click();
+    await guest.getByRole('dialog').getByLabel('Email', { exact: true }).fill(accounts.guest.email);
+    await guest.getByRole('dialog').getByLabel('Password', { exact: true }).fill(accounts.guest.password);
+    await guest.getByRole('button', { name: 'Sign in to your club' }).click();
     await expect(guest.getByRole('button', { name: 'Sign out' })).toBeVisible();
     expect((await (await guestContext.request.get('/api/me')).json()).data.accountId).toBe(guestIdentity.accountId);
   } finally { await hostContext.close(); await guestContext.close(); }

@@ -3,6 +3,7 @@ import { spawn } from 'node:child_process';
 import { createServer } from 'node:http';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { mkdir, writeFile } from 'node:fs/promises';
 
 import httpProxy from 'http-proxy';
 import { MongoClient } from 'mongodb';
@@ -26,7 +27,6 @@ const pnpmCommand = pnpmCli
     : { command: 'pnpm', args: [] };
 const children = new Set();
 const accountEmails = [];
-let mockAccounts = null;
 
 const backendEnvironment = {
   ...process.env,
@@ -51,7 +51,7 @@ await runPreparation(['--filter', '@poker/server', 'catalogue:publish'], backend
 
 let backend = launchBackend();
 const frontend = start(pnpmCommand.command, [...pnpmCommand.args, '--filter', '@poker/web', 'dev', '--hostname', '127.0.0.1', '--port', '3101'],
-  { ...process.env, NEXT_PUBLIC_LOCAL_MOCK_ACCOUNTS: 'true' });
+  process.env);
 
 const proxy = httpProxy.createProxyServer({ ws: true });
 proxy.on('proxyReq', (proxyRequest, request) => {
@@ -67,16 +67,6 @@ proxy.on('error', (_error, _request, response) => {
 
 const gateway = createServer((request, response) => {
   const requestedUrl = new URL(request.url ?? '/', publicOrigin);
-  if (requestedUrl.pathname === '/__e2e/mock-accounts') {
-    response.writeHead(request.method === 'GET' && request.headers.host === '127.0.0.1:3100' && mockAccounts ? 200 : 404,
-      { 'cache-control': 'no-store', 'content-type': 'application/json' });
-    response.end(JSON.stringify({ ready: Boolean(mockAccounts) }));
-    return;
-  }
-  if (requestedUrl.pathname === '/__e2e/mock-login') {
-    void handleMockLogin(request, response);
-    return;
-  }
   if (requestedUrl.pathname === '/__e2e/account-email') {
     const email = accountEmails.findLast((entry) => entry.recipient === requestedUrl.searchParams.get('recipient')
       && entry.kind === requestedUrl.searchParams.get('kind'));
@@ -100,7 +90,13 @@ gateway.on('upgrade', (request, socket, head) => {
 });
 
 void prepareLocalMockAccounts({ backendOrigin, publicOrigin, proxySecret, registrationCode, accountEmails })
-  .then((accounts) => { mockAccounts = accounts; gateway.listen(3100, '127.0.0.1'); })
+  .then(async (accounts) => {
+    const directory = resolve(webRoot, '.artifacts');
+    await mkdir(directory, { recursive: true, mode: 0o700 });
+    await writeFile(resolve(directory, 'local-test-accounts.json'), JSON.stringify(accounts, null, 2), { mode: 0o600 });
+    console.log('Local test accounts ready. Credentials: apps/web/.artifacts/local-test-accounts.json');
+    gateway.listen(3100, '127.0.0.1');
+  })
   .catch((error) => { console.error(error.message); stop(1); });
 
 let stopping = false;
@@ -176,29 +172,6 @@ async function readJson(request) {
     if (body.length > 1_024) throw new Error('request too large');
   }
   return body ? JSON.parse(body) : {};
-}
-
-async function handleMockLogin(request, response) {
-  const reply = (status, body = {}) => {
-    response.writeHead(status, { 'cache-control': 'no-store', 'content-type': 'application/json' });
-    response.end(JSON.stringify(body));
-  };
-  if (request.method !== 'POST') return reply(405);
-  if (request.headers.origin !== publicOrigin || request.headers.host !== '127.0.0.1:3100') return reply(403);
-  if (!mockAccounts) return reply(503);
-  try {
-    const body = await readJson(request);
-    if (!body || typeof body !== 'object' || Object.keys(body).length !== 1 || !['host', 'guest'].includes(body.player)) return reply(400);
-    const signin = await fetch(`${backendOrigin}/api/auth/sign-in/email`, {
-      method: 'POST', headers: { origin: publicOrigin, 'x-poker-proxy-secret': proxySecret, 'content-type': 'application/json' },
-      body: JSON.stringify(mockAccounts[body.player]), signal: AbortSignal.timeout(5000),
-    });
-    if (!signin.ok) return reply(signin.status);
-    const cookies = signin.headers.getSetCookie();
-    if (!cookies.length) return reply(503);
-    response.setHeader('set-cookie', cookies);
-    return reply(200, { ok: true });
-  } catch { return reply(400); }
 }
 
 async function expirePreviousAuthority() {
