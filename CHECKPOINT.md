@@ -7,10 +7,17 @@
   `maxShutdownDelaySeconds` on Free; local configuration inspection reproduced
   that incompatible pair before the fix. Remove the field and use Render's
   default shutdown period. Document the limitation in `docs/deployment.md`.
-- Verification and commit/PR handoff are pending below; hosted Blueprint
-  revalidation requires the corrected revision to be manually merged into `dev`.
-- Next: check YAML and diff, commit/push the task branch and open a PR targeting
-  `dev`; user merges manually, then refreshes the Render Blueprint setup.
+- Implementation commit `78b655ba` is pushed in draft
+  [PR #24](https://github.com/24-HUB/poker-game/pull/24), base `dev`.
+  YAML parsing and semantic comparison passed: removing the unsupported field
+  is the only service configuration change. Full diff review and
+  `git diff --check` passed. The first comparison attempt was blocked by Node
+  child-process permissions; rerun with Git output piped to Node passed.
+  Application tests were not rerun for this provider-only field removal.
+- Hosted Blueprint validation and normal PR CI remain pending; keep draft until
+  required evidence is available. Next: inspect PR checks, manually merge the
+  corrected revision into `dev`, refresh the operator's Render Blueprint setup
+  and confirm validation before provisioning/deployment.
 - Usage observed at session start: five-hour 85% remaining (reset 2026-10-12
   13:52:41 UTC /20:52:41 Bangkok); weekly 47% remaining (reset 2026-10-18
   05:12:40 UTC /12:12:40 Bangkok). No provider/deployment/live database/billing action.

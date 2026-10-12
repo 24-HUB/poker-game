@@ -529,6 +529,11 @@ Clean task branch `codex/render-free-blueprint` starts from freshly fetched
 manual deployments and closed admission/economy controls. Configuration inspection
 reproduced the incompatible pair before removal; hosted revalidation remains pending
 manual PR merge and operator refresh. See `CHECKPOINT.md` for verification/handoff.
+Implementation `78b655ba` is pushed in draft
+[PR #24](https://github.com/24-HUB/poker-game/pull/24), base `dev`.
+YAML parsing and semantic comparison confirm this is the only service config
+change; full diff review and `git diff --check` pass. Application tests not rerun;
+normal PR CI and operator-hosted revalidation remain pending.
 No provider creation, deployment, secrets or live database operations performed.
 
 ### Local test account password login — 2026-10-12 11:31 Bangkok (04:31 UTC)
