@@ -520,6 +520,24 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### M5.1a resumed local verification — 2026-10-12 08:58 Bangkok (01:58 UTC)
+
+Continued `codex/m5-predeploy-ux` / [PR #21](https://github.com/24-HUB/poker-game/pull/21),
+base `dev`, preserving `f7619764` and `032f885c`; fresh `origin/dev` is still `623749f0`.
+Resolved mobile table/control overlap, desktop action overflow and truncated caller
+identification, with real own-turn/observer geometry assertions that run in CI.
+Fixed the initial-authentication lobby remount race with a RED→GREEN regression.
+Full local Chromium passed 19/19 with zero retries; final aggregate passed 372 tests,
+types/builds, followed by native history HTTP guard coverage and server typecheck
+(identity 18/18). Production chunks exclude mock controls/helper strings. Local
+captures were inspected at all required breakpoints. Restart recovery now passes
+at original bounds on fresh services; its earlier historical failure cause remains
+unproven and no production restart fix is claimed. See CHECKPOINT.md for details.
+
+New remote Linux CI remains the final gate before marking the PR ready. The user
+merges manually; no deployment/live database/billing work occurred. Continue the
+same branch and PR if CI reports a failure. Hosted M5/friends gates remain pending.
+
 ### M5.1a implementation save point — 2026-10-11 13:32 UTC
 
 Tasks 1–4 are implemented on `codex/m5-predeploy-ux` from freshly fetched

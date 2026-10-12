@@ -31,14 +31,19 @@ const props: PokerTableProps = { room, game, accountId: 'host', status: 'connect
 
 describe('PokerTable', () => {
   afterEach(cleanup);
+  it('keeps the caller marker separate from a long player name', () => {
+    render(<PokerTable {...props} game={{ ...game, participants: game.participants.map((player) => player.accountId === 'host' ? { ...player, displayName: 'Alexandria Through the Looking Glass' } : player) }} />);
+    expect(screen.getByText('(you)', { exact: true })).toBeVisible();
+    expect(screen.getByText('Alexandria Through the Looking Glass')).toBeVisible();
+  });
   it('keeps caller and opponent seat positions stable after disconnect or fold', () => {
     const view = render(<PokerTable {...props} />);
-    const own = screen.getByText('Host (you)').closest('li')!;
+    const own = screen.getByText('Host', { exact: true }).closest('li')!;
     const opponent = screen.getByText('Guest').closest('li')!;
     expect(own).toHaveAttribute('data-position', 'bottom');
     expect(opponent).toHaveAttribute('data-position', 'top');
     view.rerender(<PokerTable {...props} game={{ ...game, participants: game.participants.map((player) => ({ ...player, folded: true, connected: false })) }} />);
-    expect(screen.getByText('Host (you)').closest('li')).toHaveAttribute('data-position', 'bottom');
+    expect(screen.getByText('Host', { exact: true }).closest('li')).toHaveAttribute('data-position', 'bottom');
   });
   it('prevents an observer from starting a finished session and explains takeover', () => {
     render(<PokerTable {...props} room={{ ...room, phase: 'waiting', members: [

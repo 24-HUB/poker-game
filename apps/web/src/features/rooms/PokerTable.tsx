@@ -35,8 +35,8 @@ export function PokerTable({ room, game, accountId, status, pending, message,
   return <section className="poker-table" aria-label="Poker table">
     <header className="poker-table__header">
       <div><h1>{room.title}</h1>
-        <p>Hand {game?.handNumber ?? '…'} · {game?.handPhase ?? 'Waiting for the next hand'} · Blinds {game?.smallBlind ?? '…'}/{game?.bigBlind ?? '…'}</p>
-        <span className={`connection-state connection-state--${status}`}>{status === 'connected' ? 'Connected' : status === 'unavailable' ? 'Service unavailable' : 'Reconnecting'}</span></div>
+        <div className="poker-table__details"><p>Hand {game?.handNumber ?? '…'} · {game?.handPhase ?? 'Waiting for the next hand'} · Blinds {game?.smallBlind ?? '…'}/{game?.bigBlind ?? '…'}</p>
+        <span className={`connection-state connection-state--${status}`}>{status === 'connected' ? 'Connected' : status === 'unavailable' ? 'Service unavailable' : 'Reconnecting'}</span></div></div>
       <div className="poker-table__session-actions">
         {canStart ? <button type="button" className="primary-button" disabled={pending || status !== 'connected' || !room.control.isController} onClick={onStart}>Start new session</button> : null}
         {!room.control.isController ? <><p>You are watching from this tab. Take over to play or leave.</p><button type="button" className="secondary-button" disabled={pending || status !== 'connected'} onClick={onClaimControl}>Use this tab to play</button></> : null}
@@ -64,7 +64,7 @@ export function PokerTable({ room, game, accountId, status, pending, message,
           {seatPositions(game, accountId).map(({ participant, position }) => <li key={participant.accountId} data-position={position}
             className={participant.accountId === game.actorAccountId ? 'poker-seat poker-seat--acting' : 'poker-seat'}>
             {participant.equipment?.avatar ? <img className="poker-seat__avatar" src={participant.equipment.avatar.assetUrl} alt={`${participant.displayName}'s ${participant.equipment.avatar.name} avatar`} width="48" height="48" /> : null}
-            <strong>{participant.displayName}{participant.accountId === accountId ? ' (you)' : ''}</strong>
+            <strong title={participant.displayName}><span className="poker-seat__name">{participant.displayName}</span>{participant.accountId === accountId ? <span className="poker-seat__you"> (you)</span> : null}</strong>
             <span className="poker-seat__stack">Stack: {participant.stack} chips</span>
             <span className="poker-seat__bet">Bet: {participant.streetContribution}</span>
             <small>{participant.folded ? 'Folded' : participant.allIn ? 'All-in' : participant.connected ? 'At table' : 'Disconnected'}

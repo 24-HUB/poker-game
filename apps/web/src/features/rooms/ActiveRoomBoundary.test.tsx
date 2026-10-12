@@ -14,17 +14,27 @@ const navigation = vi.hoisted(() => ({ pathname: '/collection', replace: vi.fn()
 vi.mock('next/navigation', () => ({ usePathname: () => navigation.pathname, useRouter: () => ({ replace: navigation.replace }) }));
 afterEach(() => { cleanup(); roomStore.getState().setAccount(null); vi.clearAllMocks(); navigation.pathname = '/collection'; });
 
-function mount(reader: () => Promise<Result<CurrentRoom | null>>) {
+function mount(reader: () => Promise<Result<CurrentRoom | null>>, initialSession: SessionState = { status: 'authenticated', account: { accountId: 'a', displayName: 'Alice' } }, sessionReader?: () => Promise<SessionState>) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  client.setQueryData(['session'], { status: 'authenticated', account: { accountId: 'a', displayName: 'Alice' } } satisfies SessionState);
+  client.setQueryData(['session'], initialSession);
   render(createElement(QueryClientProvider, { client }, createElement(SessionProvider, {
-    sessionReader: async () => client.getQueryData(['session']) as SessionState,
+    sessionReader: sessionReader ?? (async () => client.getQueryData(['session']) as SessionState),
     children: createElement(ActiveRoomBoundary, { reader, children: createElement('p', null, 'Destination content') }),
   })));
   return client;
 }
 
 describe('ActiveRoomBoundary', () => {
+  it('does not expose an interactive destination while initial authentication is still loading', async () => {
+    const reader = vi.fn(async () => ({ data: null, error: null } as Result<CurrentRoom | null>));
+    let finishSession!: (session: SessionState) => void;
+    mount(reader, { status: 'loading' }, () => new Promise((resolve) => { finishSession = resolve; }));
+    expect(screen.queryByText('Destination content')).not.toBeInTheDocument();
+    expect(reader).not.toHaveBeenCalled();
+    await act(async () => { finishSession({ status: 'authenticated', account: { accountId: 'a', displayName: 'Alice' } }); });
+    expect(await screen.findByText('Destination content')).toBeVisible();
+    expect(reader).toHaveBeenCalled();
+  });
   it('recovers a playing room from a direct route and hides destination content', async () => {
     mount(async () => ({ data: { roomId: 'own-room', title: 'Friday', phase: 'playing' }, error: null }));
     await waitFor(() => expect(navigation.replace).toHaveBeenCalledWith('/rooms/own-room'));

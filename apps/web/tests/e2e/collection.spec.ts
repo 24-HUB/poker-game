@@ -39,7 +39,7 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
         const states = [];
         for (const page of [host, guest]) {
           states.push({
-            phase: await page.locator('.poker-table__header > div:first-child > p:last-child').allTextContents(),
+            phase: await page.locator('.poker-table__details > p').allTextContents(),
             turn: await page.locator('.poker-turn > [role="status"]').allTextContents(),
             claim: await page.getByRole('button', { name: 'Use this tab to play', exact: true }).count(),
             pending: await page.getByRole('button', { name: 'Reconcile pending game action' }).count(),

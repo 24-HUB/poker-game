@@ -70,11 +70,11 @@ export function ActiveRoomBoundary({ children, reader = readCurrentRoom }: { chi
       client.setQueryData(currentRoomKey(accountId), { data: null, error: null });
     },
   };
-  const checking = accountId !== null && !recovery && !liveRoom && (query.isPending || query.data?.error || query.isError);
+  const checking = !recovery && (session.status === 'loading' || (accountId !== null && !liveRoom && (query.isPending || query.data?.error || query.isError)));
   return <RoomBoundaryContext.Provider value={value}>
     {checking || redirect ? <div className="session-boundary" role="status">
       <AccountAccess />
-      <p>{query.data?.error || query.isError ? 'Your current room could not be checked. Reconnect to continue.' : 'Recovering your current room…'}</p>
+      <p>{session.status === 'loading' ? 'Checking private access…' : query.data?.error || query.isError ? 'Your current room could not be checked. Reconnect to continue.' : 'Recovering your current room…'}</p>
       {query.data?.error || query.isError ? <button type="button" onClick={() => void query.refetch()}>Retry room connection</button> : null}
     </div> : children}
   </RoomBoundaryContext.Provider>;

@@ -19,7 +19,7 @@ async function actingPage(pages: Page[]): Promise<Page> {
     }, { timeout: 10_000 }).toBe(1);
   } catch (error) {
     console.error('Release actor diagnostics', await Promise.all(pages.map(async (page) => ({
-      phase: await page.locator('.poker-table__header > div:first-child > p:last-child').allTextContents(),
+      phase: await page.locator('.poker-table__details > p').allTextContents(),
       turn: await page.locator('.poker-turn > [role="status"]').allTextContents(),
       control: await page.getByRole('button', { name: 'Use this tab to play', exact: true }).count(),
       pending: await page.getByRole('button', { name: 'Reconcile pending game action' }).count(),
@@ -43,7 +43,7 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
       });
       contexts.push(context);
       await createAccountThroughNativeApi(context, {
-        displayName: `Release Player ${index + 1}`, email: `release-${index}-${suffix}@example.test`,
+        displayName: index === 3 ? 'Alexandria Through the Looking Glass' : `Release Player ${index + 1}`, email: `release-${index}-${suffix}@example.test`,
       });
       pages.push(await context.newPage());
     }
@@ -70,6 +70,21 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     }
     expect(await host.evaluate(() => matchMedia('(prefers-reduced-motion: reduce)').matches)).toBe(true);
+    async function assertTableVisibility(page: Page) {
+      await page.evaluate(() => window.scrollTo(0, 0));
+      const felt = await page.locator('.poker-table__felt').boundingBox();
+      const actions = await page.getByRole('region', { name: 'Poker actions' }).boundingBox();
+      const ownCards = await page.getByLabel('Your cards').boundingBox();
+      expect(felt).not.toBeNull(); expect(actions).not.toBeNull(); expect(ownCards).not.toBeNull();
+      expect(felt!.y + felt!.height, 'Actions must not cover the table').toBeLessThanOrEqual(actions!.y);
+      const height = await page.evaluate(() => innerHeight);
+      expect(ownCards!.y + ownCards!.height, 'Private cards fit above the controls').toBeLessThanOrEqual(actions!.y);
+      expect(actions!.y + actions!.height, 'Primary controls fit in the viewport').toBeLessThanOrEqual(height);
+      const bet = await page.locator('.poker-seat[data-position="bottom"] .poker-seat__bet').boundingBox();
+      const center = await page.locator('.poker-table__center').boundingBox();
+      expect(center!.y + center!.height, 'The pot and inward bet do not overlap').toBeLessThanOrEqual(bet!.y);
+    }
+    await assertTableVisibility(host);
     const feltContrast = await host.locator('.poker-table__felt').evaluate((felt) => {
       const luminance = (rgb: number[]) => rgb.map((channel) => channel / 255)
         .map((channel) => channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4)
@@ -87,18 +102,21 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
       await pages[1]!.evaluate(() => window.scrollTo(0, 0));
       await host.screenshot({ path: testInfo.outputPath('six-player-mobile.png'), fullPage: true });
       await pages[1]!.screenshot({ path: testInfo.outputPath('six-player-desktop.png'), fullPage: true });
-      for (const viewport of [{ width: 1280, height: 720 }, { width: 900, height: 900 }]) {
-        await pages[1]!.setViewportSize(viewport);
-        await expect.poll(() => pages[1]!.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
-        const layout = await pages[1]!.locator('.poker-table__felt').boundingBox();
-        const actions = await pages[1]!.getByRole('region', { name: 'Poker actions' }).boundingBox();
-        expect(layout).not.toBeNull();
-        expect(actions).not.toBeNull();
-        expect(layout!.y + layout!.height).toBeLessThanOrEqual(actions!.y);
-        await pages[1]!.screenshot({ path: testInfo.outputPath(`six-player-${viewport.width}.png`), fullPage: true });
-      }
-      await pages[1]!.setViewportSize({ width: 1440, height: 1000 });
     }
+    for (const viewport of [{ width: 1280, height: 720 }, { width: 900, height: 900 }]) {
+      await pages[1]!.setViewportSize(viewport);
+      await expect.poll(() => pages[1]!.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await assertTableVisibility(pages[1]!);
+      if (!process.env.CI) await pages[1]!.screenshot({ path: testInfo.outputPath(`six-player-${viewport.width}.png`), fullPage: true });
+    }
+    await pages[1]!.setViewportSize({ width: 1440, height: 1000 });
+    const firstActor = await actingPage(pages);
+    const previousViewport = firstActor.viewportSize()!;
+    await firstActor.setViewportSize({ width: 360, height: 800 });
+    await assertTableVisibility(firstActor);
+    await expect(firstActor.getByText('(you)', { exact: true })).toBeVisible();
+    if (!process.env.CI) await firstActor.screenshot({ path: testInfo.outputPath('six-player-mobile-your-turn.png'), fullPage: true });
+    await firstActor.setViewportSize(previousViewport);
 
     // Real folds create unequal stacks; no fixture changes live account balances.
     for (let index = 0; index < 5; index += 1) {

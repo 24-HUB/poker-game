@@ -221,12 +221,13 @@ failure diagnostics. Recheck the docs-only follow-up's final head before merge.
 
 ### M5.1a — Required local playtest UX improvements before deployment
 
-**Implementation save point (2026-10-11):** Tasks 1–4 have application changes on
-`codex/m5-predeploy-ux`; the acceptance checkboxes remain unchecked until the full
-gate passes. Focused poker/history/reconnect and mock-account flows pass, but visual
-inspection found mobile sticky-panel overlap and controls below the 1280×720 fold.
-A full-suite restart-after-game failure remains isolated and unresolved. Read
-`CHECKPOINT.md` before resuming; do not repeat completed functional implementation.
+**Local verification (2026-10-12):** Tasks 1–4 are implemented on
+`codex/m5-predeploy-ux` / PR #21. Responsive own-turn/observer geometry and full
+local CI-mode Chromium (19/19) pass. Final local aggregate passes 372 tests plus
+additional native history HTTP guard coverage; production excludes mock UI/helper
+strings. The historical restart failure did not recur on fresh services at the
+original bounds; its original cause remains unproven. New-head remote Linux CI is
+the final gate. Read `CHECKPOINT.md`; do not repeat completed implementation.
 
 **User requirements confirmed 2026-10-11:** keep a player at the current playing
 room instead of letting ordinary app navigation lose the table; improve playing-room

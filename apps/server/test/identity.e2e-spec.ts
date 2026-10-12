@@ -77,6 +77,26 @@ describe('identity', () => {
     expect(revoked.body.error.code).toBe('UNAUTHENTICATED');
   });
 
+  it('guards completed-hand HTTP reads and validates pagination before accessing history', async () => {
+    const account = await signUp('history-member@example.com', 'History reader');
+    const cookie = account.headers['set-cookie']?.[0] ?? '';
+    const endpoint = '/api/rooms/private-room/hands?sessionId=private-session';
+    const outsider = await request(application.getHttpServer()).get(endpoint)
+      .set('cookie', cookie).set('x-poker-proxy-secret', proxySecret);
+    expect(outsider.status).toBe(403);
+    expect(outsider.body.data).toBeNull();
+    const malformed = await request(application.getHttpServer()).get(`${endpoint}&beforeHandNumber=0`)
+      .set('cookie', cookie).set('x-poker-proxy-secret', proxySecret);
+    expect(malformed.status).toBe(400);
+    const anonymous = await request(application.getHttpServer()).get(endpoint).set('x-poker-proxy-secret', proxySecret);
+    expect(anonymous.status).toBe(401);
+    expect((await database.db.collection('session').deleteOne({ token: account.body.token })).deletedCount).toBe(1);
+    const revoked = await request(application.getHttpServer()).get(endpoint)
+      .set('cookie', cookie).set('x-poker-proxy-secret', proxySecret);
+    expect(revoked.status).toBe(401);
+    expect(revoked.body.error.code).toBe('UNAUTHENTICATED');
+  });
+
   it('creates an account through the native auth response without persisting the registration code', async () => {
     const response = await request(application.getHttpServer())
       .post('/api/auth/sign-up/email')

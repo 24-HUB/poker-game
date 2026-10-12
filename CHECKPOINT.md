@@ -1,5 +1,53 @@
 # Checkpoint — Remaining phases through production
 
+## M5.1a resumed local verification — 2026-10-12 08:58 Bangkok (01:58 UTC)
+
+- Continued clean `codex/m5-predeploy-ux` and existing
+  [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`; fetched
+  `origin/dev` remains `623749f0`. Preserve prior implementation `f7619764` and
+  checkpoint `032f885c`. No deployment, live database, billing or unrelated changes.
+- Fixed the recorded layout blockers: compact app/room headers, stable control
+  placement without bottom-sticky overlay, preserved card sizes, and enough room
+  between the center pot and inward bets. Long names truncate independently of the
+  always-visible `(you)` marker. Numeric input/slider/presets retain legal behavior.
+- New real-browser geometry assertions first failed on mobile overlap and then
+  1280×720 overflow; they now pass for waiting and actual own-turn mobile panels,
+  desktop/tablet, private-card visibility and pot/bet separation. These assertions
+  run in CI, not only during screenshot capture. Final six-player captures are
+  local/ignored under `apps/web/.artifacts/ux-completed/`; mobile own turn, 1280×720,
+  900×900 and 1440×1000 were inspected. No exhaustive accessibility certification.
+- Full Chromium under `CI=true` passed **19/19, zero retries**. A prior resumed
+  run passed 18/19 and exposed an initial-authentication form reset: lobby controls
+  were clickable before session resolution, then the membership check remounted
+  the form. The boundary now withholds interactive destinations during initial
+  loading; the regression proved RED→GREEN. Existing recovery/account-isolation
+  coverage remains passing (boundary 7/7; table 9/9).
+- The previous restart-after-game failure did not reproduce with fresh Docker
+  services: isolated sequence 3/3 and both resumed full browser runs passed restart
+  recovery at the original bounds. Temporary harness timing showed lease expiry in
+  4–9 ms and prompt relaunch; diagnostics were removed. No production restart fix
+  is claimed, and the original historical cause remains unproven. Earlier failures
+  during this resumption were Docker-startup setup failures, not acceptance results.
+- Frozen install used pnpm 10.33.0. Final local `pnpm check` passed **372 tests**,
+  typechecks and production builds. A further native HTTP history guard test passed
+  with server typecheck and identity suite **18/18**: outsider 403, malformed cursor 400,
+  anonymous 401 and revoked 401. Rebuilt production chunks contain no mock UI/helper
+  strings. Global pnpm outside the workspace is 12.6.0; the documented Windows wrapper
+  selects 10.33.0. Next's generated type imports returned to unchanged production form.
+- Mechanical layout detector returned no findings. Fresh read-only review found no
+  Important/Critical findings. Deferred minor remains: cached hand outcomes stay
+  visible after a refetch authorization error; this is already-received client data,
+  not a new server disclosure. Hosted playtest/provider gates remain separate.
+- Latest remote CI on old head `032f885c` passed aggregate and Linux Worker build,
+  but failed Chromium (three timeouts). The resumed head must pass that workflow
+  before this PR can be described as ready. Local changes will be committed/pushed
+  to the existing PR; record the resulting head and CI evidence before final handoff.
+- Next: inspect the new GitHub CI run after push. If it fails, read its actual failed
+  step/logs and repair the cause on this same branch; do not relax acceptance bounds,
+  merge, deploy or create another implementation branch. User merges manually.
+
+---
+
 ## M5.1a implementation save point — 2026-10-11 13:32 UTC
 
 - Task: implement the newly merged pre-deployment UX plan, Tasks 1–4. Clean start
