@@ -1,5 +1,30 @@
 # Checkpoint — Remaining phases through production
 
+## M5.1a final acceptance — 2026-10-12 10:12 Bangkok (03:12 UTC)
+
+- Task branch `codex/m5-predeploy-ux`, [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`.
+  Latest verified implementation/test commit **`2f73ba30`** passed
+  [Linux CI](https://github.com/24-HUB/poker-game/actions/runs/38198327488): frozen
+  install, backend build, disposable MongoDB/replica setup, migration idempotency,
+  **374 aggregate tests**, typechecks/production builds, encrypted backup/isolated
+  restore, Worker packaging and **19/19 Chromium cases with zero retries**.
+- Docker containers are healthy. Local collection recovery passed three unchanged
+  repeats plus the diagnostic run; web typecheck and whitespace review passed.
+  The intermittent prior Linux collection failure remains recorded below with
+  cause unproven. Diagnostic assertions require a valid committed receipt and
+  report only HTTP codes/named UI states; no product fix or relaxed timeout claimed.
+- The final documentation commit changes no executable files. Inspect its normal
+  CI before marking the PR ready, then fetch and verify branch freshness/clean status.
+  Last fetched `origin/dev` is `623749f0`, included by the task branch.
+- Next: owner reviews/merges manually once final-head checks pass. Deferred minor:
+  cached history remains after a permission-denied refetch. M5.2/M5.3 hosted and
+  provider work still requires operator inputs/authorization. No deployment,
+  production database, email delivery or billing action occurred.
+- Usage last observed: five-hour 20% remaining, reset 2026-10-12 03:14:47 UTC
+  (10:14:47 Bangkok); weekly 64%, reset 2026-10-18 05:12:40 UTC (12:12:40 Bangkok).
+
+---
+
 ## M5.1a collection recovery investigation — 2026-10-12 10:03 Bangkok (03:03 UTC)
 
 - Continue `codex/m5-predeploy-ux`, draft [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`.

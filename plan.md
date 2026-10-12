@@ -520,6 +520,20 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### M5.1a final acceptance — 2026-10-12 10:12 Bangkok (03:12 UTC)
+
+`codex/m5-predeploy-ux`, [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`:
+implementation/test head `2f73ba30` passed [Linux CI](https://github.com/24-HUB/poker-game/actions/runs/38198327488),
+including 374 tests, typechecks/builds, migration idempotency, encrypted backup/isolated
+restore, Worker packaging and 19/19 Chromium with zero retries. Docker is healthy;
+three unchanged local collection repeats and the diagnostic run pass. The preceding
+intermittent collection failure has unproven cause and remains documented; added
+strict commit/status diagnostics without changing product code or timeout bounds.
+Inspect final documentation-head CI, fetch/check freshness (`origin/dev` `623749f0`
+included at last fetch), then leave the PR for manual owner review/merge. See
+`CHECKPOINT.md` for evidence, deferred minor, usage and next steps. Hosted/provider
+work remains separately authorized; no deployment or live data/billing changes.
+
 ### M5.1a collection recovery investigation — 2026-10-12 10:03 Bangkok (03:03 UTC)
 
 Continue `codex/m5-predeploy-ux`, draft [PR #21](https://github.com/24-HUB/poker-game/pull/21),
