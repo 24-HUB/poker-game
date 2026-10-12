@@ -1,5 +1,28 @@
 # Checkpoint — Remaining phases through production
 
+## M5.1a collection recovery investigation — 2026-10-12 10:03 Bangkok (03:03 UTC)
+
+- Continue `codex/m5-predeploy-ux`, draft [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`.
+  Last completed commit is `d442a329`; fresh fetch contains `origin/dev` `623749f0`.
+- Application commit `6f358fa1` passed all Linux checks below. The Markdown-only
+  `d442a329` rerun passed all preceding checks but Chromium finished **18/19**:
+  collection recovery did not show its final reveal within the original five-second
+  assertion. [Failed run](https://github.com/24-HUB/poker-game/actions/runs/38197017820).
+  Its cause remains unproven; do not describe the current PR as ready to merge.
+- Fresh Docker services work. Three unchanged local collection repeats passed
+  **3/3**, with zero retries. Added test-only diagnostics: require HTTP 201 and a
+  strict committed receipt before reload, then report only recovery status codes
+  and named UI states on failure. No timing relaxation or speculative product fix.
+  Web typecheck and the diagnostic collection browser run **1/1** passed.
+  New-head CI is pending.
+- Next: commit/push these reviewed task-owned test/docs changes and inspect new-head CI.
+  Keep the PR draft if it fails; investigate the reported recovery state.
+- Usage at investigation start: five-hour 24% remaining, reset 2026-10-12
+  03:14:46 UTC (10:14:46 Bangkok); weekly 65%, reset 2026-10-18 05:12:40 UTC
+  (12:12:40 Bangkok). No deployment, live database or billing action.
+
+---
+
 ## M5.1a verified implementation — 2026-10-12 09:41 Bangkok (02:41 UTC)
 
 - Completed Tasks 1–4 on `codex/m5-predeploy-ux`, existing

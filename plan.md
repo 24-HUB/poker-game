@@ -520,6 +520,20 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### M5.1a collection recovery investigation — 2026-10-12 10:03 Bangkok (03:03 UTC)
+
+Continue `codex/m5-predeploy-ux`, draft [PR #21](https://github.com/24-HUB/poker-game/pull/21),
+base `dev`, last commit `d442a329`; fresh fetch still contains `origin/dev` `623749f0`.
+Although application `6f358fa1` passed all Linux gates, the Markdown-only rerun on
+`d442a329` finished Chromium 18/19: the committed-pull reload did not reveal within
+the original five-second assertion. Cause unproven. Three unchanged local repeats
+passed 3/3 with zero retries. Test-only diagnostics now validate HTTP 201 and the
+strict receipt before reload and report status codes/named recovery states on failure;
+no timeout relaxation or speculative product fix. Web typecheck and diagnostic
+browser run 1/1 pass; new-head CI pending. See `CHECKPOINT.md` for exact next steps and usage
+(five-hour 24%, weekly 65% remaining at investigation start). Keep the PR draft until
+new-head checks pass. Owner merge and hosted/provider work remain separate.
+
 ### M5.1a verified implementation — 2026-10-12 09:41 Bangkok (02:41 UTC)
 
 Tasks 1–4 are implemented and verified on `codex/m5-predeploy-ux` /

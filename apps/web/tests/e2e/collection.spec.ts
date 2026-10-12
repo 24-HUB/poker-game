@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import type { PullReceipt } from '@poker/contracts';
+import { pullReceiptSchema, type PullReceipt } from '@poker/contracts';
 import { createAccountThroughNativeApi } from './support/accounts';
 
 test('earn → interrupted pull → recover → equip → next hand → sign in again', async ({ browser }) => {
@@ -73,13 +73,16 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     await host.setViewportSize({ width: 1280, height: 850 });
 
     let captured: PullReceipt | null = null;
+    let purchaseStatus = 0;
+    let purchasePayload: unknown;
     let markCommitted!: () => void;
     let releaseResponse!: () => void;
     const committed = new Promise<void>((resolve) => { markCommitted = resolve; });
     const release = new Promise<void>((resolve) => { releaseResponse = resolve; });
     await host.route('**/api/pulls', async (route) => {
       const response = await route.fetch();
-      captured = (await response.json()).data as PullReceipt;
+      purchaseStatus = response.status();
+      purchasePayload = (await response.json()).data;
       markCommitted();
       await release;
       await route.fulfill({ response }).catch(() => undefined);
@@ -87,6 +90,12 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     if (process.env.M4_CAPTURE === '1') { await host.clock.install(); await host.clock.pauseAt(new Date()); }
     await host.getByRole('button', { name: 'Open 1 — 5 tickets' }).click();
     await committed;
+    expect(purchaseStatus, 'The interrupted purchase must commit before reload').toBe(201);
+    captured = pullReceiptSchema.parse(purchasePayload);
+    const recoveryStatuses: number[] = [];
+    host.on('response', (response) => {
+      if (new URL(response.url()).pathname.startsWith('/api/pulls/')) recoveryStatuses.push(response.status());
+    });
     await host.reload();
     releaseResponse();
     await host.unroute('**/api/pulls');
@@ -102,7 +111,21 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
       await host.setViewportSize({ width: 1280, height: 850 });
       await host.clock.resume();
     }
-    await expect(host.getByRole('heading', { name: 'Your invitations', exact: true })).toBeVisible();
+    try {
+      await expect(host.getByRole('heading', { name: 'Your invitations', exact: true })).toBeVisible();
+    } catch (cause) {
+      // Report only flow states/status codes; never dump cookies, request IDs or cosmetic payloads.
+      const states = {
+        recoveryStatuses,
+        pending: await host.getByRole('button', { name: 'Recover existing invitation' }).count(),
+        reveal: await host.getByRole('region', { name: 'Committed invitation results' }).count(),
+        accessCheck: await host.getByText('Checking private access…', { exact: true }).count(),
+        roomCheck: await host.getByText('Recovering your current room…', { exact: true }).count(),
+        roomUnavailable: await host.getByText('Your current room could not be checked. Reconnect to continue.', { exact: true }).count(),
+        storageUnavailable: await host.getByRole('alert').filter({ hasText: 'cannot safely save' }).count(),
+      };
+      throw new Error(`Committed pull recovery states: ${JSON.stringify(states)}`, { cause });
+    }
     expect(captured).not.toBeNull();
     const receipt = captured! as PullReceipt;
     const recovered = await (await hostContext.request.get(`/api/pulls/${receipt.requestId}`)).json();
