@@ -19,8 +19,11 @@
 - Reported production link failure remains undiagnosed. Application tests,
   real-email/public-origin acceptance, deployment and migrations were not run.
   Complete document/diff review against the inspected code and confirmed choices,
-  plus `git diff --check`, passed. Application tests are unnecessary for this
-  documentation-only diff. Commit/PR will be recorded before handoff.
+  plus `git diff --check` and staged diff checks, passed. Application tests are
+  unnecessary for this documentation-only diff. Specification commit `786237ec`
+  is pushed in draft [PR #26](https://github.com/24-HUB/poker-game/pull/26), base
+  `dev`. The final fetch confirms the branch contains current `origin/dev`;
+  normal PR CI and written-spec approval remain pending.
 - Next: owner reviews the draft spec; after approval, write the executable
   implementation plan before product code. Production work needs separate
   authorization. Owner merges the documentation PR manually.

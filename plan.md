@@ -534,7 +534,11 @@ Documentation task branch `codex/auth-code-spec` started clean from freshly fetc
 `origin/dev` `4c6b39b3`. Application implementation, production diagnosis, real
 email acceptance, deployments and live migrations are not part of this save point.
 Next: review/approve the spec, then write its executable implementation plan.
-Commit/PR and actual documentation checks are recorded in `CHECKPOINT.md`.
+Specification commit `786237ec` is pushed in draft
+[PR #26](https://github.com/24-HUB/poker-game/pull/26), base `dev`. Document/diff
+review and whitespace checks passed. The final fetch confirms the task branch
+contains current `origin/dev`; normal PR CI and spec approval remain pending.
+Detailed evidence is recorded in `CHECKPOINT.md`.
 Usage observed at 14:42 UTC (21:42 Bangkok): five-hour 86% remaining (reset
 2026-10-13 01:58:12 Bangkok); weekly 42% (reset 2026-10-18 12:12:40 Bangkok).
 
