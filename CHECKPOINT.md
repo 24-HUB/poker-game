@@ -1,5 +1,22 @@
 # Checkpoint — Remaining phases through production
 
+## Render Free Blueprint validation fix — 2026-10-12 19:49 Bangkok (12:49 UTC)
+
+- Clean task branch `codex/render-free-blueprint` from fetched `origin/dev`
+  `1bb1b639`. Render's operator screenshot rejects explicit
+  `maxShutdownDelaySeconds` on Free; local configuration inspection reproduced
+  that incompatible pair before the fix. Remove the field and use Render's
+  default shutdown period. Document the limitation in `docs/deployment.md`.
+- Verification and commit/PR handoff are pending below; hosted Blueprint
+  revalidation requires the corrected revision to be manually merged into `dev`.
+- Next: check YAML and diff, commit/push the task branch and open a PR targeting
+  `dev`; user merges manually, then refreshes the Render Blueprint setup.
+- Usage observed at session start: five-hour 85% remaining (reset 2026-10-12
+  13:52:41 UTC /20:52:41 Bangkok); weekly 47% remaining (reset 2026-10-18
+  05:12:40 UTC /12:12:40 Bangkok). No provider/deployment/live database/billing action.
+
+---
+
 ## Local test account password login — 2026-10-12 11:31 Bangkok (04:31 UTC)
 
 - User requested normal email/password login for prepared local users and removal
