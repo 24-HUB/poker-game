@@ -1,5 +1,54 @@
 # Checkpoint — Remaining phases through production
 
+## M5.1a room UI refinement — 2026-10-12 11:02 Bangkok (04:02 UTC)
+
+- User requested a second room pass after trying the live preview. Continue the
+  existing `codex/m5-predeploy-ux` task and [PR #21](https://github.com/24-HUB/poker-game/pull/21)
+  (base `dev`), returned to draft while this follow-up is verified. Last completed
+  implementation commit **`a1bc9fa4`** follows baseline `4ed3f977`; fetch succeeded,
+  `origin/dev` remains `623749f0`.
+- Visible equipped/default portraits at all seats/mobile, acting-seat deadline
+  ring and explicit label, readable dealer/blind/chip markers, larger private cards,
+  optional four-colour suits, dashed undealt board slots and reduced-motion-aware
+  card arrival. Fold/Call-or-Check/Raise always keep their positions; amount controls
+  collapse off turn, raises are solid cobalt, presets outlined and server-clamped.
+  Half-pot/pot sizing includes the call first; presets never submit a command.
+- Lobby button confirms active-room departure. Gear options retain session end,
+  deliberate collection/invitation departure and suit preference. Mobile playing
+  title is hidden as requested; desktop title is compact. A single felt frame,
+  safe-area padding and clearer cosmetic-ticket eligibility replace clutter.
+  The local Next dev badge is disabled using its documented setting.
+- Previous committed result is shown only for its matching live hand, or the final
+  numbered hand of an ended session; it is dismissible and disappears at a new
+  hand. Regression caught and fixed the ended-session live-ID-clearing case; the
+  final public showdown comes from the selected committed result, not a cleared
+  live-card field.
+  Private-card projection, persistent economy and game authority are unchanged.
+- Focused tests **29/29** pass. Core requirements first failed 5 tests, then passed;
+  final-result/showdown regressions also proved RED→GREEN. Server/browser clock-skew
+  coverage catches the atomic time-sampling issue. Frozen installation and aggregate
+  `pnpm check` passed **383 tests**, typechecks and production builds. Final web
+  test/build after the showdown follow-up passes **116 tests** and production build.
+  Production chunks contain no mock UI/helper strings.
+  Mechanical layout scan returned no findings; reviewer found no major product
+  defect, and stale visible-text assertions were updated to accessible labels.
+- Real six-player captures were inspected together at 360×800, 1280×720 and 900×900,
+  then confirmed once after the waiting-row/result fix. Cards, avatars, 12px seat
+  labels, pot/bet separation and primary controls pass original viewport bounds.
+  Full Chromium run: **18 passed, 1 failed** on a legacy observer-Check absence
+  assertion; updated to verify disabled authority instead. Final release rerun
+  **2/2** passed including takeover and **4.5:1** control contrast, at zero retries.
+  New-head Linux CI is pending. Do not call this ready to merge yet.
+- Next: push these reviewed task-owned commits and inspect exact-head CI. Restart the
+  disposable preview afterward. Browser control of the old preview tab was rejected
+  by its URL policy; no browser-policy workaround was attempted. Isolated acceptance
+  captures remain under `apps/web/.artifacts/room-refinement-final/`.
+- Usage observed before aggregate verification: five-hour 69% remaining (reset 2026-10-12
+  08:14:49 UTC /15:14:49 Bangkok); weekly 58% (reset 2026-10-18 05:12:40 UTC /
+  12:12:40 Bangkok). No deployment, live database, email delivery or billing changes.
+
+---
+
 ## M5.1a final acceptance — 2026-10-12 10:12 Bangkok (03:12 UTC)
 
 - Task branch `codex/m5-predeploy-ux`, [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`.

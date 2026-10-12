@@ -520,6 +520,26 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### M5.1a room UI refinement — 2026-10-12 11:02 Bangkok (04:02 UTC)
+
+Following the user's live-preview feedback, continue `codex/m5-predeploy-ux` and
+draft [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`, last commit
+implementation `a1bc9fa4` following `4ed3f977`; fresh fetch still contains `origin/dev` `623749f0`. The room now has
+visible equipped/default portraits, an acting-seat timer ring, larger private cards,
+readable chip/dealer/blind markers, optional four-colour suits, dashed board slots,
+fixed Fold/Call-or-Check/Raise positions, collapsed off-turn amount controls and
+server-clamped pot/all-in presets. Clear Lobby confirmation and gear options replace
+ambiguous navigation. Numbered dismissible results never label the next live hand;
+the ended-session final result remains visible. Backend authority/privacy/economy
+are preserved. Focused tests 29/29; desktop/mobile captures and original geometry
+gates pass. Full browser run 18/19 exposed a legacy absence assertion for observer
+Check, now correctly expecting disabled state. Final release rerun 2/2 passes,
+including 4.5:1 control contrast. Frozen install and aggregate check pass 383 tests,
+types/builds; final web follow-up passes 116 tests/build. The final public showdown
+comes from the selected committed result when the live hand clears. New-head CI
+pending; see `CHECKPOINT.md` for precise evidence and next commands.
+No deployment or live data/billing changes. Owner merge remains manual.
+
 ### M5.1a final acceptance — 2026-10-12 10:12 Bangkok (03:12 UTC)
 
 `codex/m5-predeploy-ux`, [PR #21](https://github.com/24-HUB/poker-game/pull/21), base `dev`:
