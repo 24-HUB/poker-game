@@ -1,5 +1,38 @@
 # Checkpoint — Remaining phases through production
 
+## Account email codes — spec review, 2026-10-12 21:42 Bangkok (14:42 UTC)
+
+- Clean task branch `codex/auth-code-spec` from freshly fetched `origin/dev`
+  `4c6b39b3`. User requested grill-me and i-have-adhd before a written spec.
+  Interview choices: six-digit codes for verification/reset, 10 minutes, resend
+  replaces old code, password sign-in after verification/reset, one reset form,
+  reset also verifies email, and old-link retirement.
+- Draft `docs/superpowers/specs/2026-10-12-account-email-codes.md` separates approved
+  product choices from proposed five-attempt, cooldown/rate and storage controls.
+  It requires whole-operation atomicity, durable failed-attempt accounting,
+  concurrency/rollback evidence, no automatic login or OTP-route bypass, generic
+  request responses and coordinated legacy-route retirement.
+- Repository/provider inspection completed: pinned Better Auth 1.7.6 has OTP
+  support and atomic consume, but whole-operation updates and race/counter safety
+  require new tests. Existing link-reset transaction wrapper covers a different
+  route. No application code, credentials or provider/live-data settings changed.
+- Reported production link failure remains undiagnosed. Application tests,
+  real-email/public-origin acceptance, deployment and migrations were not run.
+  Complete document/diff review against the inspected code and confirmed choices,
+  plus `git diff --check` and staged diff checks, passed. Application tests are
+  unnecessary for this documentation-only diff. Specification commit `786237ec`
+  is pushed in draft [PR #26](https://github.com/24-HUB/poker-game/pull/26), base
+  `dev`. The final fetch confirms the branch contains current `origin/dev`;
+  normal PR CI and written-spec approval remain pending.
+- Next: owner reviews the draft spec; after approval, write the executable
+  implementation plan before product code. Production work needs separate
+  authorization. Owner merges the documentation PR manually.
+- Usage observed 14:42 UTC: five-hour 86% remaining, reset 2026-10-12 18:58:12 UTC
+  /2026-10-13 01:58:12 Bangkok; weekly 42%, reset 2026-10-18 05:12:40 UTC
+  /12:12:40 Bangkok. No usage reset or billing action.
+
+---
+
 ## Automatic Render deployment — 2026-10-12 21:15 Bangkok (14:15 UTC)
 
 - User requested automatic Render updates. New clean branch

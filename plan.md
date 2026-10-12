@@ -182,7 +182,7 @@ Next.js, NestJS with its default Express adapter, MongoDB, and the Cloudflare/Re
 | Verification | Vitest for shared/web code; Jest with `@nestjs/testing` for backend; real MongoDB replica set; Playwright | Pure rules, Nest dependency wiring and gateways, transactions, and independent browser accounts |
 | Hosting | Cloudflare Workers Free + Render Free web service + MongoDB Atlas Free | Target $0 playtest hosting; one game authority with idle sleep and restart recovery |
 
-Invite-only email/password sign-in is confirmed for M0/M1. A shared registration code is checked against a server-held SHA-256 digest; room invitations remain separate from registration access. For M3 the user approved email verification and password reset links via Brevo Free, configured with an existing sender address. Live delivery and the existing-account rollout must be verified before persistent rewards ship. Hosting providers and a $0 free-tier target are confirmed; region and capacity are selected during setup and measurement. Use provider subdomains initially, with no paid domain or paid service required by this plan.
+Invite-only email/password sign-in is confirmed for M0/M1. A shared registration code is checked against a server-held SHA-256 digest; room invitations remain separate from registration access. For M3 the user approved email verification and password reset links via Brevo Free, configured with an existing sender address. On 2026-10-12, following a reported production verification failure, the user selected codes for both flows: six digits, 10-minute lifetime, newest code only, return to password sign-in, one reset form, successful reset also verifies email, and retirement of already sent links. These product choices supersede the earlier link UX; implementation and hosted acceptance remain pending. The [account-email-code spec](docs/superpowers/specs/2026-10-12-account-email-codes.md) is a draft for review, with technical defaults explicitly proposed. Live delivery and the existing-account rollout must be verified before persistent rewards ship. Hosting providers and a $0 free-tier target are confirmed; region and capacity are selected during setup and measurement. Use provider subdomains initially, with no paid domain or paid service required by this plan.
 
 NestJS supplies a Socket.IO gateway adapter, with gateways sharing the HTTP server port by default. Register the gateway once as a provider and let Nest own its Socket.IO lifecycle. See [NestJS gateways](https://docs.nestjs.com/websockets/gateways).
 
@@ -519,6 +519,28 @@ Implementation prerequisites are concrete: prove the Cloudflare frontend/runtime
 Section 19 supplies the detailed M0/M1 implementation plan. Review it before execution. Build subsequent milestones sequentially, each with a usable frontend slice and its acceptance evidence. Keep all future implementation on a separate development branch so this planning branch retains its single-file purpose. This design task creates no application code, provider accounts, deployed resources, or paid subscriptions.
 
 ## 18. Checkpoint and resumption notes
+
+### Account email codes — specification review, 2026-10-12
+
+The owner reports production is configured but email-verification links leave the
+account unverified. The live cause has not been reproduced. The grill-me interview
+selected six-digit, 10-minute codes for verification and password reset, newest
+code only, password sign-in after success, one reset form, email verification on
+successful reset, and old-link retirement. The
+[written spec](docs/superpowers/specs/2026-10-12-account-email-codes.md) records those
+confirmed choices separately from proposed attempt/rate/storage controls.
+
+Documentation task branch `codex/auth-code-spec` started clean from freshly fetched
+`origin/dev` `4c6b39b3`. Application implementation, production diagnosis, real
+email acceptance, deployments and live migrations are not part of this save point.
+Next: review/approve the spec, then write its executable implementation plan.
+Specification commit `786237ec` is pushed in draft
+[PR #26](https://github.com/24-HUB/poker-game/pull/26), base `dev`. Document/diff
+review and whitespace checks passed. The final fetch confirms the task branch
+contains current `origin/dev`; normal PR CI and spec approval remain pending.
+Detailed evidence is recorded in `CHECKPOINT.md`.
+Usage observed at 14:42 UTC (21:42 Bangkok): five-hour 86% remaining (reset
+2026-10-13 01:58:12 Bangkok); weekly 42% (reset 2026-10-18 12:12:40 Bangkok).
 
 ### Automatic Render deployment requested — 2026-10-12
 
