@@ -8,11 +8,13 @@
   successfully, including the disposable backup drill, Worker and Chromium gates.
   Last completed implementation **`d66e6f2d`**, documentation **`a1621591`**.
 - New clean task branch `codex/m5-backup-readiness` from this fetched baseline.
-  PR creation to `dev` pending; keep draft while operator inputs/evidence are missing.
+  Preparation commit **`c614ce7c`** is pushed; draft
+  [PR #23](https://github.com/24-HUB/poker-game/pull/23) targets `dev`.
+  Keep draft while operator inputs/evidence are missing; owner merges manually.
 - Prepared non-secret storage/key acceptance fields and a retained-archive recovery
   procedure in `docs/operations.md`; updated the release checklist to reflect normal
   local account login and the verified merged candidate. Only documentation changes.
-  Diff/whitespace review passed before this save-point update; recheck before commit.
+  Complete task diff review and `git diff --check` passed. Task-head CI is pending.
   No application tests rerun for documentation-only edits.
 - Blocker: operator has not selected an encrypted archive destination, staging
   location, separate key store or confirmed storage cost/capacity. The previous

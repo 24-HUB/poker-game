@@ -526,6 +526,8 @@ User requested the next step after manually merging PR #22. Fresh fetch and
 GitHub confirm merge revision `1bb1b639`; its
 [dev CI](https://github.com/24-HUB/poker-game/actions/runs/38204673280) succeeded.
 Clean task branch `codex/m5-backup-readiness` starts from that revision.
+Preparation commit `c614ce7c` is pushed in draft
+[PR #23](https://github.com/24-HUB/poker-game/pull/23), base `dev`.
 Prepared the storage/key acceptance record and retained recovery procedure in
 `docs/operations.md`, corrected the release checklist's obsolete shortcut-login
 requirement, and recorded the verified merged local candidate. Documentation only;
