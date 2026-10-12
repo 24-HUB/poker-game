@@ -38,10 +38,22 @@
   Important/Critical findings. Deferred minor remains: cached hand outcomes stay
   visible after a refetch authorization error; this is already-received client data,
   not a new server disclosure. Hosted playtest/provider gates remain separate.
-- Latest remote CI on old head `032f885c` passed aggregate and Linux Worker build,
-  but failed Chromium (three timeouts). The resumed head must pass that workflow
-  before this PR can be described as ready. Local changes will be committed/pushed
-  to the existing PR; record the resulting head and CI evidence before final handoff.
+- Follow-up implementation `2f09c749` was pushed. Its Linux CI passed aggregate,
+  backup rehearsal and Worker packaging; Chromium finished 17 passed, 1 failed and
+  1 skipped. The new mobile assertion exposed a panel bottom of 828px in an 800px viewport.
+  Kept the original viewport gate: remove redundant turn labels, keep timer beside
+  the mobile turn label, and give the room title its own grid row rather than sharing
+  width with options. Actor context remains visible for observer/transport states.
+  The semantic turn-label regression proved RED→GREEN. New-head Linux CI remains
+  required before declaring this PR ready; record its evidence before final handoff.
+- Correction verification: the semantic turn-label unit suite passes 9/9; full local
+  CI-mode Chromium passed 19/19 before the final mobile timer-grid grouping. The
+  final poker/history/six-player capture flows passed; one reconnect capture attempt
+  failed before the server on Windows `net::ERR_NO_BUFFER_SPACE`, confirmed from
+  the local trace. Its isolated rerun passed unchanged at the original bound. Scoped
+  final mobile own-turn/waiting captures were inspected. Latest `pnpm check` passed
+  **374 tests**, types and production builds. No unrelated application/network fix
+  was introduced for the host socket-buffer failure.
 - Next: inspect the new GitHub CI run after push. If it fails, read its actual failed
   step/logs and repair the cause on this same branch; do not relax acceptance bounds,
   merge, deploy or create another implementation branch. User merges manually.

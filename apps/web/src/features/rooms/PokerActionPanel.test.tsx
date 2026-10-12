@@ -17,6 +17,17 @@ const game: GameView = {
 const props = { game, accountId: 'a', status: 'connected' as const, pending: false, message: null, onAction: vi.fn(), onRetryPending: vi.fn() };
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
 describe('PokerActionPanel', () => {
+  it('names the turn once during play while retaining actor context for an observer', () => {
+    const view = render(<PokerActionPanel {...props} />);
+    expect(screen.getByText('Your turn')).toBeVisible();
+    expect(screen.queryByText('Turn: Alice')).not.toBeInTheDocument();
+    view.rerender(<PokerActionPanel {...props} game={{ ...game, actorAccountId: 'b' }} />);
+    expect(screen.getByText('Waiting for Bob')).toBeVisible();
+    expect(screen.queryByText('Turn: Bob')).not.toBeInTheDocument();
+    view.rerender(<PokerActionPanel {...props} game={{ ...game, actorAccountId: 'b', control: { isController: false, epoch: 2 } }} />);
+    expect(screen.getByText('Turn: Bob')).toBeVisible();
+    expect(screen.getByRole('button', { name: 'Fold' })).toBeDisabled();
+  });
   it('blocks betting for an aborted session even if an old snapshot retains legal actions', () => {
     render(<PokerActionPanel {...props} game={{ ...game, sessionPhase: 'aborted' }} />);
     expect(screen.getByRole('button', { name: 'Fold' })).toBeDisabled();

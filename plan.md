@@ -534,7 +534,14 @@ captures were inspected at all required breakpoints. Restart recovery now passes
 at original bounds on fresh services; its earlier historical failure cause remains
 unproven and no production restart fix is claimed. See CHECKPOINT.md for details.
 
-New remote Linux CI remains the final gate before marking the PR ready. The user
+Follow-up `2f09c749` passed Linux aggregate, backup and Worker steps but failed the
+new mobile viewport assertion (828px versus 800px); 17 browser cases passed and one
+was skipped. Corrected redundant turn rows and header width sharing without relaxing the
+gate; the next Linux run must verify the correction. Remote Linux CI remains the
+final gate before marking the PR ready. Latest local aggregate passed 374 tests,
+types/builds; scoped final capture flows and isolated reconnect passed. A Windows
+socket-buffer error in one capture was traced and recorded, not treated as a server
+failure or masked with a weaker assertion. The user
 merges manually; no deployment/live database/billing work occurred. Continue the
 same branch and PR if CI reports a failure. Hosted M5/friends gates remain pending.
 

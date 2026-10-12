@@ -38,7 +38,7 @@ test('heads-up hands carry chips and the host ends after a committed hand', asyn
     await expect(guest.getByLabel('0 tickets, 20 can be earned today')).toBeVisible();
     await expect(host.getByText('Winner: Poker Guest')).toBeVisible();
     await expect(host.getByText('Stack: 1010 chips')).toHaveCount(1);
-    await expect(host.getByText(/Turn: Poker Guest/)).toBeVisible({ timeout: 10_000 });
+    await expect(host.getByText('Waiting for Poker Guest')).toBeVisible({ timeout: 10_000 });
     host.once('dialog', (dialog) => void dialog.accept());
     await host.getByText('Room options', { exact: true }).click();
     await expect(host.getByRole('button', { name: 'End after this hand' })).toBeEnabled();

@@ -85,7 +85,9 @@ are corrected, actual mobile own-turn and 1280×720 visibility assertions pass, 
 full local CI-mode Chromium is 19/19 with zero retries. Final aggregate passes 372
 tests/types/builds, plus direct native history HTTP guard coverage. Restart recovery
 passes at original bounds on fresh services; its earlier historical cause is unproven.
-New-head remote Linux CI remains pending. See `CHECKPOINT.md` for evidence.
+Linux CI verified aggregate, backup and Worker packaging, but caught a font-sensitive
+mobile overflow; compact turn/header grouping addresses it without weakening the
+viewport assertion. New-head remote Linux CI remains pending. See `CHECKPOINT.md`.
 
 Earlier passing gameplay evidence remains historical. The user requires these
 additional improvements before production; implement and verify them before the

@@ -32,6 +32,7 @@ export function PokerActionPanel({ game, accountId, status, pending, message, on
     selected >= raise.minRaiseTo && selected <= raise.maxRaiseTo &&
     (selected - raise.minRaiseTo) % raise.amountStep === 0 && (!raise.shortAllInOnly || selected === raise.maxRaiseTo);
   const actor = game.participants.find((player) => player.accountId === game.actorAccountId);
+  const waitingLabel = `Waiting for ${actor?.displayName ?? 'another player'}`;
   const ownTurn = game.actorAccountId === accountId;
   const settled = game.handPhase === null || ['paused', 'settling', 'result'].includes(game.handPhase);
   const reason = status !== 'connected' ? 'Reconnecting: actions are unavailable until the table is synchronized.'
@@ -40,7 +41,7 @@ export function PokerActionPanel({ game, accountId, status, pending, message, on
         : game.sessionPhase === 'aborted' ? 'Session interrupted. Betting is unavailable.'
           : game.sessionPhase === 'ended' ? 'Session complete. The host can start a new session.'
           : settled ? game.handPhase === 'paused' ? 'Settlement paused. Retrying safely.' : 'Waiting for the next hand.'
-            : !ownTurn ? `Waiting for ${actor?.displayName ?? 'another player'}` : null;
+            : !ownTurn ? waitingLabel : null;
   const canAct = reason === null;
   const seconds = game.deadline ? Math.max(0, Math.ceil((Date.parse(game.deadline) - now - offset) / 1000)) : null;
   const raiseLabel = game.currentBet === 0 ? 'Bet' : 'Raise';
@@ -52,9 +53,9 @@ export function PokerActionPanel({ game, accountId, status, pending, message, on
   }
   return <section className="poker-table__action-panel" aria-label="Poker actions">
     <div className="poker-turn">
-      <p role="status">{ownTurn && !settled ? <strong>Your turn</strong> : reason ?? `Waiting for ${actor?.displayName ?? 'another player'}`}</p>
-      {game.actorAccountId ? <span>Turn: {actor?.displayName ?? 'Player'}</span> : null}
-      {seconds === null ? null : <span aria-label="Time remaining" aria-live="off">{seconds}s left</span>}
+      <p role="status">{ownTurn && !settled ? <strong>Your turn</strong> : reason ?? waitingLabel}</p>
+      {seconds === null ? null : <span className="poker-turn__timer" aria-label="Time remaining" aria-live="off">{seconds}s left</span>}
+      {game.actorAccountId && !ownTurn && reason !== waitingLabel ? <span>Turn: {actor?.displayName ?? 'Player'}</span> : null}
     </div>
     {game.sessionPhase === 'ending' ? <p role="status">The session will end after this hand.</p> : null}
     {reason && ownTurn && !settled ? <p>{reason}</p> : null}

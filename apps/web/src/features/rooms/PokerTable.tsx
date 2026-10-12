@@ -34,7 +34,7 @@ export function PokerTable({ room, game, accountId, status, pending, message,
 
   return <section className="poker-table" aria-label="Poker table">
     <header className="poker-table__header">
-      <div><h1>{room.title}</h1>
+      <div><h1 title={room.title}>{room.title}</h1>
         <div className="poker-table__details"><p>Hand {game?.handNumber ?? '…'} · {game?.handPhase ?? 'Waiting for the next hand'} · Blinds {game?.smallBlind ?? '…'}/{game?.bigBlind ?? '…'}</p>
         <span className={`connection-state connection-state--${status}`}>{status === 'connected' ? 'Connected' : status === 'unavailable' ? 'Service unavailable' : 'Reconnecting'}</span></div></div>
       <div className="poker-table__session-actions">
