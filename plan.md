@@ -520,6 +520,31 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Account email codes — implementation complete, 2026-10-13
+
+Owner directed immediate implementation on `codex/account-email-codes`, overriding
+the additional plan-review pause. Commit `67c34997` implements the
+[email-code spec](docs/superpowers/specs/2026-10-12-account-email-codes.md) and is
+pushed in [PR #27](https://github.com/24-HUB/poker-game/pull/27), base `dev`.
+Six-digit ten-minute challenges replace both link flows; durable attempt/rate
+controls, atomic recovery, no automatic login, retained-email forms, native fixture
+verification and coordinated old-link retirement are implemented.
+
+Pinned frozen install and `pnpm check` passed. Final full backend/frontend suites
+passed 233/233 and 121/121, complete Chromium passed 23/23, final typechecks/builds
+passed, and the Worker bundle passed in disposable Linux. Independent review's
+three Important findings and the trailing-slash public-origin edge case have
+RED-to-GREEN regressions. No local blockers remain; GitHub PR CI and owner review
+are pending. Final fetch confirms current `origin/dev` `bf472463` is included.
+Complete evidence, implementation decisions and usage are in `CHECKPOINT.md`.
+
+Next: owner reviews CI and merges manually. Migration 006 and coordinated rollout
+require separate live authorization and follow `docs/deployment.md`; old-link
+acceptance must remain disabled during rollback. No deployment/live migration or
+actual Brevo/public-route acceptance occurred. The reported production failure
+remains unverified. Usage observed at 02:42 UTC (09:42 Bangkok): five-hour 38%
+remaining (reset 12:23:57 Bangkok); weekly 27% (reset October 18, 12:12:40 Bangkok).
+
 ### Account email codes — implementation plan, 2026-10-13
 
 The owner requested implementation of the written spec, approving its scope and

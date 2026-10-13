@@ -1,5 +1,50 @@
 # Checkpoint — Remaining phases through production
 
+## Account email codes — implementation complete, 2026-10-13 09:42 Bangkok (02:42 UTC)
+
+- Owner explicitly directed immediate implementation, overriding the additional
+  plan-review pause. Continued on `codex/account-email-codes` from `origin/dev`
+  `bf472463`; no unrelated work was present. Implementation commit `67c34997`
+  is pushed in [PR #27](https://github.com/24-HUB/poker-game/pull/27), base `dev`.
+- Implemented six-digit/600-second verification and reset, keyed-hash storage,
+  latest-generation/single-use challenges, durable five-attempt limits,
+  address/purpose cooldown and hourly bounds, trusted-IP bounds with Retry-After,
+  transactional reset/verification/session revocation and legacy-route retirement.
+  Better Auth 1.7.6 still owns registration, password hashing and uncached sessions.
+  No automatic login; reset verifies an unverified email and preserves ID/economy.
+- Updated Brevo messages, native auth responses, shared code-entry/reset forms,
+  retained-email sign-in transitions, uncertain-result copy, focus/keyboard/refresh
+  behavior and cooldown display. Browser/local mock fixtures submit native codes;
+  production capture/shortcut routes remain unavailable. Secret-bearing trace,
+  automatic screenshot/video and failure-page snapshot capture are disabled.
+- Independent read-only review found three Important issues, all reproduced and
+  fixed RED-to-GREEN: duplicate signup issuance, hashing before IP admission and
+  account eligibility exposed by delivery timeout. Real Brevo sends share a bounded
+  five-second response window across eligibility outcomes. Final compatibility
+  review also reproduced/fixed canonical Origin handling for trailing-slash config.
+- Passed: pinned Node 22.16.0/pnpm 10.33.0 frozen install; `pnpm check`; final full
+  backend suite **233/233**, final full frontend suite **121/121**, full Chromium
+  **23/23**; final backend/frontend typechecks and `pnpm build`. Worker bundle
+  passed in disposable Linux Docker with Node 22.16.0/pnpm 10.33.0 and read-only
+  source. Native/transaction tests cover real replica-set races, forced retries,
+  rollback at all writes, persisted attempts, sessions and owned-cosmetic/wallet
+  preservation. Desktop, 360px mobile and shortened 480px-height viewport evidence
+  confirms reachable controls and no horizontal overflow; physical phone keyboards
+  and hosted behavior were not tested.
+- Final diff, staged whitespace and complete task review passed. Final fetch
+  confirms the branch contains current `origin/dev` `bf472463`. No remaining local
+  implementation blockers; normal GitHub PR CI and owner review remain pending.
+- Next: review PR #27 and its CI; owner merges manually. Before rollout, follow
+  `docs/deployment.md`: pause automatic deployment, drain play, obtain explicit
+  authorization for live migration 006, coordinate Worker/backend cutover and prove
+  actual Brevo/public-origin acceptance. No live migration, provider change or
+  deployment occurred, and the reported production failure is not claimed fixed.
+- Usage observed at 02:42 UTC: five-hour **38% remaining**, reset 2026-10-13
+  05:23:57 UTC /12:23:57 Bangkok; weekly **27% remaining**, reset 2026-10-18
+  05:12:40 UTC /12:12:40 Bangkok. No billing/reset-credit action.
+
+---
+
 ## Account email codes — implementation plan, 2026-10-13 08:48 Bangkok (01:48 UTC)
 
 - Owner requested implementation of the written spec; treat that as written-spec
