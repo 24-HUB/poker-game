@@ -57,10 +57,10 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
     for (const page of pages.slice(1)) {
       await page.goto('/#invite=' + encodeURIComponent(invitation));
       await expect(page).toHaveURL(/\/rooms\/[^/]+$/);
-      await page.getByRole('button', { name: 'Use this tab to play' }).click();
+      await expect(page.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
       await expect(page.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     }
-    await host.getByRole('button', { name: 'Use this tab to play' }).click();
+    await expect(host.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     await expect(host.getByText('6 of 6 members')).toBeVisible();
     await host.getByRole('button', { name: 'Start poker session' }).click();
     for (const page of pages) {
@@ -127,8 +127,32 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
     await pages[1]!.setViewportSize({ width: 1440, height: 1000 });
     const firstActor = await actingPage(pages);
     const previousViewport = firstActor.viewportSize()!;
-    await firstActor.setViewportSize({ width: 360, height: 800 });
-    await assertTableVisibility(firstActor);
+    await firstActor.addStyleTag({ content: 'body { font-family: Arial, sans-serif; }' });
+    for (const viewport of [{ width: 355, height: 767 }, { width: 360, height: 800 }, { width: 390, height: 844 }, { width: 1440, height: 900 }]) {
+      await firstActor.setViewportSize(viewport);
+      await expect(firstActor.getByRole('spinbutton')).toBeVisible();
+      await expect(firstActor.getByRole('slider')).toBeVisible();
+      await expect(firstActor.getByRole('button', { name: 'Minimum', exact: true })).toBeVisible();
+      await assertTableVisibility(firstActor);
+      await firstActor.getByRole('spinbutton').fill('1');
+      await expect(firstActor.getByText(/Enter a whole-chip amount/)).toBeVisible();
+      await assertTableVisibility(firstActor);
+      await firstActor.getByRole('button', { name: 'Minimum', exact: true }).click();
+      if (!process.env.CI) await firstActor.screenshot({ path: testInfo.outputPath(`audit-own-turn-${viewport.width}.png`), fullPage: true });
+    }
+    await firstActor.setViewportSize({ width: 360, height: 480 });
+    await firstActor.getByRole('spinbutton').focus();
+    await firstActor.getByRole('button', { name: 'Minimum', exact: true }).scrollIntoViewIfNeeded();
+    await expect(firstActor.getByRole('button', { name: 'Minimum', exact: true })).toBeInViewport();
+    await expect.poll(() => firstActor.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await firstActor.setViewportSize({ width: 355, height: 767 });
+    const ownName = firstActor.locator('.poker-seat[data-position="bottom"] .poker-player-name summary');
+    await ownName.focus();
+    await firstActor.keyboard.press('Enter');
+    const expandedName = await firstActor.locator('.poker-seat[data-position="bottom"] .poker-player-name > span').boundingBox();
+    const expandedCards = await firstActor.getByLabel('Your cards').boundingBox();
+    expect(expandedName!.y + expandedName!.height, 'Expanded player names must not cover private cards').toBeLessThanOrEqual(expandedCards!.y);
+    await ownName.click();
     await expect(firstActor.getByText('(you)', { exact: true })).toBeVisible();
     if (!process.env.CI) await firstActor.screenshot({ path: testInfo.outputPath('six-player-mobile-your-turn.png'), fullPage: true });
     await firstActor.setViewportSize(previousViewport);
@@ -146,7 +170,7 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
     await host.getByLabel('Room options', { exact: true }).click();
     await host.getByRole('button', { name: 'End after this hand' }).click();
     await expect(host.getByText('The session will end after this hand.')).toBeVisible();
-    const raiseInput = actor.getByRole('spinbutton', { name: /Raise to/ });
+    const raiseInput = actor.getByRole('spinbutton', { name: /Raise to|Bet amount/ });
     const maximum = await raiseInput.getAttribute('max');
     expect(maximum).not.toBeNull();
     await raiseInput.fill(maximum!);
@@ -216,8 +240,8 @@ test('heads-up reconnect restores private cards and takeover removes old-tab bet
     await host.getByRole('button', { name: 'Create private room' }).click();
     await host.getByRole('button', { name: 'Copy invite code' }).click();
     await guest.goto('/#invite=' + encodeURIComponent(await host.evaluate(() => navigator.clipboard.readText())));
-    await guest.getByRole('button', { name: 'Use this tab to play' }).click();
-    await host.getByRole('button', { name: 'Use this tab to play' }).click();
+    await expect(guest.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
+    await expect(host.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     await host.getByRole('button', { name: 'Start poker session' }).click();
     await expect(guest.getByLabel('Your cards')).toBeVisible();
     const privateCards = await guest.getByLabel('Your cards').textContent();

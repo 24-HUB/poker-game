@@ -23,16 +23,24 @@ const uncertainGameReply: Result<GameReply> = { data: null, error: uncertainRepl
 export function useRoomConnection(roomId: string | null) {
   const queryClient = useQueryClient();
   const { session, refresh: refreshSession } = useSession();
-  const room = useStore(roomStore, (state) => state.room);
-  const pendingCommand = useStore(roomStore, (state) => state.pendingCommand);
-  const game = useStore(gameStore, (state) => state.game);
+  const accountId = session.status === 'authenticated' ? session.account.accountId : null;
+  const room = useStore(roomStore, (state) => state.accountId === accountId ? state.room : null);
+  const pendingCommand = useStore(roomStore, (state) => state.accountId === accountId ? state.pendingCommand : null);
+  const game = useStore(gameStore, (state) => state.accountId === accountId ? state.game : null);
   const [pendingGameCommand, setPendingGameCommand] = useState<GameMutationCommand | null>(null);
   const [status, setStatus] = useState<RoomConnectionStatus>('connecting');
   const [authorityBootId, setAuthorityBootId] = useState<string | null>(null);
+  const [synchronizedRoomId, setSynchronizedRoomId] = useState<string | null>(null);
+  const [syncFailed, setSyncFailed] = useState(false);
+  const [syncAttempt, setSyncAttempt] = useState(0);
   const [uncertainCommandId, setUncertainCommandId] = useState<string | null>(null);
   const socketRef = useRef<GameSocket | null>(null);
   const bootIdRef = useRef<string | null>(null);
-  const accountId = session.status === 'authenticated' ? session.account.accountId : null;
+  const roomIdRef = useRef(roomId);
+  roomIdRef.current = roomId;
+
+  const accountIdRef = useRef(accountId);
+  accountIdRef.current = accountId;
 
   const sync = useCallback(async (): Promise<Result<RoomReply>> => {
     const socket = socketRef.current;
@@ -54,47 +62,33 @@ export function useRoomConnection(roomId: string | null) {
     setStatus('connecting');
 
     socket.on('connection:ready', ({ authorityBootId: nextBootId }) => {
+      setSynchronizedRoomId(null);
+      setSyncFailed(false);
       void queryClient.invalidateQueries({ queryKey: ['current-room', accountId] });
       void queryClient.invalidateQueries({ queryKey: ['wallet', accountId] });
       bootIdRef.current = nextBootId;
       setAuthorityBootId(nextBootId);
       setStatus('connected');
       const stored = readPendingCommand(accountId, sessionStorage);
-      setPendingGameCommand(roomId ? readPendingGameCommand(accountId, roomId, sessionStorage) : null);
       roomStore.getState().setPendingCommand(stored);
       setUncertainCommandId(stored?.commandId ?? null);
-      if (roomId) void (async () => {
-        const result = await emitWithAck(socket, 'room:sync', { type: 'room:sync', roomId });
-        if (!result.data?.room) return;
-        roomStore.getState().applySnapshot(result.data.room);
-        const previous = gameStore.getState();
-        gameStore.getState().setBoundary(accountId, roomId,
-          result.data.room.sessionId ?? (previous.roomId === roomId ? previous.sessionId : null), nextBootId);
-        const synchronized = await emitGameWithAck(socket, 'game:sync', { type: 'game:sync', roomId });
-        if (synchronized.data?.game) {
-          const view = synchronized.data.game;
-          if (result.data.room.sessionId === view.sessionId ||
-            (result.data.room.sessionId === null && view.sessionPhase === 'ended')) {
-            gameStore.getState().setBoundary(accountId, roomId, view.sessionId, nextBootId);
-            gameStore.getState().applySnapshot(view);
-          }
-        }
-      })();
     });
     socket.on('room:snapshot', (view) => {
-      if (view.roomId !== roomId) return;
+      if (view.roomId !== roomIdRef.current) return;
       roomStore.getState().applySnapshot(view);
       void queryClient.invalidateQueries({ queryKey: ['current-room', accountId] });
       const previous = gameStore.getState();
-      gameStore.getState().setBoundary(accountId, roomId,
-        view.sessionId ?? (previous.roomId === roomId ? previous.sessionId : null), bootIdRef.current);
+      gameStore.getState().setBoundary(accountId, view.roomId,
+        view.sessionId ?? (previous.roomId === view.roomId ? previous.sessionId : null), bootIdRef.current);
     });
-    socket.on('game:snapshot', (view) => gameStore.getState().applySnapshot(view));
+    socket.on('game:snapshot', (view) => {
+      if (view.roomId === roomIdRef.current) gameStore.getState().applySnapshot(view);
+    });
     socket.on('account:changed', () => {
       for (const scope of ['wallet', 'collection', 'equipment']) void queryClient.invalidateQueries({ queryKey: [scope, accountId] });
     });
     socket.on('room:closed', ({ roomId: closedRoomId, reason }) => {
-      if (roomStore.getState().room?.roomId === closedRoomId || roomId === closedRoomId) {
+      if (roomStore.getState().room?.roomId === closedRoomId || roomIdRef.current === closedRoomId) {
         roomStore.getState().close(reason);
         gameStore.getState().clear();
         clearPendingGameCommand(sessionStorage);
@@ -104,8 +98,8 @@ export function useRoomConnection(roomId: string | null) {
       }
     });
     socket.on('disconnect', (reason) => {
-      gameStore.getState().clear();
       if (reason === 'io server disconnect') {
+        gameStore.getState().clear();
         roomStore.getState().clear();
         setPendingGameCommand(null);
         setStatus('closed');
@@ -123,7 +117,49 @@ export function useRoomConnection(roomId: string | null) {
       gameStore.getState().clear();
       socket.close();
     };
-  }, [accountId, roomId, queryClient]);
+  }, [accountId, queryClient]);
+
+  useEffect(() => {
+    gameStore.getState().clear();
+    setSynchronizedRoomId(null);
+  }, [roomId]);
+
+  useEffect(() => {
+    const socket = socketRef.current;
+    setPendingGameCommand(accountId && roomId ? readPendingGameCommand(accountId, roomId, sessionStorage) : null);
+    if (!socket?.connected || !accountId || !roomId || status !== 'connected' || !authorityBootId) return;
+    setSyncFailed(false);
+    setSynchronizedRoomId(null);
+    let cancelled = false;
+    void (async () => {
+      const result = await emitWithAck(socket, 'room:sync', { type: 'room:sync', roomId });
+      if (cancelled) return;
+      if (!result.data?.room) { setSyncFailed(true); return; }
+      roomStore.getState().applySnapshot(result.data.room);
+      const currentRoom = roomStore.getState().room;
+      if (currentRoom?.roomId !== roomId) { setSyncFailed(true); return; }
+      const previous = gameStore.getState();
+      gameStore.getState().setBoundary(accountId, roomId,
+        currentRoom.sessionId ?? (previous.roomId === roomId ? previous.sessionId : null), authorityBootId);
+      const synchronized = await emitGameWithAck(socket, 'game:sync', { type: 'game:sync', roomId });
+      if (cancelled) return;
+      const synchronizedRoom = roomStore.getState().room;
+      if (synchronizedRoom?.roomId !== roomId) { setSyncFailed(true); return; }
+      if (!synchronized.data?.game) {
+        if (synchronizedRoom.phase === 'waiting' && (synchronized.error === null || synchronized.error?.code === 'NOT_FOUND')) setSynchronizedRoomId(roomId);
+        else setSyncFailed(true);
+        return;
+      }
+      const view = synchronized.data.game;
+      if (synchronizedRoom.sessionId === view.sessionId ||
+        (synchronizedRoom.sessionId === null && view.sessionPhase === 'ended')) {
+        gameStore.getState().setBoundary(accountId, roomId, view.sessionId, authorityBootId);
+        gameStore.getState().applySnapshot(view);
+        setSynchronizedRoomId(roomId);
+      } else { setSyncFailed(true); }
+    })();
+    return () => { cancelled = true; };
+  }, [accountId, roomId, status, authorityBootId, syncAttempt]);
 
   const send = useCallback(async (command: RoomCommand): Promise<Result<RoomReply>> => {
     const socket = socketRef.current;
@@ -134,6 +170,7 @@ export function useRoomConnection(roomId: string | null) {
       storePendingCommand(accountId, command, sessionStorage);
     }
     const result = await emitWithAck(socket, command.type, command);
+    if (socketRef.current !== socket || accountIdRef.current !== accountId) return unavailableReply();
     if (result.error?.code === 'COMMAND_UNCERTAIN') {
       if (command.type !== 'room:sync') setUncertainCommandId(command.commandId);
       return result;
@@ -160,12 +197,13 @@ export function useRoomConnection(roomId: string | null) {
 
   const sendGame = useCallback(async (command: GameCommand): Promise<Result<GameReply>> => {
     const socket = socketRef.current;
-    if (!socket?.connected || !accountId || !roomId) return unavailableGameReply();
+    if (!socket?.connected || !accountId || !roomId || command.type !== 'game:sync' && synchronizedRoomId !== roomId) return unavailableGameReply();
     if (command.type !== 'game:sync') {
       setPendingGameCommand(command);
       storePendingGameCommand(accountId, command, sessionStorage);
     }
     const result = await emitGameWithAck(socket, command.type, command);
+    if (socketRef.current !== socket || accountIdRef.current !== accountId || roomIdRef.current !== roomId) return unavailableGameReply();
     if (result.error?.code === 'COMMAND_UNCERTAIN') return result;
     if (command.type !== 'game:sync') {
       setPendingGameCommand(null);
@@ -186,7 +224,7 @@ export function useRoomConnection(roomId: string | null) {
       }
     }
     return result;
-  }, [accountId, roomId, refreshSession]);
+  }, [accountId, roomId, refreshSession, synchronizedRoomId]);
 
   const retryPendingGame = useCallback((): Promise<Result<GameReply>> => {
     const command = pendingGameCommand;
@@ -197,9 +235,10 @@ export function useRoomConnection(roomId: string | null) {
     [sendGame, roomId]);
 
   return {
-    status,
+    status: status === 'connected' && roomId && synchronizedRoomId !== roomId ? syncFailed ? 'unavailable' as const : 'reconnecting' as const : status,
     room,
-    game,
+    game: game?.roomId === roomId ? game : null,
+    retrySynchronization: () => { socketRef.current?.connect(); setSyncAttempt((attempt) => attempt + 1); },
     pendingCommand,
     pendingGameCommand,
     authorityBootId,

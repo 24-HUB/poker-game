@@ -1,11 +1,14 @@
 'use client';
 
-import { roomTitleSchema } from '@poker/contracts';
+import { roomTitleSchema, type CosmeticItem } from '@poker/contracts';
 import { ArrowLeft, ArrowRight, Clock3, Plus, Users } from 'lucide-react';
 import { type FormEvent, type KeyboardEvent, useEffect, useRef, useState } from 'react';
 
 import { CompanionPortrait } from '../../components/shell/CompanionPortrait';
 import { Icon } from '../../components/ui/Icon';
+import type { SessionState } from '../../lib/auth-client';
+import { SignInButton } from '../auth/SignInButton';
+import { useLobbyDraft } from './LobbyDraftProvider';
 
 export type LobbyProps = {
   onCreate: (title: string) => void | Promise<void>;
@@ -15,6 +18,10 @@ export type LobbyProps = {
   initialInvitation?: string | null;
   canRetryPending?: boolean;
   onRetryPending?: () => void | Promise<void>;
+  session?: SessionState;
+  onAuthenticated?: () => void;
+  avatar?: CosmeticItem | null;
+  avatarPending?: boolean;
 };
 
 type LobbyMode = 'actions' | 'create' | 'join';
@@ -27,12 +34,33 @@ export function Lobby({
   initialInvitation = null,
   canRetryPending = false,
   onRetryPending,
+  session,
+  onAuthenticated = () => {},
+  avatar,
+  avatarPending,
 }: LobbyProps) {
-  const [mode, setMode] = useState<LobbyMode>(initialInvitation ? 'join' : 'actions');
-  const [title, setTitle] = useState('');
-  const [invitation, setInvitation] = useState(initialInvitation ?? '');
+  const savedDraft = useLobbyDraft();
+  const [localMode, setLocalMode] = useState<LobbyMode>(initialInvitation ? 'join' : 'actions');
+  const [localTitle, setLocalTitle] = useState('');
+  const [localInvitation, setLocalInvitation] = useState(initialInvitation ?? '');
+  const mode = savedDraft?.draft.mode ?? localMode;
+  const title = savedDraft?.draft.title ?? localTitle;
+  const invitation = savedDraft?.draft.invitation ?? localInvitation;
+  const setMode = (mode: LobbyMode) => savedDraft ? savedDraft.update({ mode }) : setLocalMode(mode);
+  const setTitle = (title: string) => savedDraft ? savedDraft.update({ title }) : setLocalTitle(title);
+  const setInvitation = (invitation: string) => savedDraft ? savedDraft.update({ invitation }) : setLocalInvitation(invitation);
   const [validationError, setValidationError] = useState<string | null>(null);
   const lastTrigger = useRef<HTMLButtonElement | null>(null);
+  const createTrigger = useRef<HTMLButtonElement | null>(null);
+  const joinTrigger = useRef<HTMLButtonElement | null>(null);
+  const errorSummary = useRef<HTMLParagraphElement | null>(null);
+  const formError = validationError ?? error;
+  useEffect(() => { if (formError) errorSummary.current?.focus(); }, [formError]);
+  const access = session?.status === 'unauthenticated' ? <div className="room-entry-access">
+    <p>Sign in to {mode === 'create' ? 'create a private room' : 'join your friend’s room'}. Your draft stays in this tab.</p>
+    <SignInButton onAuthenticated={onAuthenticated} />
+  </div> : session?.status === 'unavailable' ? <p role="status">The game server is starting. <button type="button" onClick={onAuthenticated}>Retry connection</button></p> : null;
+  const errorNotice = formError ? <p id="room-entry-error" ref={errorSummary} tabIndex={-1} className="room-form__error" role="alert">{formError}</p> : null;
 
   useEffect(() => {
     if (!initialInvitation) return;
@@ -47,8 +75,9 @@ export function Lobby({
   }
 
   function returnToActions() {
+    const trigger = lastTrigger.current ?? (mode === 'create' ? createTrigger.current : joinTrigger.current);
     setMode('actions');
-    requestAnimationFrame(() => lastTrigger.current?.focus());
+    requestAnimationFrame(() => trigger?.focus());
   }
 
   function handleFormKeyDown(event: KeyboardEvent<HTMLFormElement>) {
@@ -66,7 +95,6 @@ export function Lobby({
     }
     setValidationError(null);
     void onCreate(parsed.data);
-    returnToActions();
   }
 
   function submitJoin(event: FormEvent<HTMLFormElement>) {
@@ -78,7 +106,6 @@ export function Lobby({
     }
     setValidationError(null);
     void onJoin(token);
-    returnToActions();
   }
 
   return (
@@ -94,19 +121,21 @@ export function Lobby({
             <p>Set the table, invite your friends, and make yourself at home.</p>
           </div>
           <div className="room-actions" hidden={mode !== 'actions'}>
-            <button className="room-action room-action--primary" type="button" aria-label="Create Room" onClick={(event) => show('create', event.currentTarget)}>
+            <button ref={createTrigger} className="room-action room-action--primary" type="button" aria-label="Create Room" onClick={(event) => show('create', event.currentTarget)}>
               <span className="room-action__icon"><Icon icon={Plus} /></span>
               <span><strong>Create Room</strong><small>Start a private table for 2–6 players.</small></span>
               <span className="room-action__arrow"><Icon icon={ArrowRight} /></span>
             </button>
-            <button className="room-action room-action--secondary" type="button" aria-label="Join Room" onClick={(event) => show('join', event.currentTarget)}>
+            <button ref={joinTrigger} className="room-action room-action--secondary" type="button" aria-label="Join Room" onClick={(event) => show('join', event.currentTarget)}>
               <span className="room-action__icon"><Icon icon={Users} /></span>
               <span><strong>Join Room</strong><small>Use a private invitation from the host.</small></span>
               <span className="room-action__arrow"><Icon icon={ArrowRight} /></span>
             </button>
           </div>
+          {mode === 'actions' && session?.status === 'unauthenticated' ? <p>Sign in is required to create or join a private room.</p> : null}
+          {mode !== 'actions' ? access : null}
           {mode === 'create' ? (
-            <form className="room-form" onSubmit={submitCreate} onKeyDown={handleFormKeyDown}>
+            <form className="room-form" aria-busy={pending} onSubmit={submitCreate} onKeyDown={handleFormKeyDown}>
               <button className="room-form__back" type="button" onClick={returnToActions}>
                 <Icon icon={ArrowLeft} /> Back to room options
               </button>
@@ -122,13 +151,16 @@ export function Lobby({
                   value={title}
                   onChange={(event) => setTitle(event.target.value)}
                   autoComplete="off"
+                  aria-invalid={Boolean(formError)}
+                  aria-describedby={formError ? 'room-entry-error' : undefined}
                 />
               </label>
-              <button className="primary-button" type="submit" disabled={pending}>Create private room</button>
+              {errorNotice}
+              <button className="primary-button" type="submit" disabled={pending}>{pending ? 'Creating…' : 'Create private room'}</button>
             </form>
           ) : null}
           {mode === 'join' ? (
-            <form className="room-form" onSubmit={submitJoin} onKeyDown={handleFormKeyDown}>
+            <form className="room-form" aria-busy={pending} onSubmit={submitJoin} onKeyDown={handleFormKeyDown}>
               <button className="room-form__back" type="button" onClick={returnToActions}>
                 <Icon icon={ArrowLeft} /> Back to room options
               </button>
@@ -143,22 +175,25 @@ export function Lobby({
                   value={invitation}
                   onChange={(event) => setInvitation(event.target.value)}
                   autoComplete="off"
+                  aria-invalid={Boolean(formError)}
+                  aria-describedby={formError ? 'room-entry-error' : undefined}
                 />
               </label>
-              <button className="primary-button" type="submit" disabled={pending}>Join private room</button>
+              {errorNotice}
+              <button className="primary-button" type="submit" disabled={pending}>{pending ? 'Joining…' : 'Join private room'}</button>
             </form>
           ) : null}
-          {validationError || error ? <p className="room-form__error" role="alert">{validationError ?? error}</p> : null}
+          {mode === 'actions' ? errorNotice : null}
           {canRetryPending && onRetryPending ? (
             <button className="secondary-button room-reconcile" type="button" onClick={() => void onRetryPending()}>
               Reconcile pending room action
             </button>
           ) : null}
-          <p className="quiet-note"><Icon icon={Clock3} /> Rooms expire after 24 hours.</p>
+          <p className="quiet-note"><Icon icon={Clock3} /> Room invite codes expire after 24 hours.</p>
         </div>
-        <CompanionPortrait />
+        <CompanionPortrait avatar={avatar} pending={avatarPending} />
       </div>
-      <footer className="lobby-footer">Private Texas Hold’em · Cosmetic collections arrive later.</footer>
+      <footer className="lobby-footer">Private Texas Hold’em · Earn tickets for cosmetic avatars and card backs.</footer>
     </section>
   );
 }

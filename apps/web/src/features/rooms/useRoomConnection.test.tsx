@@ -6,6 +6,7 @@ import { createElement, type ReactNode } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { roomStore } from './roomStore';
+import { gameStore } from './gameStore';
 import { createMutationCommand, useRoomConnection } from './useRoomConnection';
 
 const harness = vi.hoisted(() => {
@@ -112,5 +113,84 @@ describe('useRoomConnection', () => {
     expect(harness.refresh).toHaveBeenCalledOnce();
     view.unmount();
     queryClient.clear();
+  });
+
+  it('preserves the owning socket when navigating from the lobby into a room', () => {
+    const queryClient = new QueryClient();
+    const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryClientProvider, { client: queryClient }, children);
+    const view = renderHook(({ roomId }: { roomId: string | null }) => useRoomConnection(roomId), { wrapper, initialProps: { roomId: null as string | null } });
+    harness.socket.close.mockClear();
+    harness.socket.connect.mockClear();
+    view.rerender({ roomId: 'room-a' });
+    expect(harness.socket.close).not.toHaveBeenCalled();
+    expect(harness.socket.connect).not.toHaveBeenCalled();
+    expect(harness.emitted.at(-1)).toMatchObject({ event: 'room:sync', command: { roomId: 'room-a' } });
+    view.unmount();
+    expect(harness.socket.close).toHaveBeenCalledOnce();
+    queryClient.clear();
+  });
+
+  it('ignores a room synchronization acknowledgement after navigation changes', async () => {
+    const queryClient = new QueryClient();
+    const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryClientProvider, { client: queryClient }, children);
+    const view = renderHook(({ roomId }: { roomId: string | null }) => useRoomConnection(roomId), { wrapper, initialProps: { roomId: 'room-a' as string | null } });
+    const staleAck = harness.acknowledgements[0]!;
+    const apply = vi.spyOn(roomStore.getState(), 'applySnapshot');
+    view.rerender({ roomId: 'room-b' });
+    await act(async () => { staleAck({ data: { room: { roomId: 'room-a' } }, error: null }); });
+    expect(apply).not.toHaveBeenCalled();
+    view.unmount(); apply.mockRestore(); queryClient.clear();
+  });
+
+  it('keeps the last private display stale during transport loss with actions disabled', () => {
+    const queryClient = new QueryClient();
+    const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryClientProvider, { client: queryClient }, children);
+    const view = renderHook(() => useRoomConnection('room-a'), { wrapper });
+    const clear = vi.spyOn(gameStore.getState(), 'clear');
+    clear.mockClear();
+    act(() => harness.handlers.get('disconnect')?.('transport close'));
+    expect(view.result.current.status).toBe('reconnecting');
+    expect(clear).not.toHaveBeenCalled();
+    view.unmount(); clear.mockRestore(); queryClient.clear();
+  });
+
+  it('does not mark a room connected before its reconnect synchronization completes', async () => {
+    const queryClient = new QueryClient();
+    const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryClientProvider, { client: queryClient }, children);
+    const view = renderHook(() => useRoomConnection('room-a'), { wrapper });
+    expect(view.result.current.status).not.toBe('connected');
+    await act(async () => { harness.acknowledgements[0]!({ data: { room: { roomId: 'room-a', phase: 'waiting', sessionId: null, members: [], control: { isController: true, epoch: 1 }, revision: 1, authorityBootId: 'boot-a' } }, error: null }); });
+    expect(view.result.current.status).not.toBe('connected');
+    await act(async () => { harness.acknowledgements[1]!({ data: { game: null, outcome: null }, error: null }); });
+    expect(view.result.current.status).toBe('connected');
+    act(() => harness.handlers.get('disconnect')?.('transport close'));
+    act(() => harness.handlers.get('connection:ready')?.({ authorityBootId: 'boot-a' }));
+    expect(view.result.current.status).not.toBe('connected');
+    view.unmount(); queryClient.clear();
+  });
+
+  it('clears the old game boundary immediately on a room route change', () => {
+    const queryClient = new QueryClient();
+    const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryClientProvider, { client: queryClient }, children);
+    const view = renderHook(({ roomId }) => useRoomConnection(roomId), { wrapper, initialProps: { roomId: 'room-a' as string | null } });
+    gameStore.setState({ roomId: 'room-a', game: { roomId: 'room-a', sessionPhase: 'ended' } as NonNullable<ReturnType<typeof gameStore.getState>['game']> });
+    view.rerender({ roomId: 'room-b' });
+    expect(view.result.current.game).toBeNull();
+    expect(gameStore.getState().game).toBeNull();
+    view.unmount(); queryClient.clear();
+  });
+
+  it('accepts a session started by the host while a guest is synchronizing entry', async () => {
+    const queryClient = new QueryClient();
+    const wrapper = ({ children }: { children: ReactNode }) => createElement(QueryClientProvider, { client: queryClient }, children);
+    const view = renderHook(() => useRoomConnection('room-a'), { wrapper });
+    const waiting = { roomId: 'room-a', phase: 'waiting', sessionId: null, members: [], control: { isController: true, epoch: 1 }, revision: 1, authorityBootId: 'boot-a' };
+    await act(async () => { harness.acknowledgements[0]!({ data: { room: waiting }, error: null }); });
+    act(() => harness.handlers.get('room:snapshot')?.({ ...waiting, phase: 'playing', sessionId: 'session-a', revision: 2 }));
+    const game = { roomId: 'room-a', sessionId: 'session-a', authorityBootId: 'boot-a', snapshotRevision: 1 };
+    await act(async () => { harness.acknowledgements[1]!({ data: { game, outcome: null }, error: null }); });
+    expect(view.result.current.status).toBe('connected');
+    expect(view.result.current.game).toEqual(game);
+    view.unmount(); queryClient.clear();
   });
 });

@@ -25,7 +25,7 @@ export function GameShell({ children, active = 'lobby' }: { children: ReactNode;
           <nav aria-label="Main navigation">
             <Link href="/" aria-current={active === 'lobby' ? 'page' : undefined}><Icon icon={Home} /><span>Lobby</span></Link>
             <Link href="/collection" aria-current={active === 'collection' ? 'page' : undefined}><Icon icon={Images} /><span>Collection</span></Link>
-            <Link href="/pulls" aria-current={active === 'pulls' ? 'page' : undefined}><Icon icon={Mail} /><span>Invitations</span></Link>
+            <Link href="/pulls" aria-current={active === 'pulls' ? 'page' : undefined}><Icon icon={Mail} /><span>Cosmetic pulls</span></Link>
           </nav>
           <p>Your private<br />poker club.</p>
         </aside>}

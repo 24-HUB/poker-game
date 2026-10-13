@@ -15,21 +15,26 @@ import {
   storePendingInvitation,
 } from './invitation';
 import { Lobby } from './Lobby';
+import { useSharedRoomConnection } from './RoomConnectionProvider';
+import { useLobbyAvatar } from './useLobbyAvatar';
+import { useLobbyDraft } from './LobbyDraftProvider';
 import { roomStore } from './roomStore';
-import { createMutationCommand, useRoomConnection } from './useRoomConnection';
+import { createMutationCommand } from './useRoomConnection';
 
 const transientErrorCodes = new Set(['COMMAND_UNCERTAIN', 'SERVICE_UNAVAILABLE', 'RATE_LIMITED']);
 
 export function LobbyExperience() {
   const router = useRouter();
   const boundary = useActiveRoom();
-  const { session } = useSession();
-  const { status, pendingCommand, authorityBootId, canRetryPending, retryPending, send } = useRoomConnection(null);
+  const draft = useLobbyDraft();
+  const { session, refresh } = useSession();
+  const { status, pendingCommand, authorityBootId, canRetryPending, retryPending, send } = useSharedRoomConnection();
   const interruption = useStore(roomStore, (state) => state.interruption);
   const [invitation, setInvitation] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const automaticJoin = useRef<string | null>(null);
   const accountId = session.status === 'authenticated' ? session.account.accountId : null;
+  const avatar = useLobbyAvatar(accountId);
 
   useEffect(() => {
     const fragmentInvitation = readInvitationFragment(window.location.hash);
@@ -51,6 +56,7 @@ export function LobbyExperience() {
       return;
     }
     setError(null);
+    draft?.clear();
     clearPendingInvitation(sessionStorage);
     setInvitation(null);
     roomStore.getState().setInvitation(result.data.invitation ?? null);
@@ -75,12 +81,12 @@ export function LobbyExperience() {
   }, [accountId, authorityBootId, handleRoomResult, send, status]);
 
   useEffect(() => {
-    if (!invitation || !accountId || !authorityBootId || status !== 'connected') return;
+    if (!invitation || !accountId || !authorityBootId || status !== 'connected' || pendingCommand) return;
     const attemptKey = `${accountId}:${authorityBootId}:${invitation}`;
     if (automaticJoin.current === attemptKey) return;
     automaticJoin.current = attemptKey;
     void joinRoom(invitation);
-  }, [accountId, authorityBootId, invitation, joinRoom, status]);
+  }, [accountId, authorityBootId, invitation, joinRoom, status, pendingCommand]);
 
   async function createRoom(title: string) {
     roomStore.getState().clearInterruption();
@@ -103,6 +109,10 @@ export function LobbyExperience() {
       You are seated in {boundary.current.title}. <Link href={`/rooms/${encodeURIComponent(boundary.current.roomId)}`}>Return to room</Link>
     </p> : null}
     <Lobby
+      session={session}
+      onAuthenticated={() => { setError(null); void refresh(); }}
+      avatar={avatar.avatar}
+      avatarPending={avatar.pending}
       onCreate={createRoom}
       onJoin={joinRoom}
       pending={pendingCommand !== null}

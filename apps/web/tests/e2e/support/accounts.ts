@@ -23,8 +23,8 @@ export async function readAccountEmail(context: BrowserContext, recipient: strin
 
 export async function createAccount(page: Page, account: { displayName: string; email: string }) {
   await prepareFixtureClient(page.context());
-  await expect(page.getByRole('button', { name: 'Sign in' })).toBeVisible();
-  await page.getByRole('button', { name: 'Sign in' }).click();
+  await expect(page.getByRole('button', { name: 'Sign in', exact: true }).first()).toBeVisible();
+  await page.getByRole('button', { name: 'Sign in', exact: true }).first().click();
   const dialog = page.getByRole('dialog');
   await dialog.getByRole('button', { name: 'Create account' }).click();
   await dialog.getByLabel('Display name').fill(account.displayName);

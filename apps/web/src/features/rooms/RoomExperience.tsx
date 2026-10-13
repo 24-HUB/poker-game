@@ -8,8 +8,9 @@ import { useStore } from 'zustand';
 import { useSession } from '../auth/SessionBoundary';
 import { RoomLobby } from './RoomLobby';
 import { PokerTable } from './PokerTable';
+import { useSharedRoomConnection } from './RoomConnectionProvider';
 import { roomStore } from './roomStore';
-import { createGameMutationCommand, createMutationCommand, useRoomConnection } from './useRoomConnection';
+import { createGameMutationCommand, createMutationCommand } from './useRoomConnection';
 import { useActiveRoom } from './ActiveRoomBoundary';
 import { HandHistory } from './HandHistory';
 
@@ -31,7 +32,8 @@ export function RoomExperience({ roomId }: { roomId: string }) {
     send,
     sendGame,
     retryPendingGame,
-  } = useRoomConnection(roomId);
+    retrySynchronization,
+  } = useSharedRoomConnection();
   const [message, setMessage] = useState<string | null>(null);
   const leaveDestination = useRef('/');
   const accountId = session.status === 'authenticated' ? session.account.accountId : null;
@@ -48,6 +50,7 @@ export function RoomExperience({ roomId }: { roomId: string }) {
     return (
       <div className="session-boundary" role="status">
         <p>{status === 'unavailable' ? 'The game server is unavailable.' : 'Synchronizing your private room…'}</p>
+        {status === 'unavailable' ? <button type="button" onClick={retrySynchronization}>Retry table synchronization</button> : null}
         <button type="button" onClick={() => router.push('/')}>Return to lobby</button>
       </div>
     );
@@ -64,6 +67,7 @@ export function RoomExperience({ roomId }: { roomId: string }) {
     return result;
   }
   const activeRoom = currentRoom;
+  const recovery = status === 'unavailable' ? <p role="status">The table could not be synchronized. <button type="button" onClick={retrySynchronization}>Retry table synchronization</button></p> : null;
 
   async function runGame(command: GameMutationCommand) {
     setMessage(null);
@@ -138,7 +142,7 @@ export function RoomExperience({ roomId }: { roomId: string }) {
   }
 
   if (currentRoom.phase === 'playing' || game?.sessionPhase === 'ended') {
-    return <>{pendingCommand ? exitControls : null}<PokerTable room={currentRoom} game={game} accountId={accountId} status={status}
+    return <>{recovery}{pendingCommand ? exitControls : null}<PokerTable room={currentRoom} game={game} accountId={accountId} status={status}
       pending={pendingGameCommand !== null} message={message} onAction={act} onEnd={endSession}
       onStart={startSession} onLeave={() => leave()} onClaimControl={claimControl}
       onRetryPending={() => void retryPendingGame().then((result) => {
@@ -150,7 +154,7 @@ export function RoomExperience({ roomId }: { roomId: string }) {
   }
 
   return (
-    <>{exitControls}
+    <>{recovery}{exitControls}
     <RoomLobby
       accountId={accountId}
       room={currentRoom}

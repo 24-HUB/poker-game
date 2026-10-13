@@ -58,33 +58,6 @@ export function RoomLobby({
       </header>
 
       <div className="room-lobby__grid">
-        <div>
-          <ul className="room-seats" aria-label="Table seats">
-            {Array.from({ length: 6 }, (_, seat) => {
-              const member = room.members.find((candidate) => candidate.seat === seat);
-              return (
-                <li className={member ? 'room-seat room-seat--occupied' : 'room-seat'} key={seat}>
-                  <span className="room-seat__number">Seat {seat + 1}</span>
-                  {member ? (
-                    <>
-                      <img className="room-seat__avatar" src="/art/hostess.png" alt={`${member.displayName}'s default avatar`} width="48" height="48" />
-                      <strong>{member.displayName}{member.accountId === accountId ? ' (you)' : ''}</strong>
-                      <small>{member.connected ? 'Connected' : 'Reconnecting'}{member.accountId === room.hostAccountId ? ' · Host' : ''}</small>
-                    </>
-                  ) : (
-                    <>
-                      <span className="room-seat__avatar room-seat__avatar--empty">{seat + 1}</span>
-                      <strong>Open seat</strong>
-                      <button type="button" disabled={pending || !room.control.isController} onClick={() => onTakeSeat(seat)}>Take seat {seat + 1}</button>
-                    </>
-                  )}
-                </li>
-              );
-            })}
-          </ul>
-          <p className="room-milestone"><ShieldCheck aria-hidden="true" /> Private table · chips reset with each session. Cosmetics do not affect cards.</p>
-        </div>
-
         <aside className="room-controls" aria-label="Room controls">
           <div>
             <h2>Bring your table together.</h2>
@@ -113,7 +86,7 @@ export function RoomLobby({
             </button>
           ) : null}
           {!room.control.isController ? (
-            <button className="secondary-button" type="button" disabled={pending} onClick={onClaimControl}>
+            <button className="secondary-button" type="button" disabled={pending || status !== 'connected'} onClick={onClaimControl}>
               <Icon icon={Link2} /> Use this tab to play
             </button>
           ) : null}
@@ -125,6 +98,34 @@ export function RoomLobby({
             <button className="secondary-button" type="button" onClick={onRetryPending}>Reconcile pending room action</button>
           ) : null}
         </aside>
+        <div>
+          <ul className="room-seats" aria-label="Table seats">
+            {Array.from({ length: 6 }, (_, seat) => {
+              const member = room.members.find((candidate) => candidate.seat === seat);
+              return (
+                <li className={member ? 'room-seat room-seat--occupied' : 'room-seat'} key={seat}>
+                  <span className="room-seat__number">Seat {seat + 1}</span>
+                  {member ? (
+                    <>
+                      <img className="room-seat__avatar" src="/art/hostess.png" alt={`${member.displayName}'s default avatar`} width="48" height="48" />
+                      <strong>{member.displayName}{member.accountId === accountId ? ' (you)' : ''}</strong>
+                      <small>{member.connected ? 'Connected' : 'Reconnecting'}{member.accountId === room.hostAccountId ? ' · Host' : ''}</small>
+                    </>
+                  ) : (
+                    <>
+                      <span className="room-seat__avatar room-seat__avatar--empty">{seat + 1}</span>
+                      <strong>Open seat</strong>
+                      <button type="button" disabled={pending || status !== 'connected' || !room.control.isController} onClick={() => onTakeSeat(seat)}>Take seat {seat + 1}</button>
+                    </>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+          <p className="room-milestone"><ShieldCheck aria-hidden="true" /> Private table · chips reset with each session. Cosmetics do not affect cards.</p>
+        </div>
+
+
       </div>
     </section>
   );

@@ -11,6 +11,20 @@ import { Lobby } from './Lobby';
 afterEach(cleanup);
 
 describe('Lobby', () => {
+  it('retains the join form and input through pending and server failure', async () => {
+    const user = userEvent.setup();
+    const props = { onCreate: vi.fn(), onJoin: vi.fn(), pending: false, error: null };
+    const view = render(createElement(Lobby, props));
+    await user.click(screen.getByRole('button', { name: 'Join Room' }));
+    await user.type(screen.getByLabelText('Invite code'), 'a'.repeat(43));
+    await user.click(screen.getByRole('button', { name: 'Join private room' }));
+    view.rerender(createElement(Lobby, { ...props, pending: true }));
+    expect(screen.getByRole('button', { name: /Join private room|Joining/ })).toBeDisabled();
+    view.rerender(createElement(Lobby, { ...props, error: 'This invitation has expired.' }));
+    expect(screen.getByLabelText('Invite code')).toHaveValue('a'.repeat(43));
+    expect(screen.getByLabelText('Invite code')).toHaveAttribute('aria-invalid', 'true');
+    expect(screen.getByRole('alert')).toHaveTextContent('This invitation has expired.');
+  });
   it.each(['', 'short', 'a'.repeat(44), 'a'.repeat(42) + '!'])('rejects malformed invitation code %s without sending', async (code) => {
     const user = userEvent.setup();
     const onJoin = vi.fn();
@@ -30,6 +44,7 @@ describe('Lobby', () => {
     await user.click(screen.getByRole('button', { name: 'Create Room' }));
     await user.type(screen.getByLabelText('Room title'), 'Friday table');
     await user.click(screen.getByRole('button', { name: 'Create private room' }));
+    await user.click(screen.getByRole('button', { name: 'Back to room options' }));
     await user.click(screen.getByRole('button', { name: 'Join Room' }));
     await user.type(screen.getByLabelText('Invite code'), `  ${'a'.repeat(43)}  `);
     await user.click(screen.getByRole('button', { name: 'Join private room' }));

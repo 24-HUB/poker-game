@@ -5,6 +5,7 @@ import { type ReactNode, createContext, useContext, useEffect } from 'react';
 
 import { readSession, signOut, type SessionState } from '../../lib/auth-client';
 import { clearPendingInvitation } from '../rooms/invitation';
+import { SignInButton } from './SignInButton';
 import { roomStore } from '../rooms/roomStore';
 
 type SessionContextValue = {
@@ -73,21 +74,25 @@ export function SessionBoundary({
   children,
   session: suppliedSession,
   onRetry,
+  heading,
+  explanation,
 }: {
+  heading?: string;
+  explanation?: string;
   children: ReactNode;
   session?: SessionState;
   onRetry?: () => void;
 }) {
   if (suppliedSession) {
-    return <SessionBoundaryView session={suppliedSession} onRetry={onRetry}>{children}</SessionBoundaryView>;
+    return <SessionBoundaryView session={suppliedSession} onRetry={onRetry} heading={heading} explanation={explanation}>{children}</SessionBoundaryView>;
   }
-  return <ConnectedSessionBoundary onRetry={onRetry}>{children}</ConnectedSessionBoundary>;
+  return <ConnectedSessionBoundary onRetry={onRetry} heading={heading} explanation={explanation}>{children}</ConnectedSessionBoundary>;
 }
 
-function ConnectedSessionBoundary({ children, onRetry }: { children: ReactNode; onRetry?: () => void }) {
+function ConnectedSessionBoundary({ children, onRetry, heading, explanation }: { children: ReactNode; onRetry?: () => void; heading?: string; explanation?: string }) {
   const session = useSession();
   return (
-    <SessionBoundaryView session={session.session} onRetry={onRetry ?? (() => void session.refresh())}>
+    <SessionBoundaryView session={session.session} onRetry={onRetry ?? (() => void session.refresh())} heading={heading} explanation={explanation}>
       {children}
     </SessionBoundaryView>
   );
@@ -97,10 +102,14 @@ function SessionBoundaryView({
   children,
   session,
   onRetry,
+  heading,
+  explanation,
 }: {
   children: ReactNode;
   session: SessionState;
   onRetry?: () => void;
+  heading?: string;
+  explanation?: string;
 }) {
   if (session.status === 'authenticated') return children;
   if (session.status === 'loading') return <p className="session-boundary" role="status">Checking private access…</p>;
@@ -112,5 +121,5 @@ function SessionBoundaryView({
       </div>
     );
   }
-  return <p className="session-boundary">Sign in to enter a private room.</p>;
+  return <section className="session-boundary">{heading ? <h1>{heading}</h1> : null}<p>{explanation ?? 'Sign in to enter a private room.'}</p><SignInButton onAuthenticated={onRetry ?? (() => {})} /></section>;
 }

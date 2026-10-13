@@ -1,5 +1,146 @@
 # Checkpoint — Remaining phases through production
 
+## PR #28 CI corrections — Linux verification passed, 2026-10-13
+
+- Commit `4d2ec8ab` is pushed on `codex/room-ux-audit` in PR #28 (base `dev`).
+  [Fresh Linux CI](https://github.com/24-HUB/poker-game/actions/runs/38407645869)
+  completed successfully, including aggregate checks, backup rehearsal, Worker
+  build and full Chromium acceptance **27/27**. Both reported failures are resolved.
+- This save point changes only documentation; its normal PR CI may run again.
+  No application changes are pending. Next: review the latest PR checks and let
+  the owner merge manually. The earlier CI-pending entry below is historical.
+- Usage at final CI check: five-hour **5% remaining**, weekly **69% remaining**;
+  reset 2026-10-13 23:39:47 Bangkok and 2026-10-20 12:12:41 Bangkok respectively.
+  Below-10% decision: verified fixes are already saved remotely; finish this
+  bounded documentation save point and stop implementation. Recheck usage and
+  fetch origin before any resumed work. No billing/reset-credit action.
+
+---
+
+## PR #28 CI follow-up — local verification complete, fresh CI pending
+
+- Resumed on clean `codex/room-ux-audit` after fetch; previous save point was
+  `6309b6db`. [CI run 38405004222](https://github.com/24-HUB/poker-game/actions/runs/38405004222)
+  failed on the ambiguous mock-account sign-in selector and mobile action-panel
+  geometry (791px bottom in a 767px viewport). Prior Windows 27/27 evidence did
+  not establish Linux CI success; the PR was not ready to merge.
+- Scoped mock-account sign-in to the header banner. The regression now deliberately
+  visits signed-out Collection, where header and inline sign-in controls coexist;
+  the original selector reproduced RED and the scoped selector passed GREEN.
+- Put the mobile amount slider beside the numeric field, removing a separate
+  32px slider row plus its gap. Only the redundant numeric output is hidden;
+  cards, numeric input, slider, presets and primary legal actions remain visible.
+  Kept viewport assertions unchanged, added fallback-font coverage and explicit
+  input/slider/preset visibility checks. The original Linux overflow is CI evidence;
+  it did not reproduce with the local Arial fallback before the fix.
+- Passed: frozen install; CI-mode release/mock-account browser tests **4/4**;
+  fresh `pnpm check` (frontend **131/131**, backend **233/233**, shared suites,
+  typechecks and production builds); complete focused diff and whitespace checks.
+  This follow-up did not rerun all Chromium tests locally. Fresh full Linux CI
+  is required before calling the PR ready to merge.
+- Next: push this checkpoint/fix commit to the same PR, inspect its latest CI run,
+  and let the owner merge manually only after checks pass. If it fails, retrieve
+  its `verify` job logs and fix the specific failure; do not loosen assertions.
+  Resume starts with `git status --short --branch`, usage check and
+  `git fetch origin --prune`. No deployment, production data or billing action.
+- Usage observed 2026-10-13 13:44:50 UTC: five-hour **10% remaining**,
+  reset 2026-10-13 16:39:47 UTC /23:39:47 Bangkok; weekly **70% remaining**,
+  reset 2026-10-20 05:12:41 UTC /12:12:41 Bangkok. Below 10% triggers a bounded
+  completion/save-point decision; this verified correction is being saved before
+  further implementation. No reset-credit action.
+
+---
+
+## UX audit fixes — implemented and pushed, 2026-10-13
+
+- Owner requested implementation of the audit handoff and updates to the same PR.
+  Branch `codex/room-ux-audit`; implementation commit `37964d3e` is pushed in
+  [PR #28](https://github.com/24-HUB/poker-game/pull/28), base `dev`.
+- Implemented layout-owned Socket.IO continuity, readiness gating after reconnect,
+  cancellation/account/room fencing, stale-room isolation and synchronization retry.
+  Mobile actions/results occupy document flow; waiting-room actions precede seats.
+  Join/create forms retain drafts/errors through authentication, contextual signed-out
+  destinations offer inline access, and zero-ticket players have earning guidance
+  and a safe play route. Alice is the free default avatar; selected equipment is
+  read from the server. Cosmetic-pull navigation, invitation expiry, touch targets,
+  accessible player-name disclosure and bet/raise draft boundaries are corrected.
+- Native session-end confirmation is retained. Real dialog-aware tests verify cancel,
+  confirm, ending state, committed settlement/standings and refresh. The original
+  audit automation stall is not classified as a proven ordinary-user failure.
+- Independent read-only review found four Important issues; all have regression
+  coverage and fixes. Draft remount, reconnect readiness, cross-room state and
+  expanded-name overlap were reproduced RED-to-GREEN. Full browser testing also
+  reproduced/fixed a host-start/guest-sync race against the latest room snapshot.
+- Passed with Node 22.16.0/pnpm 10.33.0: frozen install; final `pnpm check`
+  (frontend **131/131**, backend **233/233**, contracts **15/15**, engine **18/18**,
+  configured script suites, typechecks and production builds); full Chromium
+  `pnpm --filter @poker/web test:e2e` **27/27**; diff/whitespace checks and
+  Impeccable detector `[]`. Earlier failed fixture selectors and sync/geometry
+  regressions were corrected; the final complete runs passed. No lint script exists.
+- Browser evidence includes six players, own/opponent turns, invalid amount, privacy,
+  real takeover/reconnect, unequal all-ins/side pots, rewards, session end, auth draft
+  recovery and full-room errors. Own-turn geometry passed at 355x767, 360x800,
+  390x844 and 1440x900; 360x480 controls remained reachable. Expanded-name geometry
+  passed without covering cards. Screenshots/logs are ignored local artifacts.
+- Deferred minor polish: lobby avatar request failure has no dedicated retry
+  presentation; some internal recovery/collection copy retains themed invitation
+  language. Physical phone keyboards, comprehensive screen-reader/text-scaling and
+  hosted acceptance remain playtest checks. Standard PR CI includes the Worker
+  bundle check, which was not rerun locally. No deployment/production operation.
+- Final fetch confirms the branch includes `origin/dev` `502d50e8`; no merge/rebase.
+  Local browser services and the disposable MongoDB containers were stopped.
+  Only task-owned files were committed; generated Next.js drift is excluded.
+- Next: review PR #28 and its CI (including the Worker bundle), then the owner
+  merges manually. No automatic merge, branch deletion, deployment or billing action.
+- Usage observed 2026-10-13 13:24:58 UTC / 2026-10-13 20:24:58 Bangkok:
+  five-hour **18% remaining**, reset 2026-10-13 16:39:47 UTC /
+  2026-10-13 23:39:47 Bangkok; weekly **71% remaining**,
+  reset 2026-10-20 05:12:42 UTC / 2026-10-20 12:12:42 Bangkok.
+  Recheck on resumption; below 10% in any applicable window triggers a save-point
+  decision. No reset-credit or billing action was taken.
+
+---
+
+## UX audit implementation brief — PR handoff, 2026-10-13 19:01 Bangkok
+
+- User requested a Markdown implementation handoff covering the live UX audit
+  and local two-player review, explicitly including usage-limit handling.
+- Branch: `codex/room-ux-audit`, based on `origin/dev` `502d50e8`; brief committed
+  as `d2dfaf7c` (`docs: capture UX audit implementation brief`). Read
+  [the implementation brief](docs/superpowers/specs/2026-10-13-ux-audit-implementation.md).
+  No application fix is implemented. The acceptance checkboxes are intentionally
+  unchecked; observations and proposed remedies are distinguished.
+- The brief covers mobile card overlap, controller continuity, waiting-room
+  hierarchy, join-error recovery, contextual authentication, terminology/avatar
+  consistency, ticket guidance, touch targets, player names and betting labels.
+  Native confirmation stalled browser automation; successful session ending is
+  explicitly unverified, not labelled a proven production failure.
+- Verification: audited the brief against observed browser evidence, current
+  source, `plan.md`, the prior room specification and actual package scripts.
+  `git diff --cached --check` passed for the brief. No application tests were
+  rerun for this documentation-only handoff. Local review screenshots are ignored
+  artifacts, not portable or committed evidence. Local test services were stopped.
+- Remote save completed after the user explicitly approved the push and PR.
+  Commits `d2dfaf7c` and `8434a4e2` were pushed with
+  `git push -u origin codex/room-ux-audit`; [PR #28](https://github.com/24-HUB/poker-game/pull/28)
+  targets `dev` and is attached to this chat. The earlier automatic-review push
+  blocker is resolved. These checkpoint corrections accompany the next commit;
+  no application edits are pending.
+- Next: review PR #28 and its CI, then the owner merges manually. No automatic
+  merge, branch deletion or deployment. GitHub CLI was unavailable; PR creation
+  used the authenticated GitHub API without printing credentials.
+- Before application implementation: recheck usage and working-tree state, fetch
+  origin, read this checkpoint and plan section 18, and reproduce UX-01/UX-02.
+  Do not treat this documentation request as completed application fixes.
+- Usage at 2026-10-13 12:01:51 UTC /19:01:51 Bangkok: five-hour **80% remaining**,
+  reset 2026-10-13 16:39:47 UTC /23:39:47 Bangkok; weekly **81% remaining**,
+  reset 2026-10-20 05:12:42 UTC /12:12:42 Bangkok. Recheck on resumption. Below
+  **10% in any applicable window** triggers a bounded-step/save-point decision;
+  update this file and plan section 18, preserve work and actual check results.
+  Never buy credits, redeem reset credits or change billing automatically.
+
+---
+
 ## Account email codes — implementation complete, 2026-10-13 09:42 Bangkok (02:42 UTC)
 
 - Owner explicitly directed immediate implementation, overriding the additional

@@ -17,6 +17,18 @@ const game: GameView = {
 const props = { game, accountId: 'a', status: 'connected' as const, pending: false, message: null, onAction: vi.fn(), onRetryPending: vi.fn() };
 afterEach(() => { cleanup(); vi.clearAllMocks(); });
 describe('PokerActionPanel', () => {
+  it('labels opening bets and resets an invalid draft on a new street and turn', () => {
+    const view = render(<PokerActionPanel {...props} />);
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '1' } });
+    const flop: GameView = { ...game, handPhase: 'flop', currentBet: 0, legalActions: { ...game.legalActions, canCheck: true, callAmount: 0, raise: { ...game.legalActions.raise!, minRaiseTo: 20 } } };
+    view.rerender(<PokerActionPanel {...props} game={flop} />);
+    expect(screen.getByRole('spinbutton', { name: 'Bet amount' })).toHaveValue(20);
+    expect(screen.getByRole('button', { name: 'Bet 20' })).toBeEnabled();
+    fireEvent.change(screen.getByRole('spinbutton'), { target: { value: '1' } });
+    view.rerender(<PokerActionPanel {...props} game={{ ...flop, actorAccountId: 'b' }} />);
+    view.rerender(<PokerActionPanel {...props} game={{ ...flop, gameVersion: 3 }} />);
+    expect(screen.getByRole('spinbutton', { name: 'Bet amount' })).toHaveValue(20);
+  });
   it('keeps three disabled action positions while hiding the amount editor off turn', () => {
     render(<PokerActionPanel {...props} game={{ ...game, actorAccountId: 'b', legalActions: { canFold: false, canCheck: false, callAmount: 0, raise: null } }} />);
     expect(screen.getByRole('button', { name: 'Fold' })).toBeDisabled();
