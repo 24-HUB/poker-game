@@ -520,7 +520,7 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
-### UX audit implementation brief — local handoff, 2026-10-13
+### UX audit implementation brief — PR handoff, 2026-10-13
 
 The user requested the live and local two-player UX audit as a Markdown
 implementation handoff. The [brief](docs/superpowers/specs/2026-10-13-ux-audit-implementation.md)
@@ -535,16 +535,15 @@ passed. Application tests were not rerun for this documentation-only handoff.
 Local two-player observations do not prove full multiplayer acceptance; the
 native session-end confirmation stalled automation and remains unverified.
 
-Remote saving is blocked: automatic approval review rejected
-`git push -u origin codex/room-ux-audit` due to potentially non-public content and
-unverified remote trust. No PR exists. These checkpoint updates accompany the
-local save-point commit. After user approval retry the push and create a PR targeting `dev`;
-the owner merges manually. On implementation resumption, check usage, Git state
-and fresh origin before reproducing UX-01 mobile overlap and UX-02 control loss.
+The user explicitly approved remote publication after the initial automatic-review
+blocker. The branch is now pushed and [PR #28](https://github.com/24-HUB/poker-game/pull/28)
+targets `dev`. The blocker is resolved. Next: review the PR and CI; the owner merges
+manually. On implementation resumption, check usage, Git state and fresh origin
+before reproducing UX-01 mobile overlap and UX-02 control loss.
 
-Usage observed 2026-10-13 11:39:48 UTC /18:39:48 Bangkok: five-hour **99% remaining**
-(reset 16:39:47 UTC /23:39:47 Bangkok); weekly **84% remaining** (reset October 20,
-05:12:41 UTC /12:12:41 Bangkok). These readings are historical. If any applicable
+Usage observed 2026-10-13 12:01:51 UTC /19:01:51 Bangkok: five-hour **80% remaining**
+(reset 16:39:47 UTC /23:39:47 Bangkok); weekly **81% remaining** (reset October 20,
+05:12:42 UTC /12:12:42 Bangkok). These readings are historical. If any applicable
 window falls below **10%**, assess a bounded completion versus save point and
 update both existing checkpoint locations with commit/PR, pending work, actual
 checks, blocker and exact next action. No automatic billing/reset-credit action.

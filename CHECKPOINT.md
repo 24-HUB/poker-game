@@ -1,6 +1,6 @@
 # Checkpoint — Remaining phases through production
 
-## UX audit implementation brief — local handoff, 2026-10-13 18:39 Bangkok
+## UX audit implementation brief — PR handoff, 2026-10-13 19:01 Bangkok
 
 - User requested a Markdown implementation handoff covering the live UX audit
   and local two-player review, explicitly including usage-limit handling.
@@ -19,21 +19,21 @@
   `git diff --cached --check` passed for the brief. No application tests were
   rerun for this documentation-only handoff. Local review screenshots are ignored
   artifacts, not portable or committed evidence. Local test services were stopped.
-- Remote blocker: automatic approval review rejected
-  `git push -u origin codex/room-ux-audit`, citing publication of potentially
-  non-public project/testing details to an unverified external origin. No push
-  succeeded and no PR exists. Do not bypass the rejection. These checkpoint
-  updates accompany the local save-point commit; no application edits are pending.
-- Exact next remote step after user approval:
-  `git push -u origin codex/room-ux-audit`, then create a documentation PR with
-  base `dev` and attach its URL. GitHub CLI is not installed/on PATH; use an
-  available authenticated GitHub interface. The user merges manually.
+- Remote save completed after the user explicitly approved the push and PR.
+  Commits `d2dfaf7c` and `8434a4e2` were pushed with
+  `git push -u origin codex/room-ux-audit`; [PR #28](https://github.com/24-HUB/poker-game/pull/28)
+  targets `dev` and is attached to this chat. The earlier automatic-review push
+  blocker is resolved. These checkpoint corrections accompany the next commit;
+  no application edits are pending.
+- Next: review PR #28 and its CI, then the owner merges manually. No automatic
+  merge, branch deletion or deployment. GitHub CLI was unavailable; PR creation
+  used the authenticated GitHub API without printing credentials.
 - Before application implementation: recheck usage and working-tree state, fetch
   origin, read this checkpoint and plan section 18, and reproduce UX-01/UX-02.
   Do not treat this documentation request as completed application fixes.
-- Usage at 2026-10-13 11:39:48 UTC /18:39:48 Bangkok: five-hour **99% remaining**,
-  reset 2026-10-13 16:39:47 UTC /23:39:47 Bangkok; weekly **84% remaining**,
-  reset 2026-10-20 05:12:41 UTC /12:12:41 Bangkok. Recheck on resumption. Below
+- Usage at 2026-10-13 12:01:51 UTC /19:01:51 Bangkok: five-hour **80% remaining**,
+  reset 2026-10-13 16:39:47 UTC /23:39:47 Bangkok; weekly **81% remaining**,
+  reset 2026-10-20 05:12:42 UTC /12:12:42 Bangkok. Recheck on resumption. Below
   **10% in any applicable window** triggers a bounded-step/save-point decision;
   update this file and plan section 18, preserve work and actual check results.
   Never buy credits, redeem reset credits or change billing automatically.
