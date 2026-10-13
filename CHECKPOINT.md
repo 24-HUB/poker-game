@@ -1,5 +1,22 @@
 # Checkpoint — Remaining phases through production
 
+## PR #28 CI corrections — Linux verification passed, 2026-10-13
+
+- Commit `4d2ec8ab` is pushed on `codex/room-ux-audit` in PR #28 (base `dev`).
+  [Fresh Linux CI](https://github.com/24-HUB/poker-game/actions/runs/38407645869)
+  completed successfully, including aggregate checks, backup rehearsal, Worker
+  build and full Chromium acceptance **27/27**. Both reported failures are resolved.
+- This save point changes only documentation; its normal PR CI may run again.
+  No application changes are pending. Next: review the latest PR checks and let
+  the owner merge manually. The earlier CI-pending entry below is historical.
+- Usage at final CI check: five-hour **5% remaining**, weekly **69% remaining**;
+  reset 2026-10-13 23:39:47 Bangkok and 2026-10-20 12:12:41 Bangkok respectively.
+  Below-10% decision: verified fixes are already saved remotely; finish this
+  bounded documentation save point and stop implementation. Recheck usage and
+  fetch origin before any resumed work. No billing/reset-credit action.
+
+---
+
 ## PR #28 CI follow-up — local verification complete, fresh CI pending
 
 - Resumed on clean `codex/room-ux-audit` after fetch; previous save point was

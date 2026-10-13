@@ -520,6 +520,21 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### PR #28 CI corrections — Linux verification passed, 2026-10-13
+
+Commit `4d2ec8ab` resolves the mock-account sign-in ambiguity and mobile action
+geometry failures. [Fresh Linux CI](https://github.com/24-HUB/poker-game/actions/runs/38407645869)
+passed, including full Chromium **27/27**, aggregate checks, backup rehearsal
+and Worker build. This save point changes documentation only; its normal CI may
+run again. No application work is pending. Next: review PR #28's latest checks;
+the owner merges manually. See CHECKPOINT.md for the exact fixes and evidence.
+
+Usage at final CI check: five-hour **5% remaining** (reset 2026-10-13 23:39:47
+Bangkok), weekly **69% remaining** (reset 2026-10-20 12:12:41 Bangkok). Below-10%
+decision: preserve the verified remote fix, finish this bounded save point and
+stop implementation. Recheck usage/Git state and fetch on resumption. No billing
+or reset-credit action. The CI-pending entry below is historical.
+
 ### PR #28 CI follow-up — local verification complete, fresh CI pending
 
 - Resumed on clean `codex/room-ux-audit` after fetch; previous save point was
