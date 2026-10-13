@@ -1,7 +1,7 @@
 # UX/UI audit — implementation handoff
 
 Date: 2026-10-13 (Asia/Bangkok). Status: **audit complete within the scope below;
-fixes proposed, not implemented or verified**. The user requested this Markdown
+original fixes were proposed, not implemented or verified at audit time**. Application implementation was subsequently requested in PR #28; current evidence is recorded in `CHECKPOINT.md` and `plan.md` section 18. The user originally requested this Markdown
 handoff for subsequent implementation, not immediate application changes.
 
 ## Scope and constraints

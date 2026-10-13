@@ -69,7 +69,7 @@ test('two accounts join one room and explicit takeover disables the old tab', as
     });
     expect(revocation.ok(), await revocation.text()).toBe(true);
     await guest.getByRole('button', { name: 'Use this tab to play' }).click();
-    await expect(guest.getByRole('button', { name: 'Sign in' })).toBeVisible();
+    await expect(guest.getByRole('button', { name: 'Sign in', exact: true }).first()).toBeVisible();
     await expect(guest.getByRole('heading', { name: 'Friday table' })).toHaveCount(0);
   } finally {
     await hostContext.close();

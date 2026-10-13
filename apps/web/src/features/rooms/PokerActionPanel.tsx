@@ -15,13 +15,20 @@ export function PokerActionPanel({ game, accountId, status, pending, message, on
   const [sending, setSending] = useState(false);
   const submitted = useRef(false);
   const edited = useRef(false);
+  const draftTurn = useRef('');
   const seconds = useTurnClock(game);
   useEffect(() => {
     if (!pending) { submitted.current = false; setSending(false); }
   }, [pending, game.gameVersion, game.handId, message]);
   useEffect(() => {
+    const turn = `${game.sessionId}:${game.handId}:${game.handPhase}:${game.actorAccountId}`;
+    if (draftTurn.current !== turn) {
+      draftTurn.current = turn;
+      edited.current = false;
+      setAmount(String(game.legalActions.raise?.minRaiseTo ?? ''));
+    }
     if (!edited.current && game.legalActions.raise) setAmount(String(game.legalActions.raise.minRaiseTo));
-  }, [game.legalActions.raise?.minRaiseTo]);
+  }, [game.sessionId, game.handId, game.handPhase, game.actorAccountId, game.legalActions.raise?.minRaiseTo]);
 
   const legal = game.legalActions;
   const raise = legal.raise;
@@ -74,11 +81,11 @@ export function PokerActionPanel({ game, accountId, status, pending, message, on
       <button type="button" className="poker-raise-action" disabled={!canAct || !valid} onClick={() => submit({ type: 'raise', raiseTo: selected })}>{ownTurn && raise && Number.isSafeInteger(selected) && amount !== '' ? `${raiseLabel}${raiseLabel === 'Raise' ? ' to' : ''} ${selected}` : 'Raise'}</button>
     </div>
     {showEditor ? <div className="poker-amount-controls">
-        <label htmlFor="raise-to">Raise to</label>
+        <label htmlFor="raise-to">{raiseLabel === 'Bet' ? 'Bet amount' : 'Raise to'}</label>
         <input id="raise-to" type="number" inputMode="numeric" min={raise?.minRaiseTo} max={raise?.maxRaiseTo} step={raise?.amountStep ?? 1}
           value={amount} placeholder={`${raise.minRaiseTo}–${raise.maxRaiseTo}`} disabled={!canAct} aria-invalid={Boolean(raise && !valid)} aria-describedby="raise-guidance" onChange={(event) => edit(event.target.value)} />
         <output className="poker-amount-value" htmlFor="raise-slider">{valid ? selected : '—'}</output>
-        <input type="range" aria-label="Raise amount" min={raise?.minRaiseTo ?? 0} max={raise?.maxRaiseTo ?? 0} step={raise?.amountStep ?? 1}
+        <input type="range" aria-label={raiseLabel === 'Bet' ? 'Bet amount slider' : 'Raise amount'} min={raise?.minRaiseTo ?? 0} max={raise?.maxRaiseTo ?? 0} step={raise?.amountStep ?? 1}
           id="raise-slider" style={{ '--range-fill': `${percent}%` } as CSSProperties} value={valid ? selected : raise?.minRaiseTo ?? 0} disabled={!canAct} onChange={(event) => edit(event.target.value)} />
         <div className="poker-amount-presets">
           <button type="button" disabled={!canAct || !raise} onClick={() => raise && edit(String(raise.minRaiseTo))}>Minimum</button>

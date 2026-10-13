@@ -22,7 +22,7 @@ test('heads-up hands carry chips and the host ends after a committed hand', asyn
     await guest.goto('/#invite=' + encodeURIComponent(invitation));
     await createAccount(guest, { displayName: 'Poker Guest', email: `poker-guest-${suffix}@example.test` });
     await expect(host.getByText('2 of 6 members')).toBeVisible();
-    await host.getByRole('button', { name: 'Use this tab to play' }).click();
+    await expect(host.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     await expect(host.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     await expect(host.getByRole('button', { name: 'Start poker session' })).toBeEnabled();
     await host.getByRole('button', { name: 'Start poker session' }).click();
@@ -39,12 +39,16 @@ test('heads-up hands carry chips and the host ends after a committed hand', asyn
     await expect(host.getByText('Winner: Poker Guest')).toBeVisible();
     await expect(host.getByLabel('Stack: 1010 chips', { exact: true })).toHaveCount(1);
     await expect(host.getByText('Poker Guest is acting')).toBeVisible({ timeout: 10_000 });
-    host.once('dialog', (dialog) => void dialog.accept());
     await host.getByLabel('Room options', { exact: true }).click();
+    host.once('dialog', (dialog) => void dialog.dismiss());
+    await host.getByRole('button', { name: 'End after this hand' }).click();
+    await expect(host.getByText('The session will end after this hand.')).toHaveCount(0);
+    await expect(host.getByRole('button', { name: 'End after this hand' })).toBeEnabled();
+    host.once('dialog', (dialog) => void dialog.accept());
     await expect(host.getByRole('button', { name: 'End after this hand' })).toBeEnabled();
     await host.getByRole('button', { name: 'End after this hand' }).click();
     await expect(host.getByText('The session will end after this hand.')).toBeVisible();
-    await guest.getByRole('button', { name: 'Use this tab to play' }).click();
+    await expect(guest.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     await expect(guest.getByRole('button', { name: 'Fold' })).toBeEnabled();
     await guest.getByRole('button', { name: 'Fold' }).click();
     await expect(host.getByRole('heading', { name: 'Session standings' })).toBeVisible({ timeout: 10_000 });

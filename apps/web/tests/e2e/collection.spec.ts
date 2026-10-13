@@ -25,7 +25,7 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     const roomUrl = host.url();
     await guest.goto('/#invite=' + encodeURIComponent(invitation));
     await expect(host.getByText('2 of 6 members')).toBeVisible();
-    await host.getByRole('button', { name: 'Use this tab to play' }).click();
+    await expect(host.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     await host.getByRole('button', { name: 'Start poker session' }).click();
     await expect(guest.getByRole('region', { name: 'Poker table' })).toBeVisible();
     for (let i = 0; i < 5; i += 1) {
@@ -172,7 +172,7 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     await expect(guest.getByRole('heading', { name: 'Session standings' })).toBeVisible({ timeout: 10_000 });
     await host.getByRole('button', { name: 'Sign out' }).click();
     await host.goto('/collection');
-    await host.getByRole('button', { name: 'Sign in', exact: true }).click();
+    await host.locator('main').getByRole('button', { name: 'Sign in', exact: true }).click();
     await host.getByRole('dialog').getByLabel('Email').fill(email);
     await host.getByRole('dialog').getByLabel('Password').fill('private-test-password');
     await host.getByRole('button', { name: 'Sign in to your club' }).click();

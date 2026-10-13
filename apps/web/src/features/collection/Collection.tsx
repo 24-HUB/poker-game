@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useInfiniteQuery, useQuery, useQueryClient, type InfiniteData } from '@tanstack/react-query';
 import { bannerVersionSchema, collectionViewSchema, equipmentViewSchema, resultSchema, type CollectionView, type CosmeticItem, type CosmeticSlot } from '@poker/contracts';
 import Link from 'next/link';
-import { UserRound, Club } from 'lucide-react';
+import { Club } from 'lucide-react';
 import { apiGet } from '../../lib/api';
 import { economyMutation } from '../../lib/economy-api';
 import { SessionBoundary, useSession } from '../auth/SessionBoundary';
@@ -70,9 +70,9 @@ export function Collection() {
   };
   const changeSlot = (next: CosmeticSlot) => { setSlot(next); setSelection(null); setMessage(null); };
 
-  return <SessionBoundary><section className="collection-page" aria-label="Cosmetic collection">
+  return <SessionBoundary heading="Collection" explanation="Sign in to view your owned avatars and card backs, and choose your equipment."><section className="collection-page" aria-label="Cosmetic collection">
     <header className="page-heading"><div><h1>Collection</h1><p>Your companions and card backs, ready for the next deal.</p></div>
-      <Link className="secondary-button" href="/pulls">Open invitations</Link></header>
+      <Link className="secondary-button" href="/pulls">Open cosmetic pulls</Link></header>
     <div className="collection-tabs" role="tablist" aria-label="Cosmetic type">
       {(['avatar', 'cardBack'] as const).map((value, index) => <button key={value} type="button" role="tab" id={`tab-${value}`}
         aria-selected={slot === value} aria-controls={`panel-${value}`} tabIndex={slot === value ? 0 : -1}
@@ -89,8 +89,8 @@ export function Collection() {
       <div><p>{inventory.length ? `${inventory.filter((entry) => entry.item.slot === slot).length} owned ${slot === 'avatar' ? 'avatars' : 'card backs'}` : 'Your free defaults are ready. Earn tickets at the poker table to collect more.'}</p>
         <ul className="cosmetic-grid cosmetic-grid--collection">
           <li className="cosmetic-item"><button className="cosmetic-choice" type="button" aria-pressed={selection === null} onClick={() => selectItem(null)}>
-            <span className="cosmetic-default">{slot === 'avatar' ? <UserRound size={64} aria-hidden="true" /> : <Club size={64} aria-hidden="true" />}</span>
-            <h3>Club default</h3><p>Free · {equipped === null ? 'Equipped' : 'Available'}</p></button></li>
+            <span className="cosmetic-default">{slot === 'avatar' ? <img src="/art/hostess.png" alt="" width="96" height="96" /> : <Club size={64} aria-hidden="true" />}</span>
+            <h3>{slot === 'avatar' ? 'Alice' : 'Club default'}</h3><p>Free · {equipped === null ? 'Equipped' : 'Available'}</p></button></li>
           {items.map((item) => <li className="cosmetic-item" key={item.id}><button className="cosmetic-choice" type="button"
             aria-pressed={selection === item.id} onClick={() => selectItem(item.id)}>
             <img src={item.assetUrl} alt="" width="160" height="160" loading="lazy" />
@@ -99,8 +99,8 @@ export function Collection() {
         </ul>{owned.hasNextPage ? <button className="secondary-button" type="button" disabled={owned.isFetchingNextPage} onClick={() => void owned.fetchNextPage()}>Load more owned items</button> : null}
       </div>
       <aside ref={preview} tabIndex={-1} className="equipment-preview" aria-label="Equipment preview">
-        {selected ? <img src={selected.assetUrl} alt={selected.name} width="256" height="256" /> : <div className="cosmetic-default">{slot === 'avatar' ? <UserRound size={96} aria-hidden="true" /> : <Club size={96} aria-hidden="true" />}</div>}
-        <h2>{selected?.name ?? 'Club default'}</h2><p>{selected ? `${selected.rarity} · ${ownedIds.has(selected.id) ? 'Owned' : 'Not owned'}` : 'Always available. No invitation needed.'}</p>
+        {selected ? <img src={selected.assetUrl} alt={selected.name} width="256" height="256" /> : <div className="cosmetic-default">{slot === 'avatar' ? <img src="/art/hostess.png" alt="" width="192" height="192" /> : <Club size={96} aria-hidden="true" />}</div>}
+        <h2>{selected?.name ?? (slot === 'avatar' ? 'Alice' : 'Club default')}</h2><p>{selected ? `${selected.rarity} · ${ownedIds.has(selected.id) ? 'Owned' : 'Not owned'}` : 'Always available. No invitation needed.'}</p>
         <button className="primary-button" type="button" disabled={working || owned.isFetching || (selection !== null && !ownedIds.has(selection)) || equipped === selection}
           onClick={() => void equip()}>{working ? 'Saving selection…' : equipped === selection ? 'Equipped' : slot === 'avatar' ? 'Equip avatar' : 'Equip card back'}</button>
         {selected && !ownedIds.has(selected.id) ? <p>Find this cosmetic through invitations before equipping it.</p> : null}

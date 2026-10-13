@@ -9,6 +9,8 @@ import { SessionBoundary, useSession } from '../auth/SessionBoundary';
 import { useWallet } from '../wallet/useWallet';
 import { useAccountSync } from '../collection/useAccountSync';
 import { clearPendingPull, readPendingPull, savePendingPull } from './pendingPull';
+import { useActiveRoom } from '../rooms/ActiveRoomBoundary';
+import Link from 'next/link';
 import { PullReveal } from './PullReveal';
 
 const bannerResponse = resultSchema(bannerVersionSchema);
@@ -17,6 +19,8 @@ const definitive = new Set(['INVALID_REQUEST', 'INSUFFICIENT_TICKETS', 'STALE_BA
 
 export function Banner() {
   const { session, refresh } = useSession();
+  const navigation = useActiveRoom();
+  const playPath = navigation?.current ? `/rooms/${encodeURIComponent(navigation.current.roomId)}` : '/';
   const accountId = session.status === 'authenticated' ? session.account.accountId : null;
   const currentAccount = useRef(accountId); currentAccount.current = accountId;
   const queryClient = useQueryClient();
@@ -81,8 +85,8 @@ export function Banner() {
     try { clearPendingPull(accountId); setPending(null); setReceipt(null); setMessage(null); }
     catch { setStorageProblem(true); }
   };
-  return <SessionBoundary><section className="collection-page" aria-label="Cosmetic invitations">
-    <header className="page-heading"><div><h1>Invitations</h1><p>Invite a celestial companion to your collection.</p></div></header>
+  return <SessionBoundary heading="Cosmetic pulls" explanation="Sign in to use earned tickets for cosmetic avatars and card backs."><section className="collection-page" aria-label="Cosmetic invitations">
+    <header className="page-heading"><div><h1>Cosmetic pulls</h1><p>Invite a celestial companion to your collection.</p></div></header>
     {storageProblem ? <p role="alert" className="collection-notice">This tab cannot safely save or read an invitation. Enable session storage and reload before opening another. Existing unresolved data is preserved.</p> : null}
     {message ? <p role="alert" className="collection-notice">{message}</p> : null}
     {receipt ? <PullReveal key={receipt.requestId} receipt={receipt} onContinue={finish} /> : pending ? <section className="invitation-purchase" aria-live="polite">
@@ -91,10 +95,12 @@ export function Banner() {
       <button className="secondary-button" type="button" disabled={working} onClick={() => accountId && void submit(accountId, pending, true)}>Recover existing invitation</button>
     </section> : banner.data ? <section className="invitation-purchase">
       <div><h2>{banner.data.name}</h2><p>{wallet.data ? `${wallet.data.balance} tickets available` : 'Loading your ticket balance…'}</p>
-        <p>Earn tickets through qualifying poker hands. Cosmetics change appearance only.</p></div>
+        <p>Make at least one manual action in a completed hand (a fold counts) to earn 1 participation ticket, plus 1 for a positive net chip result. Cosmetics change appearance only.</p></div>
       <div className="collection-actions"><button className="primary-button" type="button" disabled={working || storageProblem || !wallet.data || wallet.data.balance < banner.data.prices.single} onClick={() => buy(1)}>Open 1 — {banner.data.prices.single} tickets</button>
         <button className="secondary-button" type="button" disabled={working || storageProblem || !wallet.data || wallet.data.balance < banner.data.prices.ten} onClick={() => buy(10)}>Open 10 — {banner.data.prices.ten} tickets</button></div>
-      {wallet.data && wallet.data.balance < banner.data.prices.single ? <p>Not enough tickets yet. Play qualifying poker hands to earn your next invitation.</p> : null}
+      {wallet.data && wallet.data.balance < banner.data.prices.single ? <p>Not enough tickets yet. Play poker to earn your next cosmetic pull.</p> : null}
+      {wallet.data ? <p>{wallet.data.remainingToday} tickets remain in your UTC daily earning allowance.</p> : null}
+      <Link className="secondary-button" href={playPath} onClick={(event) => { if (navigation) { event.preventDefault(); navigation.navigate(playPath); } }}>{navigation?.current ? 'Return to your room' : 'Play poker with friends'}</Link>
       {wallet.error ? <p role="alert">Ticket balance unavailable. <button type="button" onClick={() => void wallet.refetch()}>Retry balance</button></p> : null}
       <details><summary>Rates &amp; guarantees</summary><p>R {banner.data.weights.R}% · SR {banner.data.weights.SR}% · SSR {banner.data.weights.SSR}%.</p>
         <p>SR or better by the {banner.data.guarantees.sr}th pull without SR+. SSR by the {banner.data.guarantees.ssr}th pull without SSR. Ten invitations follow the same ordered rules.</p>

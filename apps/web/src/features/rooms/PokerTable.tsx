@@ -57,7 +57,7 @@ export function PokerTable({ room, game, accountId, status, pending, message,
           {host && game?.sessionPhase !== 'ended' ? <><button type="button" className="secondary-button" disabled={pending || !room.control.isController || status !== 'connected' || game?.sessionPhase === 'ending'} onClick={onEnd}>End after this hand</button>
             {game?.sessionPhase === 'ending' ? <p>Ending requested. This hand will finish first.</p> : !room.control.isController ? <p>Use this tab to play to manage the session.</p> : null}</> : null}
           <button type="button" className="text-button" disabled={pending || status !== 'connected' || !room.control.isController} onClick={onLeave}>Leave room</button>
-          {navigation ? <><button type="button" className="text-button" onClick={() => navigation.navigate('/collection')}>Collection</button><button type="button" className="text-button" onClick={() => navigation.navigate('/pulls')}>Invitations</button></> : null}
+          {navigation ? <><button type="button" className="text-button" onClick={() => navigation.navigate('/collection')}>Collection</button><button type="button" className="text-button" onClick={() => navigation.navigate('/pulls')}>Cosmetic pulls</button></> : null}
         </details>
       </div>
     </header>
@@ -81,10 +81,10 @@ export function PokerTable({ room, game, accountId, status, pending, message,
               <img className="poker-seat__avatar" src={participant.equipment?.avatar?.assetUrl ?? '/art/hostess.png'} alt={`${participant.displayName}'s ${participant.equipment?.avatar?.name ?? 'default'} avatar`} width="48" height="48" />
               {participant.accountId === game.actorAccountId && seconds !== null ? <svg className="poker-seat__clock" viewBox="0 0 56 56" aria-hidden="true"><circle cx="28" cy="28" r="26" pathLength="100" /><circle cx="28" cy="28" r="26" pathLength="100" strokeDasharray={`${Math.min(100, seconds / 30 * 100)} 100`} /></svg> : null}
             </div>
-            <strong title={participant.displayName}><span className="poker-seat__name">{participant.displayName}</span>{participant.accountId === accountId ? <span className="poker-seat__you"> (you)</span> : null}</strong>
-            <span className="poker-seat__stack" aria-label={`Stack: ${participant.stack} chips`}><Coins aria-hidden="true" />{participant.stack}</span>
+            <strong><details className="poker-player-name"><summary aria-label={`Player: ${participant.displayName}`}><span className="poker-seat__name">{participant.displayName}</span><span className="poker-seat__stack" aria-label={`Stack: ${participant.stack} chips`}><Coins aria-hidden="true" />{participant.stack}</span></summary><span>{participant.displayName}</span></details></strong>
             {participant.streetContribution > 0 ? <span className="poker-seat__bet" aria-label={`${participant.displayName}'s bet: ${participant.streetContribution}`}><Coins aria-hidden="true" />{participant.streetContribution}</span> : null}
             <span className="poker-seat__markers">
+              {participant.accountId === accountId ? <span className="poker-seat__you">(you)</span> : null}
               {participant.folded ? <span>Folded</span> : participant.allIn ? <span>All-in</span> : !participant.connected ? <span>Disconnected</span> : null}
               {participant.accountId === game.actorAccountId ? <span className="poker-seat__acting-label">Acting{seconds === null ? '' : ` · ${seconds}s`}</span> : null}
               {participant.seat === game.buttonSeat ? <span className="poker-dealer" aria-label="Dealer">D</span> : null}

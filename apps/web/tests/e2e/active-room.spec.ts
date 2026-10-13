@@ -36,7 +36,7 @@ test('waiting recovery and active navigation use the real caller membership and 
     await host.goBack();
     await expect(host).toHaveURL(roomUrl);
     await expect(guest.getByRole('region', { name: 'Poker table' })).toBeVisible();
-    await guest.getByRole('button', { name: 'Use this tab to play' }).click();
+    await expect(guest.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     await expect(guest.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     guest.once('dialog', (dialog) => void dialog.dismiss());
     await guest.getByRole('button', { name: 'Lobby', exact: true }).click();

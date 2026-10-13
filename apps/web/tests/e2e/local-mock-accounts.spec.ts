@@ -43,7 +43,7 @@ test('two ready players use real distinct verified sessions and join by invite c
     await guest.getByRole('button', { name: 'Join private room' }).click();
     await expect(guest.getByRole('heading', { name: 'Mock table' })).toBeVisible();
     await expect(host.getByText('2 of 6 members')).toBeVisible();
-    await guest.getByRole('button', { name: 'Use this tab to play' }).click();
+    await expect(guest.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     await guest.getByRole('button', { name: 'Leave room', exact: true }).click();
     await guest.getByRole('button', { name: 'Sign out' }).click();
     await guest.getByRole('button', { name: 'Sign in', exact: true }).click();

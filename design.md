@@ -106,7 +106,7 @@ Use original or appropriately licensed anime artwork. Franchise references guide
 
 Character treatment: clean outlines, simplified hair shapes, a limited palette, and restrained cel shading. Avoid glossy doll-like faces, overly detailed costumes, painted scenery behind every portrait, and inconsistent rendering styles.
 
-The equipped avatar provides the lobby portrait. If an avatar lacks a matching larger illustration, use a deliberate enlarged portrait crop inside the arch; do not invent an unrelated character. The large character region occupies at most about one quarter of desktop lobby content width and never overlaps controls. On phones, collapse it to a small portrait header.
+Alice is the free default avatar used consistently in the lobby, collection and poker table. She is outside the paid catalogue and implies no pulled-item ownership. The selected server-confirmed avatar provides the lobby portrait. If an avatar lacks a matching larger illustration, use a deliberate enlarged portrait crop inside the arch; do not invent an unrelated character. The large character region occupies at most about one quarter of desktop lobby content width and never overlaps controls. On phones, collapse it to a small portrait header.
 
 Asset set:
 
@@ -125,7 +125,7 @@ The proposed launch catalogue size and rarities come from plan.md and are not ex
 
 Five primary surfaces follow the product plan: sign-in, lobby/private room, poker/results, invitations/reveal, and collection/equipment.
 
-Outside active play, desktop navigation uses **Lobby**, **Collection**, and **Invitations**. Invitations is the themed name for the cosmetic gacha surface. Room sharing always uses explicit language such as **Copy room link** or **Join Room**, avoiding ambiguity with cosmetic invitations.
+Outside active play, desktop navigation uses **Lobby**, **Collection**, and **Cosmetic pulls**. Invitation language belongs to the cosmetic reveal; destination labels explicitly identify cosmetic pulls. Room sharing always uses explicit language such as **Copy room link** or **Join Room**, avoiding ambiguity with cosmetic invitations.
 
 On phones, use a compact header and three-item bottom navigation outside gameplay. During live play, replace that navigation with the game action area. Collection and gacha are accessed at safe boundaries, not through overlays hiding a live hand.
 
@@ -177,7 +177,7 @@ Between hands, use an inline result region for winner(s), hand description when 
 
 Session results show standings and committed rewards, with host controls for the next session when permitted. Ending a session explains that it takes effect between hands. Aborted sessions use different copy from completed sessions and do not imply rewards for an unfinished hand.
 
-### Invitations and reveal
+### Cosmetic pulls and reveal
 
 One permanent cosmetic catalogue. Show the ticket balance, current pull price, available single/ten-pull options from plan.md, owned status where useful, and accessible **Rates & guarantees** information. Explain duplicate handling before a player spends tickets. Values come from product configuration; this document does not lock in the proposed economy.
 
