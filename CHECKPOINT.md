@@ -1,5 +1,55 @@
 # Checkpoint — Remaining phases through production
 
+## UX audit fixes — implemented and pushed, 2026-10-13
+
+- Owner requested implementation of the audit handoff and updates to the same PR.
+  Branch `codex/room-ux-audit`; implementation commit `37964d3e` is pushed in
+  [PR #28](https://github.com/24-HUB/poker-game/pull/28), base `dev`.
+- Implemented layout-owned Socket.IO continuity, readiness gating after reconnect,
+  cancellation/account/room fencing, stale-room isolation and synchronization retry.
+  Mobile actions/results occupy document flow; waiting-room actions precede seats.
+  Join/create forms retain drafts/errors through authentication, contextual signed-out
+  destinations offer inline access, and zero-ticket players have earning guidance
+  and a safe play route. Alice is the free default avatar; selected equipment is
+  read from the server. Cosmetic-pull navigation, invitation expiry, touch targets,
+  accessible player-name disclosure and bet/raise draft boundaries are corrected.
+- Native session-end confirmation is retained. Real dialog-aware tests verify cancel,
+  confirm, ending state, committed settlement/standings and refresh. The original
+  audit automation stall is not classified as a proven ordinary-user failure.
+- Independent read-only review found four Important issues; all have regression
+  coverage and fixes. Draft remount, reconnect readiness, cross-room state and
+  expanded-name overlap were reproduced RED-to-GREEN. Full browser testing also
+  reproduced/fixed a host-start/guest-sync race against the latest room snapshot.
+- Passed with Node 22.16.0/pnpm 10.33.0: frozen install; final `pnpm check`
+  (frontend **131/131**, backend **233/233**, contracts **15/15**, engine **18/18**,
+  configured script suites, typechecks and production builds); full Chromium
+  `pnpm --filter @poker/web test:e2e` **27/27**; diff/whitespace checks and
+  Impeccable detector `[]`. Earlier failed fixture selectors and sync/geometry
+  regressions were corrected; the final complete runs passed. No lint script exists.
+- Browser evidence includes six players, own/opponent turns, invalid amount, privacy,
+  real takeover/reconnect, unequal all-ins/side pots, rewards, session end, auth draft
+  recovery and full-room errors. Own-turn geometry passed at 355x767, 360x800,
+  390x844 and 1440x900; 360x480 controls remained reachable. Expanded-name geometry
+  passed without covering cards. Screenshots/logs are ignored local artifacts.
+- Deferred minor polish: lobby avatar request failure has no dedicated retry
+  presentation; some internal recovery/collection copy retains themed invitation
+  language. Physical phone keyboards, comprehensive screen-reader/text-scaling and
+  hosted acceptance remain playtest checks. Standard PR CI includes the Worker
+  bundle check, which was not rerun locally. No deployment/production operation.
+- Final fetch confirms the branch includes `origin/dev` `502d50e8`; no merge/rebase.
+  Local browser services and the disposable MongoDB containers were stopped.
+  Only task-owned files were committed; generated Next.js drift is excluded.
+- Next: review PR #28 and its CI (including the Worker bundle), then the owner
+  merges manually. No automatic merge, branch deletion, deployment or billing action.
+- Usage observed 2026-10-13 13:24:58 UTC / 2026-10-13 20:24:58 Bangkok:
+  five-hour **18% remaining**, reset 2026-10-13 16:39:47 UTC /
+  2026-10-13 23:39:47 Bangkok; weekly **71% remaining**,
+  reset 2026-10-20 05:12:42 UTC / 2026-10-20 12:12:42 Bangkok.
+  Recheck on resumption; below 10% in any applicable window triggers a save-point
+  decision. No reset-credit or billing action was taken.
+
+---
+
 ## UX audit implementation brief — PR handoff, 2026-10-13 19:01 Bangkok
 
 - User requested a Markdown implementation handoff covering the live UX audit
