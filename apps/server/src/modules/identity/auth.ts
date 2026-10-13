@@ -9,7 +9,8 @@ import {
   loadBetterAuthMongoAdapter,
 } from '../../compatibility/better-auth-loader';
 import { accountEmailFromEnvironment } from './accountEmail.service';
-import { atomicPasswordResetPlugin } from './atomicPasswordReset';
+import { EmailCodeService } from './emailCode.service';
+import { wrapEmailCodeAuth } from './emailCodeAuthHandler';
 
 export const AUTH = Symbol('AUTH');
 
@@ -39,13 +40,12 @@ export async function createPokerAuth(db: Db, client: MongoClient): Promise<Poke
   const { createAuthMiddleware, APIError } = await loadBetterAuthApi();
   const { mongodbAdapter } = await loadBetterAuthMongoAdapter();
 
-  return betterAuth({
+  const auth = betterAuth({
     appName: 'Poker Anime Gacha',
     baseURL: publicOrigin,
     secret,
     trustedOrigins: [publicOrigin],
     database: mongodbAdapter(db, { client, transaction: true }),
-    plugins: [await atomicPasswordResetPlugin()],
     rateLimit: {
       enabled: enforceRecovery, storage: 'database',
       // Browser fixtures share one loopback IP. Production retains provider defaults.
@@ -59,13 +59,10 @@ export async function createPokerAuth(db: Db, client: MongoClient): Promise<Poke
       requireEmailVerification: enforceRecovery,
       autoSignIn: !enforceRecovery,
       revokeSessionsOnPasswordReset: true,
-      resetPasswordTokenExpiresIn: 3600,
-      sendResetPassword: async ({ user, url }) => accountEmail.sendPasswordReset(user.email, url),
     },
     emailVerification: {
-      sendOnSignUp: true,
-      expiresIn: 3600,
-      sendVerificationEmail: async ({ user, url }) => accountEmail.sendVerification(user.email, url),
+      sendOnSignUp: false,
+      sendOnSignIn: false,
     },
     session: { cookieCache: { enabled: false } },
     advanced: {
@@ -102,6 +99,14 @@ export async function createPokerAuth(db: Db, client: MongoClient): Promise<Poke
       }),
     },
   });
+  const context = await auth.$context;
+  const emailCodes = new EmailCodeService(db, client, {
+    secret, hashPassword: context.password.hash,
+    deliveryWindowMs: process.env.NODE_ENV === 'test' && process.env.ACCOUNT_EMAIL_TRANSPORT === 'memory' ? 0 : 5000,
+    deliver: (email, purpose, code) => purpose === 'email-verification'
+      ? accountEmail.sendVerification(email, code) : accountEmail.sendPasswordReset(email, code),
+  });
+  return wrapEmailCodeAuth(auth, emailCodes, publicOrigin);
 }
 
 export function recoveryEnforced(): boolean {
@@ -136,8 +141,9 @@ function requireEnvironmentValue(name: string): string {
 
 function requirePublicOrigin(): string {
   const value = requireEnvironmentValue('PUBLIC_ORIGIN');
-  if (!parsePublicOrigin(value)) {
+  const origin = parsePublicOrigin(value);
+  if (!origin) {
     throw new Error('PUBLIC_ORIGIN must be an HTTPS origin, or a loopback HTTP origin outside production');
   }
-  return value;
+  return origin.origin;
 }

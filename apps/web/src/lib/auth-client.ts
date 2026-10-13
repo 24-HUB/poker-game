@@ -11,7 +11,7 @@ export type SignUpInput = SignInInput & { name: string; registrationCode: string
 export type Fetcher = typeof fetch;
 
 export class AuthRequestError extends Error {
-  public constructor(public readonly code: string, message: string) {
+  public constructor(public readonly code: string, message: string, public readonly retryAfterSeconds?: number) {
     super(message);
     this.name = 'AuthRequestError';
   }
@@ -44,15 +44,19 @@ export async function signUp(input: SignUpInput, fetcher: Fetcher = fetch): Prom
 }
 
 export async function requestPasswordReset(email: string, fetcher: Fetcher = fetch): Promise<void> {
-  await submitRecovery('/api/auth/request-password-reset', { email, redirectTo: `${location.origin}/reset-password` }, fetcher);
+  await submitRecovery('/api/auth/email-otp/request-password-reset', { email }, fetcher);
 }
 
 export async function resendVerification(email: string, fetcher: Fetcher = fetch): Promise<void> {
-  await submitRecovery('/api/auth/send-verification-email', { email, callbackURL: location.origin }, fetcher);
+  await submitRecovery('/api/auth/email-otp/send-verification-otp', { email, type: 'email-verification' }, fetcher);
 }
 
-export async function resetPassword(token: string, newPassword: string, fetcher: Fetcher = fetch): Promise<void> {
-  await submitRecovery('/api/auth/reset-password', { token, newPassword }, fetcher);
+export async function verifyEmail(email: string, otp: string, fetcher: Fetcher = fetch): Promise<void> {
+  await submitRecovery('/api/auth/email-otp/verify-email', { email, otp: otp.trim() }, fetcher);
+}
+
+export async function resetPassword(email: string, otp: string, password: string, fetcher: Fetcher = fetch): Promise<void> {
+  await submitRecovery('/api/auth/email-otp/reset-password', { email, otp: otp.trim(), password }, fetcher);
 }
 
 export async function signOut(fetcher: Fetcher = fetch): Promise<void> {
@@ -90,7 +94,7 @@ async function submitAuth(path: string, input: SignInInput | SignUpInput, fetche
   }
   if (response.status === 403) {
     if (providerError.code === 'EMAIL_NOT_VERIFIED') {
-      throw new AuthRequestError('EMAIL_NOT_VERIFIED', 'Verify your email before signing in. You can resend the verification link below.');
+      throw new AuthRequestError('EMAIL_NOT_VERIFIED', 'Verify your email before signing in. Enter your code or request a new one.');
     }
     if (path === '/api/auth/sign-up/email' && providerError.code === 'INVALID_REGISTRATION_CODE') {
       throw new AuthRequestError('INVALID_REGISTRATION_CODE', 'That registration code is not valid.');
@@ -113,14 +117,23 @@ async function submitRecovery(path: string, input: object, fetcher: Fetcher): Pr
       body: JSON.stringify(input),
     });
   } catch {
-    throw new AuthRequestError('SERVICE_UNAVAILABLE', 'The server is unavailable. Try again shortly.');
+    throw new AuthRequestError('SERVICE_UNAVAILABLE', path.endsWith('/reset-password')
+      ? 'The server could not confirm the password change. Try signing in with your intended password, or request a fresh code.'
+      : 'The server is unavailable. Try again shortly.');
   }
   if (response.ok) return;
-  if (response.status === 429) throw new AuthRequestError('RATE_LIMITED', 'Please wait a minute before trying again.');
-  if (path === '/api/auth/reset-password' && response.status === 400) {
-    throw new AuthRequestError('INVALID_TOKEN', 'This reset link has expired or was already used. Request a new one.');
+  if (response.status === 429) {
+    const seconds = Number(response.headers.get('retry-after'));
+    throw new AuthRequestError('RATE_LIMITED', 'Please wait before trying again.', Number.isFinite(seconds) && seconds > 0 ? Math.ceil(seconds) : 60);
   }
-  throw new AuthRequestError('SERVICE_UNAVAILABLE', 'The request could not be completed. Try again shortly.');
+  const provider = await readProviderError(response);
+  if (response.status === 400 && provider.code === 'INVALID_CODE') throw new AuthRequestError('INVALID_CODE', 'This code is invalid, expired, replaced or exhausted. Request a new code.');
+  if (response.status === 400 && provider.code === 'INVALID_PASSWORD') throw new AuthRequestError('INVALID_PASSWORD', 'Use a password with 8–128 characters.');
+  if (response.status === 400) throw new AuthRequestError('INVALID_INPUT', 'Check the email and six-digit code, then try again.');
+  if (response.status === 403) throw new AuthRequestError('FORBIDDEN', 'Open the trusted app address and try again.');
+  throw new AuthRequestError('SERVICE_UNAVAILABLE', path.endsWith('/reset-password')
+    ? 'The server could not confirm the password change. Try signing in with your intended password, or request a fresh code.'
+    : 'The request could not be confirmed. Try again shortly.');
 }
 
 async function readProviderError(response: Response): Promise<{ code: string; message: string }> {

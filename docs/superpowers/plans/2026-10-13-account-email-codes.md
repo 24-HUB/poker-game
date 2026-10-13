@@ -10,7 +10,7 @@
 
 **Spec:** [Account email codes](../specs/2026-10-12-account-email-codes.md).
 
-**Execution status:** Spec implementation requested on 2026-10-13; this plan awaits owner review and execution-method selection. No application changes or hosted acceptance yet. Task branch: `codex/account-email-codes`, starting at `origin/dev` `bf472463`.
+**Execution status:** Owner explicitly directed immediate implementation on 2026-10-13. Native execution is underway on `codex/account-email-codes`, starting at `origin/dev` `bf472463`, with draft PR #27. Local implementation and verification evidence are recorded in `CHECKPOINT.md`; hosted acceptance is separately authorized work.
 
 ## Global constraints
 
@@ -91,4 +91,6 @@
 
 All spec sections map to tasks: lifecycle/rates/storage/atomicity to Task 1; route/provider/email/legacy boundary to Task 2; user flows/errors/accessibility to Task 3; fixture/browser evidence to Task 4; release and verification to Task 5. Review-focus cases have explicit owning tests. The public signatures remain consistent across backend and UI. Existing infrastructure names, scripts, migration version, native auth mount and test helpers were inspected at `bf472463`; no new dependencies or live access are assumed.
 
-Before product implementation, the owner reviews this concrete plan and selects native or subagent execution as required by the writing-plans skill. Native execution is recommended because the five tasks share challenge, route and UI interfaces; deterministic security/race tests provide the necessary evidence without repeated agent contexts.
+Owner overrode the additional review pause and instructed immediate implementation. Native execution preserves this plan's five tasks; one independent whole-change review identified duplicate signup issuance, hashing before rate admission and delivery timing, each fixed with a RED-to-GREEN regression. Dedicated service tests force transaction retries, races and rollback; production delivery shares a five-second response window across eligibility outcomes. The test-only memory transport has no delivery latency, and the isolated loopback gateway simulates distinct client IP identities without disabling rate bounds.
+
+Execution rulings: preserve two per-account challenge tombstones without TTL, while counters/serialization records expire; issue signup codes only after the provider commits and only for the actual committed account ID; use the installed ObjectId mapping with provider hashing and uncached sessions. Tasks 1–4 form one coordinated feature commit after their integrated verification, followed by the evidence handoff. Final compatibility review also reproduced and fixed trailing-slash `PUBLIC_ORIGIN` rejection. Browser setup was corrected to re-enter code mode after an email change, as required by the spec; no implementation behavior was relaxed to make the test pass.

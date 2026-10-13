@@ -107,23 +107,54 @@ processes and jobs as described in [operations.md](operations.md).
 Production requires verified email before account, room or wallet access. Existing
 unverified accounts use **Resend verification** with their original email; verification
 retains their account ID and balance. Wallets start at zero, with no historical reward
-backfill. Reset links expire after one hour, can be consumed once, and revoke older
-sessions. Browser wallet reads recover missed hints on reconnect, focus and UTC midnight.
+backfill. Verification and password reset use six-digit email codes that expire
+after ten minutes. Successful verification/reset returns to password sign-in;
+reset also verifies an unverified email and revokes all previous sessions.
+Browser wallet reads recover missed hints on reconnect, focus and UTC midnight.
 
-Password reset wraps the pinned provider's reset endpoint in its MongoDB transaction
-context. Token consumption, password update and previous-session deletion commit
-together. An interruption rolls them all back, leaving the same unexpired link
-usable for a retry. The wrapper uses the provider's token checks and password hashing;
-it does not implement another token format or require additional configuration.
+Dedicated challenges use a domain-separated HMAC derived from the existing
+`BETTER_AUTH_SECRET`, while Better Auth 1.7.6 still owns password hashing,
+registration and uncached sessions. Challenge consumption, password update,
+email verification, both-purpose invalidation and session deletion commit in one
+MongoDB transaction. An aborted transaction leaves the valid code recoverable;
+wrong-attempt outcomes commit their durable count before returning an error.
+Five wrong submissions exhaust a challenge. Resend invalidates the old code;
+the database enforces a 60-second cooldown, five address/purpose issuances per
+hour, 20 send attempts/IP/hour and 30 confirmations/IP/ten minutes. Eligible and
+ineligible requests share the bounded five-second Brevo response window, so an
+email timeout does not reveal account existence. Messages never contain recovery
+links. Code confirmation never creates a new session.
 
-Brevo setup and real verification/reset delivery remain pending separate authorization.
-Before rewards ship, prove delivery to the intended friends, including provider outage
-and retry behavior, using the approved sender. Tests use fake delivery only. Never set
+Migration **006** adds challenge, transient serialization and rate-counter
+collections with validators/indexes. It is additive and idempotent and does not
+rewrite existing auth, wallet or cosmetic documents. Preserve two challenge
+tombstones per account to reject immediately repeated codes; transient locks and
+bounded rate counters expire through TTL cleanup. Rotating the auth secret also
+invalidates outstanding codes and requires fresh requests.
+
+Before an authorized release, pause automatic Render updates, drain active games,
+prepare migration 006 with the operator's explicit live-database authorization,
+and coordinate the Worker and backend versions. New frontend code requests fail
+against the old backend; old link clients fail against the new backend. Apply the
+schema before the backend starts and restore automatic deployment only after the
+coordinated release is accepted. No live migration/deployment is performed by this
+implementation. Old verification/reset GETs redirect to clean request-code pages
+without consuming tokens, sending email or echoing query secrets. Legacy POSTs
+and unapproved OTP operations stay unavailable; old token documents can expire
+naturally. Rollback must never re-enable link acceptance or resurrect consumed
+challenges: prefer a compatible corrective release, or pause recovery with a
+clear unavailable state while preserving password sign-in.
+
+Hosted acceptance remains separate: prove actual Brevo code delivery and both POST
+flows through the public Worker-to-Nest route, account changes, secure cookies on
+subsequent password login, old-session revocation, legacy-link retirement, provider
+outage and retry behavior using the approved sender. Local fake-email evidence
+does not establish that the reported production link failure is fixed. Never set
 `ACCOUNT_EMAIL_TRANSPORT=memory`, `ACCOUNT_EMAIL_TEST_IPC` or `ACCOUNT_RECOVERY_ENFORCED`
 in a deployed environment; these are test fixtures and production always enforces recovery.
 
 The Worker replaces incoming `x-poker-client-ip` with Cloudflare's visitor address;
-Better Auth uses that header for recovery limits only after the proxy-secret guard.
+the challenge service and Better Auth use that header only after the proxy-secret guard.
 Keep visitor IP headers enabled and verify separate clients have separate limits in
 hosted acceptance. Cloudflare documents this address in its
 [HTTP header reference](https://developers.cloudflare.com/fundamentals/reference/http-headers/#cf-connecting-ip).

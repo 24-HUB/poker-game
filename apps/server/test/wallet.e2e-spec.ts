@@ -58,8 +58,9 @@ describe('authenticated ticket wallet', () => {
       .set('origin', origin).set('x-poker-proxy-secret', proxySecret)
       .send({ name: email, email, password: 'correct-horse-battery-staple', registrationCode });
     expect(signup.status).toBe(200);
-    const link = new URL(testAccountEmailInbox.at(-1)!.url);
-    await request(app.getHttpServer()).get(link.pathname + link.search).set('x-poker-proxy-secret', proxySecret);
+    await request(app.getHttpServer()).post('/api/auth/email-otp/verify-email')
+      .set('origin', origin).set('x-poker-proxy-secret', proxySecret)
+      .send({ email, otp: testAccountEmailInbox.at(-1)!.code });
     const signin = await request(app.getHttpServer()).post('/api/auth/sign-in/email')
       .set('origin', origin).set('x-poker-proxy-secret', proxySecret)
       .send({ email, password: 'correct-horse-battery-staple' });
