@@ -1,5 +1,45 @@
 # Checkpoint — Remaining phases through production
 
+## UX audit implementation brief — local handoff, 2026-10-13 18:39 Bangkok
+
+- User requested a Markdown implementation handoff covering the live UX audit
+  and local two-player review, explicitly including usage-limit handling.
+- Branch: `codex/room-ux-audit`, based on `origin/dev` `502d50e8`; brief committed
+  as `d2dfaf7c` (`docs: capture UX audit implementation brief`). Read
+  [the implementation brief](docs/superpowers/specs/2026-10-13-ux-audit-implementation.md).
+  No application fix is implemented. The acceptance checkboxes are intentionally
+  unchecked; observations and proposed remedies are distinguished.
+- The brief covers mobile card overlap, controller continuity, waiting-room
+  hierarchy, join-error recovery, contextual authentication, terminology/avatar
+  consistency, ticket guidance, touch targets, player names and betting labels.
+  Native confirmation stalled browser automation; successful session ending is
+  explicitly unverified, not labelled a proven production failure.
+- Verification: audited the brief against observed browser evidence, current
+  source, `plan.md`, the prior room specification and actual package scripts.
+  `git diff --cached --check` passed for the brief. No application tests were
+  rerun for this documentation-only handoff. Local review screenshots are ignored
+  artifacts, not portable or committed evidence. Local test services were stopped.
+- Remote blocker: automatic approval review rejected
+  `git push -u origin codex/room-ux-audit`, citing publication of potentially
+  non-public project/testing details to an unverified external origin. No push
+  succeeded and no PR exists. Do not bypass the rejection. These checkpoint
+  updates accompany the local save-point commit; no application edits are pending.
+- Exact next remote step after user approval:
+  `git push -u origin codex/room-ux-audit`, then create a documentation PR with
+  base `dev` and attach its URL. GitHub CLI is not installed/on PATH; use an
+  available authenticated GitHub interface. The user merges manually.
+- Before application implementation: recheck usage and working-tree state, fetch
+  origin, read this checkpoint and plan section 18, and reproduce UX-01/UX-02.
+  Do not treat this documentation request as completed application fixes.
+- Usage at 2026-10-13 11:39:48 UTC /18:39:48 Bangkok: five-hour **99% remaining**,
+  reset 2026-10-13 16:39:47 UTC /23:39:47 Bangkok; weekly **84% remaining**,
+  reset 2026-10-20 05:12:41 UTC /12:12:41 Bangkok. Recheck on resumption. Below
+  **10% in any applicable window** triggers a bounded-step/save-point decision;
+  update this file and plan section 18, preserve work and actual check results.
+  Never buy credits, redeem reset credits or change billing automatically.
+
+---
+
 ## Account email codes — implementation complete, 2026-10-13 09:42 Bangkok (02:42 UTC)
 
 - Owner explicitly directed immediate implementation, overriding the additional
