@@ -529,6 +529,11 @@ is written and self-reviewed against the installed provider, native auth mount,
 migration ledger, UI, fixtures and configured verification. No application code,
 live database, deployment or hosted acceptance changes have occurred.
 
+Plan commit `1f241ea4` is pushed in draft [PR #27](https://github.com/24-HUB/poker-game/pull/27),
+base `dev`. Documentation diff/whitespace checks passed; final fetch confirms the
+branch contains current `origin/dev`. Application tests and normal PR CI are not
+claimed complete.
+
 The writing-plans skill requires owner review and execution-method selection
 before product implementation. Next: review the plan, select native (recommended)
 or subagent execution, then execute Task 1 on the same branch after fetch and
