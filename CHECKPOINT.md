@@ -1,5 +1,30 @@
 # Checkpoint — Remaining phases through production
 
+## Account email codes — implementation plan, 2026-10-13 08:48 Bangkok (01:48 UTC)
+
+- Owner requested implementation of the written spec; treat that as written-spec
+  approval, including its technical defaults. Clean branch
+  `codex/account-email-codes` created from freshly fetched `origin/dev` `bf472463`.
+  Last completed application baseline is that merge; no product changes yet.
+- Completed repository/provider inspection and the self-reviewed executable plan
+  `docs/superpowers/plans/2026-10-13-account-email-codes.md`. Dedicated persistent
+  challenges preserve Better Auth sign-in/session authority while providing durable
+  attempt/rate controls, atomic reset and legacy-route retirement. Five tasks cover
+  database/backend, native auth/email, UI, fixtures/browser acceptance and handoff.
+- Pending: owner review of the concrete plan and selection of native or subagent
+  execution, explicitly required by the writing-plans skill. Native is recommended.
+  Next: after review, read the executing-plans and test-driven-development skills,
+  fetch origin, recheck usage, then execute Task 1 on this same branch.
+- Plan/doc accuracy reviewed against current routes, provider source, migrations,
+  manifests, CI and test fixtures. Application tests, hosted diagnosis, real Brevo
+  acceptance, deployment and live migrations have not run. Documentation checks
+  and remote save outcome are recorded at handoff below.
+- Usage observed 2026-10-13 01:48 UTC: five-hour 94% remaining, reset
+  2026-10-13 05:23:57 UTC /12:23:57 Bangkok; weekly 36% remaining, reset
+  2026-10-18 05:12:40 UTC /12:12:40 Bangkok. No billing or usage-reset action.
+
+---
+
 ## Account email codes — spec review, 2026-10-12 21:42 Bangkok (14:42 UTC)
 
 - Clean task branch `codex/auth-code-spec` from freshly fetched `origin/dev`

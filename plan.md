@@ -520,6 +520,22 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Account email codes — implementation plan, 2026-10-13
+
+The owner requested implementation of the written spec, approving its scope and
+technical defaults. Clean branch `codex/account-email-codes` starts at freshly
+fetched `origin/dev` `bf472463`. The [executable plan](docs/superpowers/plans/2026-10-13-account-email-codes.md)
+is written and self-reviewed against the installed provider, native auth mount,
+migration ledger, UI, fixtures and configured verification. No application code,
+live database, deployment or hosted acceptance changes have occurred.
+
+The writing-plans skill requires owner review and execution-method selection
+before product implementation. Next: review the plan, select native (recommended)
+or subagent execution, then execute Task 1 on the same branch after fetch and
+usage recheck. Evidence and remote-save state are in `CHECKPOINT.md`; the owner
+merges manually. Usage observed at 01:48 UTC (08:48 Bangkok): five-hour 94%
+remaining (reset 12:23:57 Bangkok), weekly 36% (reset October 18 at 12:12:40 Bangkok).
+
 ### Account email codes — specification review, 2026-10-12
 
 The owner reports production is configured but email-verification links leave the
