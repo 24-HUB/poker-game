@@ -25,10 +25,10 @@ export async function prepareLocalMockAccounts({ backendOrigin, publicOrigin, pr
       await new Promise((resolve) => setTimeout(resolve, 100));
     }
     if (!verification) throw new Error('Local verification capture failed.');
-    const url = new URL(verification.url);
-    if (url.origin !== publicOrigin || url.pathname !== '/api/auth/verify-email') throw new Error('Unexpected local verification target.');
-    const verified = await fetch(`${backendOrigin}${url.pathname}${url.search}`, { headers, redirect: 'manual', signal: AbortSignal.timeout(5000) });
-    if (verified.status !== 302 && !verified.ok) throw new Error('Local mock verification failed.');
+    if (!/^\d{6}$/.test(verification.code)) throw new Error('Invalid local verification code.');
+    const verified = await fetch(`${backendOrigin}/api/auth/email-otp/verify-email`, { method: 'POST', headers,
+      body: JSON.stringify({ email, otp: verification.code }), signal: AbortSignal.timeout(5000) });
+    if (!verified.ok) throw new Error('Local mock verification failed.');
     const signin = await fetch(`${backendOrigin}/api/auth/sign-in/email`, { method: 'POST', headers,
       body: JSON.stringify({ email, password }), signal: AbortSignal.timeout(5000) });
     if (!signin.ok) throw new Error('Local verified sign-in failed.');

@@ -15,8 +15,8 @@ describe('AccountEmailService', () => {
     process.env.ACCOUNT_EMAIL_TRANSPORT = 'memory';
     process.env.ACCOUNT_EMAIL_TEST_IPC = 'true';
     try {
-      await accountEmailFromEnvironment(options.publicOrigin).sendVerification('friend@example.net', `${options.publicOrigin}/verify`);
-      expect(send).toHaveBeenCalledWith({ type: 'account-email', email: { kind: 'verification', recipient: 'friend@example.net', url: `${options.publicOrigin}/verify` } });
+      await accountEmailFromEnvironment(options.publicOrigin).sendVerification('friend@example.net', '000042');
+      expect(send).toHaveBeenCalledWith({ type: 'account-email', email: { kind: 'verification', recipient: 'friend@example.net', code: '000042' } });
     } finally {
       process.send = previousSend;
       if (previous === undefined) delete process.env.ACCOUNT_EMAIL_TEST_IPC;
@@ -25,7 +25,7 @@ describe('AccountEmailService', () => {
       else process.env.ACCOUNT_EMAIL_TRANSPORT = previousTransport;
     }
   });
-  it('sends only provider links on the public origin to the intended recipient', async () => {
+  it('sends a six-digit code with expiry and no recovery link to the intended recipient', async () => {
     const requests: Array<{ url: string; body: unknown }> = [];
     const send = async (input: string | URL | Request, init?: RequestInit) => {
       requests.push({ url: String(input), body: JSON.parse(String(init?.body)) as unknown });
@@ -33,25 +33,25 @@ describe('AccountEmailService', () => {
     };
     const service = new AccountEmailService(options, send);
 
-    await service.sendVerification('friend@example.net', 'https://play.example/api/auth/verify-email?token=provider-token');
+    await service.sendVerification('friend@example.net', '000042');
 
     expect(requests).toEqual([{
       url: 'https://api.brevo.com/v3/smtp/email',
       body: {
         sender: { email: 'club@example.com', name: 'Looking Glass Club' },
         to: [{ email: 'friend@example.net' }],
-        subject: 'Verify your Looking Glass Club email',
-        textContent: 'Open this link to verify your email: https://play.example/api/auth/verify-email?token=provider-token',
+        subject: 'Verify your email',
+        textContent: 'Your verification code is:\n\n000042\n\nIt expires in 10 minutes. Use the latest code. Do not share it.',
       },
     }]);
     await expect(service.sendPasswordReset('friend@example.net', 'https://evil.example/reset?token=x'))
-      .rejects.toThrow('Account email link has an invalid origin');
+      .rejects.toThrow();
     expect(requests).toHaveLength(1);
   });
 
   it('reports delivery outage without exposing a provider response', async () => {
     const service = new AccountEmailService(options, async () => new Response('private provider error', { status: 503 }));
-    await expect(service.sendPasswordReset('friend@example.net', 'https://play.example/reset?token=secret'))
+    await expect(service.sendPasswordReset('friend@example.net', '000043'))
       .rejects.toThrow('Account email delivery is unavailable');
   });
 });

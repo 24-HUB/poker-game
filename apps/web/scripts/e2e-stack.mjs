@@ -55,7 +55,14 @@ const frontend = start(pnpmCommand.command, [...pnpmCommand.args, '--filter', '@
 
 const proxy = httpProxy.createProxyServer({ ws: true });
 proxy.on('proxyReq', (proxyRequest, request) => {
-  if (isBackendPath(request.url)) proxyRequest.setHeader('x-poker-proxy-secret', proxySecret);
+  if (isBackendPath(request.url)) {
+    proxyRequest.setHeader('x-poker-proxy-secret', proxySecret);
+    // Disposable loopback fixtures simulate independent trusted clients; the
+    // production Worker never reads this test header. Limits stay fully enabled.
+    const fixture = request.headers['x-e2e-client'];
+    proxyRequest.setHeader('x-poker-client-ip', typeof fixture === 'string' && /^[a-f0-9-]{36}$/.test(fixture) ? `fixture:${fixture}` : '127.0.0.1');
+    proxyRequest.removeHeader('x-e2e-client');
+  }
 });
 proxy.on('error', (_error, _request, response) => {
   if (!response || 'destroyed' in response && response.destroyed) return;
@@ -71,7 +78,7 @@ const gateway = createServer((request, response) => {
     const email = accountEmails.findLast((entry) => entry.recipient === requestedUrl.searchParams.get('recipient')
       && entry.kind === requestedUrl.searchParams.get('kind'));
     response.writeHead(email ? 200 : 404, { 'cache-control': 'no-store', 'content-type': 'application/json' });
-    response.end(JSON.stringify(email ? { url: email.url } : {}));
+    response.end(JSON.stringify(email ? { code: email.code } : {}));
     return;
   }
   if (new URL(request.url ?? '/', publicOrigin).pathname === '/__e2e/restart-backend') {

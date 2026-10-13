@@ -1,189 +1,86 @@
 'use client';
-
 import { KeyRound, X } from 'lucide-react';
 import { type FormEvent, useEffect, useRef, useState } from 'react';
-
 import { Icon } from '../../components/ui/Icon';
-import { AuthRequestError, requestPasswordReset, resendVerification, signIn, signUp } from '../../lib/auth-client';
+import { AuthRequestError, signIn, signUp } from '../../lib/auth-client';
+import { EmailCodeForm } from './EmailCodeForm';
 
 type AuthMode = 'sign-in' | 'sign-up' | 'reset' | 'verify';
-
-export function SignInButton({ onAuthenticated }: { onAuthenticated: () => void }) {
-  const [open, setOpen] = useState(false);
-  const [mode, setMode] = useState<AuthMode>('sign-in');
-  const [pending, setPending] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [notice, setNotice] = useState<string | null>(null);
-  const trigger = useRef<HTMLButtonElement>(null);
-  const emailInput = useRef<HTMLInputElement>(null);
-  const dialog = useRef<HTMLElement>(null);
-
+export function SignInButton({ onAuthenticated, initialEmail = '', initialNotice, autoOpen = false }: {
+  onAuthenticated: () => void; initialEmail?: string; initialNotice?: string; autoOpen?: boolean;
+}) {
+  const [open, setOpen] = useState(autoOpen); const [mode, setMode] = useState<AuthMode>('sign-in');
+  const [email, setEmail] = useState(initialEmail); const [codeSent, setCodeSent] = useState(false);
+  const [pending, setPending] = useState(false); const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(initialNotice ?? null);
+  const trigger = useRef<HTMLButtonElement>(null); const emailInput = useRef<HTMLInputElement>(null);
+  const dialog = useRef<HTMLElement>(null); const version = useRef(0);
   useEffect(() => {
-    if (open) emailInput.current?.focus();
-  }, [open, mode]);
-
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('recovery') === 'verification') {
+      setOpen(true); setMode('verify'); setNotice('This link has been replaced. Request a new code.');
+      window.history.replaceState(null, '', window.location.pathname);
+    }
+  }, []);
+  useEffect(() => { if (open) emailInput.current?.focus(); }, [open, mode]);
+  useEffect(() => () => { version.current++; }, []);
+  function changeMode(value: AuthMode) { version.current++; setMode(value); setError(null); setNotice(null); setPending(false); setCodeSent(false); }
   function close() {
-    setOpen(false);
-    setPending(false);
-    setError(null);
-    setNotice(null);
+    version.current++; setOpen(false); setPending(false); setError(null); setNotice(null); setCodeSent(false); setMode('sign-in');
     requestAnimationFrame(() => trigger.current?.focus());
   }
-
+  function back(retainedEmail: string, message?: string) { changeMode('sign-in'); setEmail(retainedEmail); setNotice(message ?? null); }
   async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setPending(true);
-    setError(null);
-    setNotice(null);
-    const form = new FormData(event.currentTarget);
-    const email = String(form.get('email') ?? '');
+    event.preventDefault(); const requestVersion = version.current;
+    setPending(true); setError(null); setNotice(null); const form = new FormData(event.currentTarget);
     const password = String(form.get('password') ?? '');
-
     try {
-      if (mode === 'reset') {
-        await requestPasswordReset(email);
-        setNotice('If that address has an account, a reset link is on its way.');
-      } else if (mode === 'verify') {
-        await resendVerification(email);
-        setNotice('If that address needs verification, a new link is on its way.');
-      } else if (mode === 'sign-up') {
-        await signUp({
-          name: String(form.get('name') ?? ''),
-          email,
-          password,
-          registrationCode: String(form.get('registrationCode') ?? ''),
-        });
-        setMode('verify');
-        setNotice('Account created. Check your email to verify it before signing in.');
+      if (mode === 'sign-up') {
+        await signUp({ name: String(form.get('name') ?? ''), email, password, registrationCode: String(form.get('registrationCode') ?? '') });
+        if (version.current !== requestVersion) return;
+        setMode('verify'); setCodeSent(true);
       } else {
-        await signIn({ email, password });
-        close();
-        onAuthenticated();
+        await signIn({ email, password }); if (version.current !== requestVersion) return;
+        close(); onAuthenticated();
       }
     } catch (cause) {
-      setError(cause instanceof AuthRequestError ? cause.message : 'Sign-in could not be completed. Try again.');
-    } finally {
-      setPending(false);
-    }
+      if (version.current !== requestVersion) return;
+      if (cause instanceof AuthRequestError && cause.code === 'EMAIL_NOT_VERIFIED') { setMode('verify'); setCodeSent(false); }
+      else setError(cause instanceof AuthRequestError ? cause.message : 'Sign-in could not be completed. Try again.');
+    } finally { if (version.current === requestVersion) setPending(false); }
   }
-
-  return (
-    <>
-      <button ref={trigger} className="sign-in-trigger" type="button" onClick={() => setOpen(true)}>
-        <Icon icon={KeyRound} /> Sign in
-      </button>
-      {open ? (
-        <div
-          className="auth-overlay"
-          role="presentation"
-          onMouseDown={(event) => {
-            if (event.target === event.currentTarget) close();
-          }}
-        >
-          <section
-            ref={dialog}
-            className="auth-dialog"
-            role="dialog"
-            aria-modal="true"
-            aria-labelledby="auth-title"
-            onKeyDown={(event) => {
-              if (event.key === 'Escape') close();
-              if (event.key !== 'Tab') return;
-              const focusable = dialog.current?.querySelectorAll<HTMLElement>(
-                'button:not([disabled]), input:not([disabled])',
-              );
-              if (!focusable?.length) return;
-              const first = focusable.item(0);
-              const last = focusable.item(focusable.length - 1);
-              if (!first || !last) return;
-              if (event.shiftKey && document.activeElement === first) {
-                event.preventDefault();
-                last.focus();
-              } else if (!event.shiftKey && document.activeElement === last) {
-                event.preventDefault();
-                first.focus();
-              }
-            }}
-          >
-            <div className="auth-dialog__heading">
-              <span className="auth-dialog__mark"><Icon icon={KeyRound} /></span>
-              <button className="icon-button" type="button" onClick={close} aria-label="Close sign-in">
-                <Icon icon={X} />
-              </button>
-            </div>
-            <h2 id="auth-title">{{ 'sign-in': 'Welcome back', 'sign-up': 'Join the private playtest', reset: 'Reset your password', verify: 'Verify your email' }[mode]}</h2>
-            <p>{mode === 'sign-up' ? 'Your host will share the registration code.' : mode === 'sign-in' ? 'Return to your private tables.' : 'We will send a secure link to your account email.'}</p>
-
-            <div className="auth-mode" aria-label="Account action">
-              <button
-                type="button"
-                aria-pressed={mode === 'sign-in'}
-                onClick={() => { setMode('sign-in'); setError(null); setNotice(null); }}
-              >
-                Sign in
-              </button>
-              <button
-                type="button"
-                aria-pressed={mode === 'sign-up'}
-                onClick={() => { setMode('sign-up'); setError(null); setNotice(null); }}
-              >
-                Create account
-              </button>
-            </div>
-
-            <form className="auth-form" onSubmit={submit}>
-              {mode === 'sign-up' ? (
-                <label>
-                  <span>Display name</span>
-                  <input name="name" autoComplete="nickname" maxLength={40} required />
-                </label>
-              ) : null}
-              <label>
-                <span>Email</span>
-                <input ref={emailInput} name="email" type="email" autoComplete="email" required />
-              </label>
-              {mode === 'sign-in' || mode === 'sign-up' ? <label>
-                <span>Password</span>
-                <input
-                  name="password"
-                  type="password"
-                  autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'}
-                  minLength={8}
-                  maxLength={128}
-                  required
-                />
-              </label> : null}
-              {mode === 'sign-up' ? (
-                <label>
-                  <span>Registration code</span>
-                  <input name="registrationCode" type="password" autoComplete="off" required />
-                </label>
-              ) : null}
-
-              {error ? <p className="auth-error" role="alert">{error}</p> : null}
-              {notice ? <p className="auth-recovery" role="status">{notice}</p> : null}
-              <button className="primary-button" type="submit" disabled={pending}>
-                {pending
-                  ? 'Checking…'
-                  : mode === 'sign-in'
-                    ? 'Sign in to your club'
-                    : mode === 'sign-up' ? 'Create private account' : mode === 'reset' ? 'Send reset link' : 'Send verification link'}
-              </button>
-            </form>
-            <p className="auth-recovery">
-              {mode === 'reset' || mode === 'verify' ? (
-                <button type="button" onClick={() => { setMode('sign-in'); setError(null); setNotice(null); }}>Back to sign in</button>
-              ) : (
-                <>
-                  <button type="button" onClick={() => { setMode('reset'); setError(null); setNotice(null); }}>Forgot password?</button>
-                  {' · '}
-                  <button type="button" onClick={() => { setMode('verify'); setError(null); setNotice(null); }}>Resend verification</button>
-                </>
-              )}
-            </p>
-          </section>
-        </div>
-      ) : null}
-    </>
-  );
+  return <>
+    <button ref={trigger} className="sign-in-trigger" type="button" onClick={() => setOpen(true)}><Icon icon={KeyRound} /> Sign in</button>
+    {open ? <div className="auth-overlay" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) close(); }}>
+      <section ref={dialog} className="auth-dialog" role="dialog" aria-modal="true" aria-labelledby="auth-title" onKeyDown={(event) => {
+        if (event.key === 'Escape') close();
+        if (event.key !== 'Tab') return;
+        const elements = dialog.current?.querySelectorAll<HTMLElement>('button:not([disabled]), input:not([disabled])');
+        const first = elements?.item(0); const last = elements?.item(elements.length - 1);
+        if (event.shiftKey && document.activeElement === first && last) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last && first) { event.preventDefault(); first.focus(); }
+      }}>
+        <div className="auth-dialog__heading"><span className="auth-dialog__mark"><Icon icon={KeyRound} /></span>
+          <button className="icon-button" type="button" onClick={close} aria-label="Close sign-in"><Icon icon={X} /></button></div>
+        <h2 id="auth-title">{{ 'sign-in': 'Welcome back', 'sign-up': 'Join the private playtest', reset: 'Reset your password', verify: 'Verify your email' }[mode]}</h2>
+        {mode === 'verify' || mode === 'reset' ? <EmailCodeForm key={mode} purpose={mode} initialEmail={email} initialCodeSent={codeSent}
+          initialNotice={mode === 'verify' && codeSent ? 'Account created. Check your email. Enter the six-digit code.' : notice ?? undefined} onBack={back} /> : <>
+          <p>{mode === 'sign-up' ? 'Your host will share the registration code.' : 'Return to your private tables.'}</p>
+          <div className="auth-mode" aria-label="Account action">
+            <button type="button" aria-pressed={mode === 'sign-in'} onClick={() => changeMode('sign-in')}>Sign in</button>
+            <button type="button" aria-pressed={mode === 'sign-up'} onClick={() => changeMode('sign-up')}>Create account</button></div>
+          <form key={mode} className="auth-form" onSubmit={submit}>
+            {mode === 'sign-up' ? <label><span>Display name</span><input name="name" autoComplete="nickname" maxLength={40} required /></label> : null}
+            <label><span>Email</span><input ref={emailInput} name="email" type="email" autoComplete="email" value={email} onChange={(event) => { version.current++; setEmail(event.target.value); setPending(false); }} required /></label>
+            <label><span>Password</span><input name="password" type="password" autoComplete={mode === 'sign-in' ? 'current-password' : 'new-password'} minLength={8} maxLength={128} required /></label>
+            {mode === 'sign-up' ? <label><span>Registration code</span><input name="registrationCode" type="password" autoComplete="off" required /></label> : null}
+            {error ? <p className="auth-error" role="alert">{error}</p> : null}{notice ? <p className="auth-recovery" role="status">{notice}</p> : null}
+            <button className="primary-button" type="submit" disabled={pending}>{pending ? 'Checking…' : mode === 'sign-in' ? 'Sign in to your club' : 'Create private account'}</button>
+          </form>
+          <p className="auth-recovery"><button type="button" onClick={() => changeMode('reset')}>Forgot password?</button>{' · '}
+            <button type="button" onClick={() => changeMode('verify')}>Resend verification</button></p>
+        </>}
+      </section>
+    </div> : null}
+  </>;
 }

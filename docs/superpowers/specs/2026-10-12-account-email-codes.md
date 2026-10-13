@@ -1,8 +1,10 @@
 # Account email codes — verification and password reset
 
-Status: **Draft for owner review. Product choices below were confirmed in the
-2026-10-12 grill-me interview; the implementation design and technical defaults
-still require review. No application changes or production fix are claimed.**
+Status: **Implemented locally following the owner's 2026-10-13 implementation
+instruction. Product choices were confirmed in the 2026-10-12 interview; the
+engineering defaults below were adopted for this implementation. Local evidence
+is recorded in CHECKPOINT.md. Hosted acceptance and the reported production
+failure remain unverified; no deployment or live migration is claimed.**
 
 ## 1. Problem and outcome
 
@@ -36,7 +38,7 @@ Prevent reuse of the immediately superseded code and avoid identical simultaneou
 verification/reset codes for the same account; other accounts may receive the same
 numeric string without sharing authorization.
 
-## 3. Current implementation and constraints
+## 3. Baseline implementation and constraints
 
 Repository inspection at `origin/dev` `4c6b39b3` found:
 
@@ -112,9 +114,11 @@ Reloading/closing clears transient secrets and lets the user resume by entering
 their email and an existing code or requesting another. Provide a public reset
 page that works without a query token; do not make opening an email link necessary.
 
-## 5. Technical defaults proposed for review
+## 5. Technical defaults adopted for implementation
 
-These are engineering recommendations, not individually confirmed interview answers.
+These were engineering recommendations rather than individually confirmed
+interview answers; the owner requested implementation of this written spec on
+2026-10-13. They are implemented without changing the pinned provider version.
 
 | Control | Proposed requirement |
 | --- | --- |
@@ -262,17 +266,29 @@ verification runs in the supported Linux environment/CI. Update E2E email captur
 native account helpers and local mock account preparation to submit codes, not
 seed verified flags or restore removed shortcut login endpoints.
 
-## 10. Next review and evidence status
+## 10. Implementation and release evidence
 
-Product interview is complete. Next: owner reviews this written spec, especially
-the proposed attempt/rate defaults. Approval permits writing the executable
-implementation plan with file boundaries, route/transaction regression cases,
-local verification and release gates. It does not claim the code is implemented.
+The [implementation plan](../plans/2026-10-13-account-email-codes.md) is executed
+on `codex/account-email-codes` in PR #27 targeting `dev`. A dedicated challenge
+service supplies the four approved native auth routes without mounting the OTP
+plugin's additional operations. Real replica-set tests cover lifecycle, attempts,
+rates, resend/confirmation races, forced transaction retries and rollback. Native
+mount tests prove identity/economy preservation, no automatic login, HTTP/socket
+revocation, generic request responses and legacy-route retirement. React/browser
+tests cover the forms, interruption, focus, refresh, resend and responsive layouts.
+Final commands and observed outcomes are in `CHECKPOINT.md`.
 
-This document was prepared from repository and installed-provider inspection.
-Application tests, real email delivery, production diagnosis and deployment were
-not run for this documentation task. The reported live failure remains unresolved
-until implementation and authorized hosted acceptance provide evidence.
+Migration 006 is required before rollout; preparation, coordinated frontend/backend
+cutover and rollback constraints are documented in `docs/deployment.md`. An
+independent code review's three Important findings have RED-to-GREEN regressions:
+synthetic duplicate signup cannot issue a code, reset admission precedes hashing,
+and real Brevo eligibility outcomes share a five-second response window. Test-only
+memory delivery is immediate, with gated tests exercising the production timing
+policy. Provider dependencies remain pinned and no live settings were changed.
+
+The reported live failure remains unresolved until separately authorized public
+Worker-to-Nest and actual Brevo acceptance provides evidence. The owner merges
+manually; implementation does not authorize deployment or applying a live migration.
 
 Reference: [Better Auth email OTP documentation](https://better-auth.com/docs/plugins/email-otp).
 Installed 1.7.6 source is the compatibility authority; current website examples

@@ -1,5 +1,9 @@
 import { defineConfig } from '@playwright/test';
 
+// Pinned Playwright uses this switch to suppress failure-page snapshots, which
+// otherwise include the current plaintext code input even with tracing off.
+process.env.PLAYWRIGHT_NO_COPY_PROMPT = '1';
+
 export default defineConfig({
   testDir: './tests/e2e',
   fullyParallel: false,
@@ -9,7 +13,8 @@ export default defineConfig({
   reporter: 'line',
   use: {
     baseURL: 'http://127.0.0.1:3100',
-    trace: process.env.CI ? 'off' : 'retain-on-failure',
+    // Account fixtures submit passwords and email codes. Never capture them.
+    trace: 'off',
     screenshot: 'off',
     video: 'off',
   },

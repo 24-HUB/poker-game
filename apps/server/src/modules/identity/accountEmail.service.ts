@@ -11,7 +11,7 @@ type AccountEmailOptions = z.infer<typeof optionsSchema>;
 
 export const ACCOUNT_EMAIL = Symbol('ACCOUNT_EMAIL');
 export type AccountEmailDelivery = Pick<AccountEmailService, 'sendVerification' | 'sendPasswordReset'>;
-export const testAccountEmailInbox: Array<{ kind: 'verification' | 'reset'; recipient: string; url: string }> = [];
+export const testAccountEmailInbox: Array<{ kind: 'verification' | 'reset'; recipient: string; code: string }> = [];
 
 export class AccountEmailService {
   private readonly options: AccountEmailOptions;
@@ -20,24 +20,17 @@ export class AccountEmailService {
     this.options = optionsSchema.parse(options);
   }
 
-  public async sendVerification(recipient: string, url: string): Promise<void> {
-    await this.send(recipient, url, 'Verify your Looking Glass Club email',
-      'Open this link to verify your email');
+  public async sendVerification(recipient: string, code: string): Promise<void> {
+    await this.send(recipient, code, 'Verify your email', 'Your verification code is');
   }
 
-  public async sendPasswordReset(recipient: string, url: string): Promise<void> {
-    await this.send(recipient, url, 'Reset your Looking Glass Club password',
-      'Open this link to reset your password');
+  public async sendPasswordReset(recipient: string, code: string): Promise<void> {
+    await this.send(recipient, code, 'Reset your password', 'Your password reset code is');
   }
 
-  private async send(recipient: string, rawUrl: string, subject: string, instruction: string): Promise<void> {
+  private async send(recipient: string, code: string, subject: string, instruction: string): Promise<void> {
     const address = z.email().parse(recipient);
-    let url: URL;
-    try { url = new URL(rawUrl); }
-    catch { throw new Error('Account email link has an invalid origin'); }
-    if (url.origin !== new URL(this.options.publicOrigin).origin || url.username || url.password) {
-      throw new Error('Account email link has an invalid origin');
-    }
+    if (!/^\d{6}$/.test(code)) throw new Error('Invalid account email code');
     try {
       const response = await this.fetcher('https://api.brevo.com/v3/smtp/email', {
         method: 'POST',
@@ -45,7 +38,7 @@ export class AccountEmailService {
         body: JSON.stringify({
           sender: { email: this.options.senderEmail, name: this.options.senderName },
           to: [{ email: address }], subject,
-          textContent: `${instruction}: ${url.toString()}`,
+          textContent: `${instruction}:\n\n${code}\n\nIt expires in 10 minutes. Use the latest code. Do not share it.`,
         }),
         signal: AbortSignal.timeout(5_000),
       });
@@ -65,11 +58,11 @@ export function accountEmailFromEnvironment(publicOrigin: string): AccountEmailD
       if (process.env.ACCOUNT_EMAIL_TEST_IPC === 'true') process.send?.({ type: 'account-email', email });
     };
     return {
-      async sendVerification(recipient, url) {
-        deliver({ kind: 'verification', recipient, url });
+      async sendVerification(recipient, code) {
+        deliver({ kind: 'verification', recipient, code });
       },
-      async sendPasswordReset(recipient, url) {
-        deliver({ kind: 'reset', recipient, url });
+      async sendPasswordReset(recipient, code) {
+        deliver({ kind: 'reset', recipient, code });
       },
     };
   }

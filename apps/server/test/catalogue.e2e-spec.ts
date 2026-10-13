@@ -14,7 +14,7 @@ describe('immutable catalogue persistence', () => {
   });
   it('creates collection validators and unique account identities idempotently', async () => {
     await applyMigrations(database.db);
-    expect(await database.db.collection('schemaMigrations').countDocuments()).toBe(5);
+    expect(await database.db.collection('schemaMigrations').countDocuments()).toBe(6);
     const progress = database.db.collection('bannerProgress');
     await progress.insertOne({ accountId: 'a', bannerId: 'celestial', sinceSr: 0, sinceSsr: 0 });
     await expect(progress.insertOne({ accountId: 'a', bannerId: 'celestial', sinceSr: 0, sinceSsr: 0 })).rejects.toMatchObject({ code: 11000 });

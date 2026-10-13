@@ -58,6 +58,6 @@ describe('SignInButton', () => {
       registrationCode: 'private-code',
     });
     expect(onAuthenticated).not.toHaveBeenCalled();
-    expect(within(dialog).getByRole('status')).toHaveTextContent('Check your email to verify it');
+    expect(within(dialog).getByRole('status')).toHaveTextContent('Check your email. Enter the six-digit code.');
   });
 });

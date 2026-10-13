@@ -1,5 +1,79 @@
 # Checkpoint — Remaining phases through production
 
+## Account email codes — implementation complete, 2026-10-13 09:42 Bangkok (02:42 UTC)
+
+- Owner explicitly directed immediate implementation, overriding the additional
+  plan-review pause. Continued on `codex/account-email-codes` from `origin/dev`
+  `bf472463`; no unrelated work was present. Implementation commit `67c34997`
+  is pushed in [PR #27](https://github.com/24-HUB/poker-game/pull/27), base `dev`.
+- Implemented six-digit/600-second verification and reset, keyed-hash storage,
+  latest-generation/single-use challenges, durable five-attempt limits,
+  address/purpose cooldown and hourly bounds, trusted-IP bounds with Retry-After,
+  transactional reset/verification/session revocation and legacy-route retirement.
+  Better Auth 1.7.6 still owns registration, password hashing and uncached sessions.
+  No automatic login; reset verifies an unverified email and preserves ID/economy.
+- Updated Brevo messages, native auth responses, shared code-entry/reset forms,
+  retained-email sign-in transitions, uncertain-result copy, focus/keyboard/refresh
+  behavior and cooldown display. Browser/local mock fixtures submit native codes;
+  production capture/shortcut routes remain unavailable. Secret-bearing trace,
+  automatic screenshot/video and failure-page snapshot capture are disabled.
+- Independent read-only review found three Important issues, all reproduced and
+  fixed RED-to-GREEN: duplicate signup issuance, hashing before IP admission and
+  account eligibility exposed by delivery timeout. Real Brevo sends share a bounded
+  five-second response window across eligibility outcomes. Final compatibility
+  review also reproduced/fixed canonical Origin handling for trailing-slash config.
+- Passed: pinned Node 22.16.0/pnpm 10.33.0 frozen install; `pnpm check`; final full
+  backend suite **233/233**, final full frontend suite **121/121**, full Chromium
+  **23/23**; final backend/frontend typechecks and `pnpm build`. Worker bundle
+  passed in disposable Linux Docker with Node 22.16.0/pnpm 10.33.0 and read-only
+  source. Native/transaction tests cover real replica-set races, forced retries,
+  rollback at all writes, persisted attempts, sessions and owned-cosmetic/wallet
+  preservation. Desktop, 360px mobile and shortened 480px-height viewport evidence
+  confirms reachable controls and no horizontal overflow; physical phone keyboards
+  and hosted behavior were not tested.
+- Final diff, staged whitespace and complete task review passed. Final fetch
+  confirms the branch contains current `origin/dev` `bf472463`. No remaining local
+  implementation blockers; normal GitHub PR CI and owner review remain pending.
+- Next: review PR #27 and its CI; owner merges manually. Before rollout, follow
+  `docs/deployment.md`: pause automatic deployment, drain play, obtain explicit
+  authorization for live migration 006, coordinate Worker/backend cutover and prove
+  actual Brevo/public-origin acceptance. No live migration, provider change or
+  deployment occurred, and the reported production failure is not claimed fixed.
+- Usage observed at 02:42 UTC: five-hour **38% remaining**, reset 2026-10-13
+  05:23:57 UTC /12:23:57 Bangkok; weekly **27% remaining**, reset 2026-10-18
+  05:12:40 UTC /12:12:40 Bangkok. No billing/reset-credit action.
+
+---
+
+## Account email codes — implementation plan, 2026-10-13 08:48 Bangkok (01:48 UTC)
+
+- Owner requested implementation of the written spec; treat that as written-spec
+  approval, including its technical defaults. Clean branch
+  `codex/account-email-codes` created from freshly fetched `origin/dev` `bf472463`.
+  Last completed application baseline is that merge; no product changes yet.
+- Completed repository/provider inspection and the self-reviewed executable plan
+  `docs/superpowers/plans/2026-10-13-account-email-codes.md`. Dedicated persistent
+  challenges preserve Better Auth sign-in/session authority while providing durable
+  attempt/rate controls, atomic reset and legacy-route retirement. Five tasks cover
+  database/backend, native auth/email, UI, fixtures/browser acceptance and handoff.
+- Pending: owner review of the concrete plan and selection of native or subagent
+  execution, explicitly required by the writing-plans skill. Native is recommended.
+  Next: after review, read the executing-plans and test-driven-development skills,
+  fetch origin, recheck usage, then execute Task 1 on this same branch.
+- Plan/doc accuracy reviewed against current routes, provider source, migrations,
+  manifests, CI and test fixtures. Application tests, hosted diagnosis, real Brevo
+  acceptance, deployment and live migrations have not run. Documentation checks
+  passed: `git diff --check`, staged whitespace checks, complete task diff review
+  and branch whitespace checks. Plan commit `1f241ea4` is pushed in draft
+  [PR #27](https://github.com/24-HUB/poker-game/pull/27), base `dev`; owner merges
+  manually. Final fetch confirms the branch contains current `origin/dev`.
+  Normal PR CI and plan approval remain pending.
+- Usage observed 2026-10-13 01:48 UTC: five-hour 94% remaining, reset
+  2026-10-13 05:23:57 UTC /12:23:57 Bangkok; weekly 36% remaining, reset
+  2026-10-18 05:12:40 UTC /12:12:40 Bangkok. No billing or usage-reset action.
+
+---
+
 ## Account email codes — spec review, 2026-10-12 21:42 Bangkok (14:42 UTC)
 
 - Clean task branch `codex/auth-code-spec` from freshly fetched `origin/dev`
