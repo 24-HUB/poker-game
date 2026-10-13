@@ -531,7 +531,8 @@ main { min-width: 0; padding: 37px 42px 22px; }
   .poker-card > span { font-size: 18px; }
   .poker-table__action-panel { position: static; padding: 8px 8px calc(8px + env(safe-area-inset-bottom)); }
   .poker-amount-controls { grid-template-columns: auto 80px 1fr; }
-  .poker-amount-controls input[type='range'] { grid-area: auto; grid-column: 1 / -1; }
+  .poker-amount-controls input[type='range'] { grid-column: 3; grid-row: 1; }
+  .poker-amount-value { display: none; }
   .poker-amount-presets { grid-area: auto; grid-column: 1 / -1; }
 }
 

@@ -1,5 +1,39 @@
 # Checkpoint — Remaining phases through production
 
+## PR #28 CI follow-up — local verification complete, fresh CI pending
+
+- Resumed on clean `codex/room-ux-audit` after fetch; previous save point was
+  `6309b6db`. [CI run 38405004222](https://github.com/24-HUB/poker-game/actions/runs/38405004222)
+  failed on the ambiguous mock-account sign-in selector and mobile action-panel
+  geometry (791px bottom in a 767px viewport). Prior Windows 27/27 evidence did
+  not establish Linux CI success; the PR was not ready to merge.
+- Scoped mock-account sign-in to the header banner. The regression now deliberately
+  visits signed-out Collection, where header and inline sign-in controls coexist;
+  the original selector reproduced RED and the scoped selector passed GREEN.
+- Put the mobile amount slider beside the numeric field, removing a separate
+  32px slider row plus its gap. Only the redundant numeric output is hidden;
+  cards, numeric input, slider, presets and primary legal actions remain visible.
+  Kept viewport assertions unchanged, added fallback-font coverage and explicit
+  input/slider/preset visibility checks. The original Linux overflow is CI evidence;
+  it did not reproduce with the local Arial fallback before the fix.
+- Passed: frozen install; CI-mode release/mock-account browser tests **4/4**;
+  fresh `pnpm check` (frontend **131/131**, backend **233/233**, shared suites,
+  typechecks and production builds); complete focused diff and whitespace checks.
+  This follow-up did not rerun all Chromium tests locally. Fresh full Linux CI
+  is required before calling the PR ready to merge.
+- Next: push this checkpoint/fix commit to the same PR, inspect its latest CI run,
+  and let the owner merge manually only after checks pass. If it fails, retrieve
+  its `verify` job logs and fix the specific failure; do not loosen assertions.
+  Resume starts with `git status --short --branch`, usage check and
+  `git fetch origin --prune`. No deployment, production data or billing action.
+- Usage observed 2026-10-13 13:44:50 UTC: five-hour **10% remaining**,
+  reset 2026-10-13 16:39:47 UTC /23:39:47 Bangkok; weekly **70% remaining**,
+  reset 2026-10-20 05:12:41 UTC /12:12:41 Bangkok. Below 10% triggers a bounded
+  completion/save-point decision; this verified correction is being saved before
+  further implementation. No reset-credit action.
+
+---
+
 ## UX audit fixes — implemented and pushed, 2026-10-13
 
 - Owner requested implementation of the audit handoff and updates to the same PR.

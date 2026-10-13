@@ -127,8 +127,12 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
     await pages[1]!.setViewportSize({ width: 1440, height: 1000 });
     const firstActor = await actingPage(pages);
     const previousViewport = firstActor.viewportSize()!;
+    await firstActor.addStyleTag({ content: 'body { font-family: Arial, sans-serif; }' });
     for (const viewport of [{ width: 355, height: 767 }, { width: 360, height: 800 }, { width: 390, height: 844 }, { width: 1440, height: 900 }]) {
       await firstActor.setViewportSize(viewport);
+      await expect(firstActor.getByRole('spinbutton')).toBeVisible();
+      await expect(firstActor.getByRole('slider')).toBeVisible();
+      await expect(firstActor.getByRole('button', { name: 'Minimum', exact: true })).toBeVisible();
       await assertTableVisibility(firstActor);
       await firstActor.getByRole('spinbutton').fill('1');
       await expect(firstActor.getByText(/Enter a whole-chip amount/)).toBeVisible();

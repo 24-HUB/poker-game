@@ -20,7 +20,7 @@ test('two ready players use real distinct verified sessions and join by invite c
     const guest = await guestContext.newPage();
     for (const [page, player] of [[host, 'host'], [guest, 'guest']] as const) {
       await page.goto('/');
-      await page.getByRole('button', { name: 'Sign in', exact: true }).click();
+      await page.getByRole('banner').getByRole('button', { name: 'Sign in', exact: true }).click();
       await expect(page.getByRole('button', { name: /Play as Mock/ })).toHaveCount(0);
       await page.getByRole('dialog').getByLabel('Email', { exact: true }).fill(accounts[player].email);
       await page.getByRole('dialog').getByLabel('Password', { exact: true }).fill(accounts[player].password);
@@ -46,7 +46,9 @@ test('two ready players use real distinct verified sessions and join by invite c
     await expect(guest.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     await guest.getByRole('button', { name: 'Leave room', exact: true }).click();
     await guest.getByRole('button', { name: 'Sign out' }).click();
-    await guest.getByRole('button', { name: 'Sign in', exact: true }).click();
+    await guest.goto('/collection');
+    await expect(guest.getByRole('heading', { name: 'Collection', exact: true })).toBeVisible();
+    await guest.getByRole('banner').getByRole('button', { name: 'Sign in', exact: true }).click();
     await guest.getByRole('dialog').getByLabel('Email', { exact: true }).fill(accounts.guest.email);
     await guest.getByRole('dialog').getByLabel('Password', { exact: true }).fill(accounts.guest.password);
     await guest.getByRole('button', { name: 'Sign in to your club' }).click();
