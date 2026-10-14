@@ -1,5 +1,52 @@
 # Checkpoint — Remaining phases through production
 
+## Hand-result implementation — locally verified, 2026-10-14
+
+- User approved implementation of PR #29's specification and updates to the same
+  PR. Branch `codex/hand-result-ux-spec`; implementation commit `74d87b98`.
+  [PR #29](https://github.com/24-HUB/poker-game/pull/29) targets `dev`.
+- Added version-1 committed public presentation: outcome reason, actual board,
+  deterministic best five, ranking/combination/kickers, public participant identity,
+  per-pot awards and separate uncalled returns. Folded private cards are excluded.
+  Older records retain payouts with “Detailed cards unavailable”.
+- Replaced the dismissible toast with inline showdown/fold results and shared
+  history rows. Seats show authorized reveals, settled stacks and winner badges.
+  Accounting distinguishes awards, returns and net; session leaders are separate.
+- Exposed the existing five-second server transition timestamp and intent. Clock
+  receipt is recorded once per snapshot; reconnect, ending, pause and zero remain
+  truthful. Terminal board survives live-hand cleanup; unavailable own cards are
+  omitted after cleanup. New hands clear prior winner treatment.
+- Fixed internal MongoDB `_id` leaking into public reward receipt projection.
+  Independent review identified paused confirmed-result retention and removed-control
+  focus; both reproduced RED and passed GREEN after fixes. Re-review found no
+  Critical/Important blockers. Card labels now use supported accessible roles.
+- Passed: frozen install; `pnpm check` (server **236/236**, contracts **16/16**,
+  engine **21/21**, script suites, typechecks and configured builds); final frontend
+  **144/144**, frontend typecheck and production build after review corrections;
+  full Chromium **28/28**. No lint script exists. Real Socket.IO privacy/reconnect
+  and isolated replica-set settlement/history tests ran successfully.
+- Inspected showdown with two players and flop fold with six at 1440×900,
+  900×900, 390×844, 355×767 and 360×480; no seat overlap or horizontal page overflow.
+  The completed room keeps the table shell so mobile navigation cannot cover cards.
+  Keyboard/reduced-motion/four-colour checks and a 200% browser-zoom equivalent
+  (720×450 CSS viewport, pixel ratio 2) passed. Detector returned `[]`.
+- Browser fixture corrections wait for completed joins, use the current host and
+  reclaim a refreshed tab when needed. Existing release assertions now verify the
+  structured showdown/board/pot details and absence of completed-hand betting
+  controls. Earlier fixture failures are superseded by the full **28/28** run.
+- Last completed code step is `74d87b98`. This save point changes only documentation
+  and the plan checklist; no application work remains. Push explicitly with
+  `git push -u origin codex/hand-result-ux-spec`, update PR #29 and inspect its
+  Linux CI/Worker packaging before manual merge. Do not merge or rebase `dev`.
+- Last successful fetch confirms `origin/dev` `7927a9c4` is contained; repeat fetch
+  before final handoff. Hosted acceptance, a native screen-reader run and physical
+  phone keyboards remain playtest checks. No deployment or production data operation.
+- Usage observed 2026-10-14 17:37:44 Bangkok: five-hour **27% remaining**, weekly
+  **56% remaining**; resets 2026-10-14 21:20:51 and 2026-10-20 12:12:42 Bangkok.
+  No below-10% pause or billing action. The user merges manually.
+
+---
+
 ## Hand-result UX/UI specification — 2026-10-14
 
 - Task branch: `codex/hand-result-ux-spec`, based on fetched `origin/dev`

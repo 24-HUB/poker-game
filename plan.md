@@ -520,6 +520,41 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Hand-result implementation — locally verified, 2026-10-14
+
+The user requested implementation of PR #29's design and updates to the same PR.
+Commit `74d87b98` on `codex/hand-result-ux-spec` implements committed public
+showdown/fold presentation, deterministic best five/combination/kicker details,
+actual final board, public identity, per-pot awards and separate returns. Folded
+private cards remain recipient-only; legacy records use an honest detail fallback.
+The inline table result and history share presentation, with award/net/final-stack
+labels, authorized seat reveals, winner badges and distinct session standings.
+
+The existing five-second progression now has server timestamp/intent contracts.
+Receipt-time clock synchronization survives rerender/remount; reconnect, ending,
+pause and zero states do not advance locally or promise an unsupported next hand.
+Terminal board survives cleanup. Confirmed results remain visible during transition
+failure, removed-control focus is recovered and cards have accessible rank/suit roles.
+The completed room keeps table layout to prevent mobile navigation covering cards.
+
+Passed: frozen install; `pnpm check` (server 236/236, contracts 16/16, engine 21/21,
+script suites, typechecks and builds); final frontend 144/144, frontend typecheck
+and production build after review fixes; full Chromium 28/28. Real Socket.IO
+privacy/reconnect and isolated MongoDB settlement/history checks passed. Responsive
+two-/six-player results were inspected at 1440×900, 900×900, 390×844, 355×767 and
+360×480; keyboard, reduced motion, four-colour suits and the 200% zoom-equivalent
+viewport passed. Independent re-review found no Critical/Important blockers.
+
+See [the implementation plan](docs/superpowers/plans/2026-10-14-hand-result-implementation.md)
+and `CHECKPOINT.md` for the evidence and fixture corrections. This documentation
+save point follows `74d87b98`; next push `codex/hand-result-ux-spec`, update
+[PR #29](https://github.com/24-HUB/poker-game/pull/29) (base `dev`) and inspect Linux
+CI/Worker packaging. Latest successful fetch contains `origin/dev` `7927a9c4`;
+repeat fetch before handoff. The user merges manually. Hosted acceptance, native
+screen-reader and physical-phone checks remain playtest gates; no deployment.
+Usage at 2026-10-14 17:37:44 Bangkok: five-hour 27%, weekly 56% remaining;
+resets 2026-10-14 21:20:51 and 2026-10-20 12:12:42 Bangkok respectively.
+
 ### Hand-result UX/UI specification — 2026-10-14
 
 - Requested scope: documentation only, based on the supplied showdown and
