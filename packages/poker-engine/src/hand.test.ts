@@ -41,6 +41,23 @@ describe('holdem hand transitions', () => {
     expect(result.settlement?.payouts).toEqual({ p0: 0, p1: 30 });
     expect(result.settlement?.revealedCards).toEqual([]);
     expect(result.settlement?.manualActionAccountIds).toEqual(['p0']);
+    expect(result.settlement?.presentation).toMatchObject({ version: 1, outcomeReason: 'fold', board: [], rankings: [] });
+    expect(result.settlement?.uncalledReturns).toEqual([{ accountId: 'p1', amount: 10 }]);
+    expect(result.settlement?.pots[0]?.amount).toBe(20);
+  });
+
+  it('records only the actual board and no rankings on preflop, flop and turn folds', () => {
+    for (const checks of [0, 2, 4]) {
+      let hand = start([1000, 1000]);
+      if (checks) {
+        hand = act(hand, 'call');
+        for (let i = 1; i < checks; i += 1) hand = act(hand, 'check');
+      }
+      hand = act(hand, 'fold');
+      expect(hand.settlement?.presentation?.board).toHaveLength(checks === 0 ? 0 : checks === 2 ? 3 : 4);
+      expect(hand.settlement?.presentation?.rankings).toEqual([]);
+      expect(hand.settlement?.revealedCards).toEqual([]);
+    }
   });
 
   it('handles a short blind and all-in runout without a stuck actor', () => {

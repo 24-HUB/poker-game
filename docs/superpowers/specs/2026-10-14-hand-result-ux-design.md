@@ -1,7 +1,8 @@
 # Poker hand results — UX/UI specification
 
 Date: 2026-10-14 (Asia/Bangkok)
-Status: Proposed design for review; application changes are not implemented by this document.
+Status: Approved for implementation by the user's 2026-10-14 request on PR #29.
+Implementation evidence is recorded in `CHECKPOINT.md` and `plan.md`.
 
 ## 1. Intent and scope
 
@@ -16,7 +17,8 @@ fold followed by another hand. Their names, balances, ticket amounts and artwork
 are illustrative. The “Alternative: everyone folds” block is a design variant,
 not another panel to show alongside a real showdown result.
 
-Deliverable: this specification only. Retain poker rules, settlement accounting,
+The original deliverable was this specification; the user subsequently requested
+implementation and updates to the same PR. Retain poker rules, settlement accounting,
 ticket policy, authorization, equipment, room navigation and existing active-hand
 controls. Do not add manual card reveal, a next-hand command, or new rewards.
 This supplements the [room specification](2026-10-11-poker-room-ux-ui.md).
@@ -267,8 +269,9 @@ by this documentation task.
 
 ## 11. Review decisions
 
-Recommended defaults: persistent inline result, existing green felt, one
+Approved direction: persistent inline result, existing green felt, one
 non-clickable server countdown, explicit award/net labels, no voluntary reveal,
-and five-second continuation with accessible history. User review may refine
-these choices. Implementation planning follows review of this specification;
-the task does not mark any milestone or deployment complete.
+and five-second continuation with accessible history. The implementation plan is
+[`2026-10-14-hand-result-implementation.md`](../plans/2026-10-14-hand-result-implementation.md).
+Actual checks and remaining release gates belong in the checkpoints; this design
+does not mark deployment complete.

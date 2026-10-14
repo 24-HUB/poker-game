@@ -27,6 +27,9 @@ function currentPots(runtime: SessionRuntime): GameView['pots'] {
 export function projectGame(runtime: SessionRuntime, room: InternalRoom, controller: RoomController,
   accountId: string, connectionId: string, now: number): GameView {
   const hand = runtime.hand;
+  const committed = runtime.committedHandResult;
+  const showingResult = committed?.handId === runtime.handId && (hand?.street === 'complete' || !!runtime.sessionResult);
+  const transitionAt = showingResult && !runtime.paused && !runtime.sessionResult ? runtime.nextTransitionAt ?? null : null;
   const control = controller.controller(accountId);
   const member = room.members.find((candidate) => candidate.accountId === accountId);
   const isController = control?.connectionId === connectionId;
@@ -52,14 +55,16 @@ export function projectGame(runtime: SessionRuntime, room: InternalRoom, control
         ...participant, stack: hand?.street === 'complete' && runtime.committedHandResult?.handId === runtime.handId
           ? runtime.stacks[index]! : seat?.stack ?? runtime.stacks[index]!,
         streetContribution: seat?.streetContribution ?? 0, totalContribution: seat?.totalContribution ?? 0,
-        folded: seat?.folded ?? false, allIn: seat?.allIn ?? false,
+        folded: seat?.folded ?? (showingResult ? committed?.presentation?.participants.find((player) => player.accountId === participant.accountId)?.folded ?? false : false), allIn: seat?.allIn ?? false,
         connected: controller.isConnected(participant.accountId),
         equipment: runtime.equipmentByAccount?.[participant.accountId] ?? { avatar: null, cardBack: null },
       };
     }),
-    board: [...(hand?.board ?? [])], pots: currentPots(runtime), buttonSeat: runtime.buttonSeat,
+    board: [...(hand?.board ?? (showingResult ? committed?.presentation?.board : []) ?? [])], pots: currentPots(runtime), buttonSeat: runtime.buttonSeat,
     actorAccountId: hand?.actorAccountId ?? null, serverTime: new Date(now).toISOString(),
     deadline: runtime.deadline === null ? null : new Date(runtime.deadline).toISOString(),
+    nextTransitionAt: transitionAt === null ? null : new Date(transitionAt).toISOString(),
+    nextTransition: transitionAt === null ? null : runtime.ending || runtime.stacks.filter((stack) => stack > 0).length < 2 ? 'session-end' : 'next-hand',
     holeCards: hand?.seats.find((seat) => seat.accountId === accountId)?.holeCards
       ? [...hand.seats.find((seat) => seat.accountId === accountId)!.holeCards] as [number, number]
       : null,
@@ -68,7 +73,12 @@ export function projectGame(runtime: SessionRuntime, room: InternalRoom, control
     control: { isController, epoch: control?.epoch ?? member?.controllerEpoch ?? 0 },
     handResult: runtime.committedHandResult ? {
       ...runtime.committedHandResult,
-      rewardReceipts: runtime.committedHandResult.rewardReceipts?.filter((receipt) => receipt.accountId === accountId),
+      rewardReceipts: runtime.committedHandResult.rewardReceipts?.filter((receipt) => receipt.accountId === accountId).map((receipt) => ({
+        handId: receipt.handId, accountId: receipt.accountId, policyVersion: receipt.policyVersion,
+        completedDateUtc: receipt.completedDateUtc, qualified: receipt.qualified, reason: receipt.reason,
+        requestedParticipation: receipt.requestedParticipation, requestedBonus: receipt.requestedBonus,
+        grantedParticipation: receipt.grantedParticipation, grantedBonus: receipt.grantedBonus,
+      })),
     } : null,
     sessionResult: runtime.sessionResult,
   };

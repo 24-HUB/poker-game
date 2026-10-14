@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { gameCommandSchema, gameViewSchema } from './poker.js';
+import { committedHandResultSchema, gameCommandSchema, gameViewSchema } from './poker.js';
 
 const mutation = {
   commandId: '11111111-1111-4111-8111-111111111111',
@@ -20,6 +20,21 @@ const action = {
 };
 
 describe('poker contracts', () => {
+  it('accepts legacy results and validates public presentation without private card fields', () => {
+    const legacy = { handId: 'h', sessionId: 's', handNumber: 1, completedAt: mutation.issuedAt,
+      completedDateUtc: '2026-09-29', rulesVersion: 1, contributions: [{ accountId: 'a', amount: 10 }, { accountId: 'b', amount: 20 }],
+      payouts: [{ accountId: 'a', amount: 0 }, { accountId: 'b', amount: 30 }], finalStacks: [{ accountId: 'a', amount: 990 }, { accountId: 'b', amount: 1010 }],
+      manualActionAccountIds: ['a'], winners: ['b'], revealedCards: [] };
+    const presentation = { version: 1, outcomeReason: 'fold', board: [3, 4, 5], rankings: [],
+      participants: [{ accountId: 'a', displayName: 'Alice', seat: 0, folded: true }, { accountId: 'b', displayName: 'Bob', seat: 1, folded: false }],
+      pots: [{ amount: 20, eligibleAccountIds: ['b'], winners: ['b'], payouts: [{ accountId: 'b', amount: 20 }] }],
+      uncalledReturns: [{ accountId: 'b', amount: 10 }] };
+    expect(committedHandResultSchema.safeParse(legacy).success).toBe(true);
+    expect(committedHandResultSchema.safeParse({ ...legacy, presentation }).success).toBe(true);
+    expect(committedHandResultSchema.safeParse({ ...legacy, presentation: { ...presentation, holeCards: [0, 1] } }).success).toBe(false);
+    expect(committedHandResultSchema.safeParse({ ...legacy, presentation: { ...presentation, version: 2 } }).success).toBe(false);
+    expect(committedHandResultSchema.safeParse({ ...legacy, presentation: { ...presentation, uncalledReturns: [] } }).success).toBe(false);
+  });
   it('accepts valid sync, start, end and action commands', () => {
     expect(gameCommandSchema.safeParse({ type: 'game:sync', roomId: 'room-a' }).success).toBe(true);
     expect(gameCommandSchema.safeParse({ type: 'session:start', ...mutation }).success).toBe(true);

@@ -20,3 +20,12 @@ it('counts down against server time even when the browser clock is an hour ahead
 it('has no countdown without an authoritative deadline', () => {
   expect(renderHook(() => useTurnClock(null)).result.current).toBeNull();
 });
+
+it('does not reset a result interval when the same snapshot remounts', () => {
+  vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-14T10:00:00Z'));
+  const game = { serverTime: '2026-10-14T09:00:00Z', nextTransitionAt: '2026-10-14T09:00:05Z' } as GameView;
+  const first = renderHook(() => useTurnClock(game, game.nextTransitionAt));
+  expect(first.result.current).toBe(5);
+  act(() => vi.advanceTimersByTime(2000)); first.unmount();
+  expect(renderHook(() => useTurnClock(game, game.nextTransitionAt)).result.current).toBe(3);
+});

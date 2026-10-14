@@ -2,6 +2,13 @@ export type Card = number;
 
 /** Category increases with hand strength, from high card (0) to straight flush (8). */
 export type HandRank = { category: number; tiebreak: readonly number[] };
+export type HandDetail = {
+  rank: HandRank; handName: string; bestFive: Card[]; combinationCards: Card[]; kickers: number[];
+};
+export type SettlementPresentation = {
+  version: 1; outcomeReason: 'showdown' | 'fold'; board: Card[];
+  rankings: (HandDetail & { accountId: string; playsBoard: boolean })[];
+};
 
 export type PotSeat = {
   accountId: string;
@@ -66,5 +73,7 @@ export type EngineSettlement = {
   manualActionAccountIds: string[];
   revealedCards: { accountId: string; cards: readonly [Card, Card] }[];
   pots: PotResult['pots'];
+  uncalledReturns?: PotResult['uncalledReturns'];
+  presentation?: SettlementPresentation;
 };
 export type EngineTransition = { state: HandState; settlement: EngineSettlement | null };

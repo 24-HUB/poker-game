@@ -198,18 +198,23 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
       const caller = await actingPage(pages);
       await caller.getByRole('button', { name: /^Call / }).click();
       // A covering stack can retain chips after calling a shorter all-in.
-      await expect(caller.getByRole('button', { name: 'Fold', exact: true })).toBeDisabled();
+      if (index === 4) {
+        await expect(caller.locator('.hand-result__reason')).toHaveText('Showdown');
+        await expect(caller.getByRole('button', { name: 'Fold', exact: true })).toHaveCount(0);
+      } else await expect(caller.getByRole('button', { name: 'Fold', exact: true })).toBeDisabled();
     }
     for (const page of pages) {
       await expect(page.getByRole('heading', { name: 'Session standings' })).toBeVisible({ timeout: 10_000 });
-      await expect(page.getByText(/^Showdown:/)).toBeVisible();
+      await expect(page.locator('.hand-result__reason')).toHaveText('Showdown');
+      await expect(page.getByText('Best five cards', { exact: true }).first()).toBeVisible();
+      await expect(page.locator('.poker-table__board .poker-card:not(.poker-card--empty)')).toHaveCount(5);
       const chips = await page.locator('.poker-table__result ol li').allTextContents();
       expect(chips).toHaveLength(6);
       expect(chips.reduce((sum, line) => sum + Number(line.match(/: (\d+) chips$/)?.[1]), 0)).toBe(6000);
       await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     }
     // Unequal contributions must produce more than one pot at showdown.
-    await expect(host.locator('.poker-table__pot')).toContainText('Side pot 1:');
+    await expect(host.locator('.hand-result__pots')).toContainText('Side pot 1');
     if (!process.env.CI) {
       await host.evaluate(() => window.scrollTo(0, 0));
       await pages[1]!.evaluate(() => window.scrollTo(0, 0));
@@ -218,7 +223,7 @@ test('six players settle unequal all-ins, preserve chips, and keep mobile cards 
     }
     await host.reload();
     await expect(host.getByRole('heading', { name: 'Session standings' })).toBeVisible();
-    await expect(host.locator('.poker-table__pot')).toContainText('Side pot 1:');
+    await expect(host.locator('.hand-result__pots')).toContainText('Side pot 1');
   } finally {
     for (const context of contexts) await context.close();
   }

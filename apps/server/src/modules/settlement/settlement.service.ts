@@ -23,6 +23,7 @@ export type SettlementCandidate = {
   rewardPolicyVersion?: number;
   dealtInAccountIds?: string[];
   participants: SessionParticipant[];
+  presentationParticipants?: NonNullable<CommittedHandResult['presentation']>['participants'];
   engine: EngineSettlement;
 };
 
@@ -56,6 +57,13 @@ function toResult(candidate: SettlementCandidate): CommittedHandResult {
     revealedCards: candidate.engine.revealedCards.map(({ accountId, cards }) => ({
       accountId, cards: [...cards] as [number, number],
     })),
+    ...(candidate.engine.presentation ? { presentation: {
+      ...candidate.engine.presentation,
+      rankings: candidate.engine.presentation.rankings.map((entry) => ({ ...entry, rank: { ...entry.rank, tiebreak: [...entry.rank.tiebreak] } })),
+      participants: candidate.presentationParticipants ?? candidate.participants.map((player) => ({ ...player, folded: false })),
+      pots: candidate.engine.pots,
+      uncalledReturns: candidate.engine.uncalledReturns ?? [],
+    } } : {}),
   };
 }
 
@@ -66,6 +74,10 @@ export class SettlementService {
   public async commit(candidate: SettlementCandidate): Promise<CommittedHandResult> {
     const hash = candidateHash(candidate);
     const result = toResult(candidate);
+    const { committedHandResultSchema } = await import('@poker/contracts');
+    if (!committedHandResultSchema.safeParse(result).success) {
+      throw new SettlementError('INVALID_SETTLEMENT', 'The public result does not match the settlement.');
+    }
     try {
       return await this.repository.commit(candidate, hash, result);
     } catch (error) {

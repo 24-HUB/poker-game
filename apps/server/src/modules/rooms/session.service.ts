@@ -25,6 +25,7 @@ export type SessionRuntime = {
   gameVersion: number;
   snapshotRevision: number;
   deadline: number | null;
+  nextTransitionAt?: number | null;
   settlement: EngineSettlement | null;
   previousHandId: string | null;
   committedHandResult: CommittedHandResult | null;
@@ -40,7 +41,7 @@ function runtime(document: StoredGameSession): SessionRuntime {
     handNumber: document.handNumber, participants: document.participants, stacks: document.stacks,
     buttonSeat: document.buttonSeat, smallBlind: 10, bigBlind: 20,
     ending: document.endingRequested, hand: null, handId: document.firstHandId,
-    gameVersion: 0, snapshotRevision: 0, deadline: null, settlement: null, previousHandId: null,
+    gameVersion: 0, snapshotRevision: 0, deadline: null, nextTransitionAt: null, settlement: null, previousHandId: null,
     committedHandResult: null, sessionResult: document.result ?? null, paused: false,
     rewardPolicyVersion: document.rewardPolicyVersion,
     equipmentByAccount: document.equipmentByAccount,

@@ -1,5 +1,6 @@
 import type { GameView } from '@poker/contracts';
 import { createStore } from 'zustand/vanilla';
+import { serverClockOffset } from './serverClock';
 
 export type GameState = {
   accountId: string | null;
@@ -25,6 +26,7 @@ export function createGameStore() {
         view.roomId !== state.roomId || view.sessionId !== state.sessionId ||
         view.authorityBootId !== state.authorityBootId) return state;
       if (state.game && view.snapshotRevision <= state.game.snapshotRevision) return state;
+      serverClockOffset(view);
       return { game: view };
     }),
     clear: () => set({ accountId: null, roomId: null, sessionId: null, authorityBootId: null, game: null }),

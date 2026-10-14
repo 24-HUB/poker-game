@@ -35,6 +35,7 @@ export function RoomExperience({ roomId }: { roomId: string }) {
     retrySynchronization,
   } = useSharedRoomConnection();
   const [message, setMessage] = useState<string | null>(null);
+  const [historyOpenRequest, setHistoryOpenRequest] = useState(0);
   const leaveDestination = useRef('/');
   const accountId = session.status === 'authenticated' ? session.account.accountId : null;
   const currentRoom = room?.roomId === roomId ? room : null;
@@ -145,10 +146,12 @@ export function RoomExperience({ roomId }: { roomId: string }) {
     return <>{recovery}{pendingCommand ? exitControls : null}<PokerTable room={currentRoom} game={game} accountId={accountId} status={status}
       pending={pendingGameCommand !== null} message={message} onAction={act} onEnd={endSession}
       onStart={startSession} onLeave={() => leave()} onClaimControl={claimControl}
+      onOpenHistory={() => setHistoryOpenRequest((value) => value + 1)}
       onRetryPending={() => void retryPendingGame().then((result) => {
         if (result.error) setMessage(result.error.message);
       })} />
       {game ? <HandHistory key={`${accountId}:${game.sessionId}`} accountId={accountId} roomId={roomId} sessionId={game.sessionId}
+        openRequest={historyOpenRequest}
         latestHandId={game.handResult?.handId} names={Object.fromEntries(game.participants.map((player) => [player.accountId, player.displayName]))} /> : null}
     </>;
   }

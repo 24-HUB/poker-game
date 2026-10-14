@@ -73,6 +73,7 @@ export class GameService implements OnApplicationShutdown {
           completedAt: result.completedAt, completedDateUtc: result.completedDateUtc, rulesVersion: result.rulesVersion,
           contributions: result.contributions, payouts: result.payouts, finalStacks: result.finalStacks,
           manualActionAccountIds: result.manualActionAccountIds, winners: result.winners, revealedCards: result.revealedCards,
+          ...(result.presentation ? { presentation: result.presentation } : {}),
           ...(result.rewardReceipts ? { rewardReceipts: result.rewardReceipts.filter((receipt) => receipt.accountId === accountId).map((receipt) => ({
             handId: receipt.handId, accountId: receipt.accountId, policyVersion: receipt.policyVersion,
             completedDateUtc: receipt.completedDateUtc, qualified: receipt.qualified, reason: receipt.reason,
@@ -283,6 +284,10 @@ export class GameService implements OnApplicationShutdown {
         rewardPolicyVersion: runtime.rewardPolicyVersion,
         dealtInAccountIds: runtime.hand?.seats.map((seat) => seat.accountId) ?? [],
         participants: runtime.participants,
+        presentationParticipants: runtime.participants.map((player) => ({ ...player,
+          folded: runtime.hand?.seats.find((seat) => seat.accountId === player.accountId)?.folded ?? false,
+          equipment: runtime.equipmentByAccount?.[player.accountId],
+        })),
         engine: { ...engine, finalStacks: runtime.participants.map((participant) => {
           const seatIndex = runtime.hand?.seats.findIndex((seat) => seat.accountId === participant.accountId) ?? -1;
           return seatIndex < 0 ? runtime.stacks[runtime.participants.indexOf(participant)]! : engine.finalStacks[seatIndex]!;
@@ -310,6 +315,7 @@ export class GameService implements OnApplicationShutdown {
     this.resultTimers.get(runtime.roomId)?.();
     const handId = runtime.handId;
     const at = this.clock.now() + delay;
+    runtime.nextTransitionAt = retry || runtime.paused ? null : at;
     this.resultTimers.set(runtime.roomId, this.clock.schedule(at, () => {
       void this.registry.enqueue(runtime.roomId, async () => {
         if (this.disposed || !this.authority.currentToken() || this.clock.now() < at) return;
@@ -334,6 +340,7 @@ export class GameService implements OnApplicationShutdown {
     if (runtime.ending || runtime.stacks.filter((stack) => stack > 0).length < 2) {
       await this.sessions.completeInQueue(runtime, runtime.ending ? 'HOST_ENDED' : 'ONE_FUNDED', new Date(this.clock.now()));
       runtime.hand = null;
+      runtime.nextTransitionAt = null;
       this.resultTimers.delete(runtime.roomId);
       return;
     }
@@ -342,6 +349,7 @@ export class GameService implements OnApplicationShutdown {
     const buttonSeat = seats.find((seat) => seat > runtime.buttonSeat) ?? seats[0]!;
     const nextHandId = randomUUID();
     await this.sessions.nextHandInQueue(runtime, nextHandId, buttonSeat, new Date(this.clock.now()));
+    runtime.nextTransitionAt = null;
     this.resultTimers.delete(runtime.roomId);
     await this.dealFirstHand(runtime);
   }

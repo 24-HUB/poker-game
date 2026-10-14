@@ -51,6 +51,19 @@ const participantSchema = z.object({
 
 const potSchema = z.object({ amount: chips, eligibleAccountIds: z.array(id).max(6) }).strict();
 const payoutSchema = z.object({ accountId: id, amount: chips }).strict();
+export const handResultPresentationSchema = z.object({
+  version: z.literal(1), outcomeReason: z.enum(['showdown', 'fold']), board: z.array(card).max(5),
+  participants: z.array(z.object({ accountId: id, displayName: z.string().min(1).max(128),
+    seat: z.number().int().min(0).max(5), folded: z.boolean(), equipment: handEquipmentSchema.optional() }).strict()).min(2).max(6),
+  rankings: z.array(z.object({ accountId: id,
+    rank: z.object({ category: z.number().int().min(0).max(8), tiebreak: z.array(z.number().int().min(2).max(14)).min(1).max(5) }).strict(),
+    handName: z.string().min(1).max(100), bestFive: z.array(card).length(5),
+    combinationCards: z.array(card).min(1).max(5), kickers: z.array(z.number().int().min(2).max(14)).max(3), playsBoard: z.boolean(),
+  }).strict()).max(6),
+  pots: z.array(z.object({ ...potSchema.shape, winners: z.array(id).min(1).max(6), payouts: z.array(payoutSchema).min(1).max(6) }).strict()).max(6),
+  uncalledReturns: z.array(payoutSchema).max(1),
+}).strict();
+export type HandResultPresentation = z.infer<typeof handResultPresentationSchema>;
 export const committedHandResultSchema = z.object({
   handId: id, sessionId: id, handNumber: chips.positive(),
   completedAt: z.iso.datetime(), completedDateUtc: z.iso.date(), rulesVersion: chips.positive(),
@@ -61,7 +74,31 @@ export const committedHandResultSchema = z.object({
   winners: z.array(id).min(1).max(6),
   revealedCards: z.array(z.object({ accountId: id, cards: z.tuple([card, card]) }).strict()).max(6),
   rewardReceipts: z.array(rewardReceiptSchema).max(6).optional(),
-}).strict();
+  presentation: handResultPresentationSchema.optional(),
+}).strict().superRefine((result, context) => {
+  const detail = result.presentation;
+  if (!detail) return;
+  const invalid = () => context.addIssue({ code: 'custom', message: 'Public presentation must reconcile with the committed result.', path: ['presentation'] });
+  if (new Set(detail.board).size !== detail.board.length ||
+      detail.outcomeReason === 'fold' && (detail.rankings.length !== 0 || result.revealedCards.length !== 0) ||
+      detail.outcomeReason === 'showdown' && (detail.board.length !== 5 || detail.rankings.length !== result.revealedCards.length)) invalid();
+  for (const ranking of detail.rankings) {
+    const reveal = result.revealedCards.find((entry) => entry.accountId === ranking.accountId);
+    if (!reveal || detail.participants.find((player) => player.accountId === ranking.accountId)?.folded ||
+        new Set(ranking.bestFive).size !== 5 || ranking.bestFive.some((card) => ![...detail.board, ...reveal.cards].includes(card)) ||
+        ranking.combinationCards.some((card) => !ranking.bestFive.includes(card))) invalid();
+  }
+  const ids = result.payouts.map((entry) => entry.accountId);
+  if (detail.participants.length !== ids.length || new Set(detail.participants.map((player) => player.accountId)).size !== ids.length ||
+      detail.participants.some((player) => !ids.includes(player.accountId))) invalid();
+  for (const payout of result.payouts) {
+    const award = detail.pots.flatMap((pot) => pot.payouts).filter((entry) => entry.accountId === payout.accountId).reduce((sum, entry) => sum + entry.amount, 0);
+    const returned = detail.uncalledReturns.filter((entry) => entry.accountId === payout.accountId).reduce((sum, entry) => sum + entry.amount, 0);
+    if (award + returned !== payout.amount) invalid();
+  }
+  if (detail.pots.some((pot) => pot.amount !== pot.payouts.reduce((sum, entry) => sum + entry.amount, 0) ||
+      pot.payouts.some((entry) => !ids.includes(entry.accountId) || !pot.winners.includes(entry.accountId)))) invalid();
+});
 export type CommittedHandResult = z.infer<typeof committedHandResultSchema>;
 
 export const handHistorySchema = z.object({
@@ -95,6 +132,7 @@ export const gameViewSchema = z.object({
   board: z.array(card).max(5), pots: z.array(potSchema),
   buttonSeat: z.number().int().min(0).max(5),
   actorAccountId: id.nullable(), serverTime: z.iso.datetime(), deadline: z.iso.datetime().nullable(),
+  nextTransitionAt: z.iso.datetime().nullable().optional(), nextTransition: z.enum(['next-hand', 'session-end']).nullable().optional(),
   holeCards: z.tuple([card, card]).nullable(),
   revealedCards: z.array(z.object({ accountId: id, cards: z.tuple([card, card]) }).strict()).max(6),
   legalActions: legalActionsSchema,
