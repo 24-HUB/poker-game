@@ -520,6 +520,81 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### PR #29 CI follow-up — 2026-10-14
+
+Same task/branch `codex/hand-result-ux-spec`, PR #29 targeting `dev`; prior published
+head `28f3f7d8` failed Linux browser acceptance (26/28). A stale history disclosure
+request reopened history in a new session. The regression reproduced RED and
+passes GREEN after scoping requests to account, room and session. Browser result
+assertions now select the live table. The subsequent poker start timeout did not
+reproduce locally; an unfinished previous session may have triggered the global
+active-session limit, but that remains an inference. Public start diagnostics were
+added without changing timeouts or server rules.
+
+Verified frozen install, frontend 145/145, typecheck, production build and full
+CI-mode Chromium 28/28. Independent review found no Important issues. Next: commit
+and push the follow-up to this PR, inspect fresh Linux CI and fetch origin before
+handoff; the user merges manually. Usage at 2026-10-14 17:55 Bangkok: 18% five-hour
+and 55% weekly remaining, resetting 2026-10-14 21:20:51 and 2026-10-20 12:12:42
+Bangkok. See CHECKPOINT.md for the follow-up and historical implementation evidence.
+
+### Hand-result implementation — locally verified, 2026-10-14
+
+The user requested implementation of PR #29's design and updates to the same PR.
+Commit `74d87b98` on `codex/hand-result-ux-spec` implements committed public
+showdown/fold presentation, deterministic best five/combination/kicker details,
+actual final board, public identity, per-pot awards and separate returns. Folded
+private cards remain recipient-only; legacy records use an honest detail fallback.
+The inline table result and history share presentation, with award/net/final-stack
+labels, authorized seat reveals, winner badges and distinct session standings.
+
+The existing five-second progression now has server timestamp/intent contracts.
+Receipt-time clock synchronization survives rerender/remount; reconnect, ending,
+pause and zero states do not advance locally or promise an unsupported next hand.
+Terminal board survives cleanup. Confirmed results remain visible during transition
+failure, removed-control focus is recovered and cards have accessible rank/suit roles.
+The completed room keeps table layout to prevent mobile navigation covering cards.
+
+Passed: frozen install; `pnpm check` (server 236/236, contracts 16/16, engine 21/21,
+script suites, typechecks and builds); final frontend 144/144, frontend typecheck
+and production build after review fixes; full Chromium 28/28. Real Socket.IO
+privacy/reconnect and isolated MongoDB settlement/history checks passed. Responsive
+two-/six-player results were inspected at 1440×900, 900×900, 390×844, 355×767 and
+360×480; keyboard, reduced motion, four-colour suits and the 200% zoom-equivalent
+viewport passed. Independent re-review found no Critical/Important blockers.
+
+See [the implementation plan](docs/superpowers/plans/2026-10-14-hand-result-implementation.md)
+and `CHECKPOINT.md` for the evidence and fixture corrections. This documentation
+save point follows `74d87b98`. Implementation/checkpoints are pushed through
+`b1b8afd1`; [PR #29](https://github.com/24-HUB/poker-game/pull/29) has an implementation
+description and base `dev`. This follow-up records publication. CI was in progress;
+next inspect the latest head's Linux CI/Worker packaging, then review and merge
+manually after checks pass. Final fetch at 2026-10-14 17:41 Bangkok confirms
+`origin/dev` `7927a9c4` is contained. Hosted acceptance, native
+screen-reader and physical-phone checks remain playtest gates; no deployment.
+Usage at 2026-10-14 17:37:44 Bangkok: five-hour 27%, weekly 56% remaining;
+resets 2026-10-14 21:20:51 and 2026-10-20 12:12:42 Bangkok respectively.
+
+### Hand-result UX/UI specification — 2026-10-14
+
+- Requested scope: documentation only, based on the supplied showdown and
+  win-by-fold references. See [the proposed specification](docs/superpowers/specs/2026-10-14-hand-result-ux-design.md).
+- Branch: `codex/hand-result-ux-spec`, from fetched `origin/dev` `7927a9c4`.
+  [Draft PR #29](https://github.com/24-HUB/poker-game/pull/29) targets `dev`;
+  specification/correction pushed through `aef8c416`. No application changes.
+- Covers persistent results, authorized reveals, best-five explanation, chip
+  accounting, session transitions, responsive/accessibility criteria and history.
+  Records missing public result/transition data rather than claiming UI-only work.
+- Existing five-second server progression is preserved. Review the proposed
+  design before requesting implementation planning; no milestone status changes.
+- Documentation review and both working-tree/full-task whitespace checks pass
+  after correcting one trailing space. Application tests not run (Markdown only).
+- Final fetch at 2026-10-14 16:38 Bangkok confirms latest `origin/dev` `7927a9c4`
+  is contained. Latest handoff usage: five-hour 74%, weekly 64% remaining.
+  Resets: 2026-10-14 21:20:50 / 2026-10-20 12:12:42 Bangkok, respectively.
+- Next: review the specification in PR #29 and request revisions or implementation
+  planning. The user merges manually; this follow-up records the completed handoff.
+
 ### PR #28 CI corrections — Linux verification passed, 2026-10-13
 
 Commit `4d2ec8ab` resolves the mock-account sign-in ambiguity and mobile action

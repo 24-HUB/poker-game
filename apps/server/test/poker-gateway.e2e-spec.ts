@@ -72,7 +72,8 @@ describe('private poker gateway', () => {
   it('sends each account only its own hole cards and rejects outsider and observer actions', async () => {
     const hostCookie = await signUp('poker-host@example.com');
     const host = socket(hostCookie);
-    const guest = socket(await signUp('poker-guest@example.com'));
+    const guestCookie = await signUp('poker-guest@example.com');
+    const guest = socket(guestCookie);
     const outsider = socket(await signUp('poker-outsider@example.com'));
     const observer = socket(hostCookie);
     try {
@@ -111,6 +112,24 @@ describe('private poker gateway', () => {
         expectedGameVersion: 0, controlEpoch: 1, action: { type: 'call' }, ...meta() })).error?.code)
         .toBe('NOT_CONTROLLER');
       expect((await emit(host, 'game:action', 'malformed')).error?.code).toBe('INVALID_REQUEST');
+      const folded = await emit(host, 'game:action', { type: 'game:action', roomId, sessionId: hostView.sessionId,
+        handId: hostView.handId, expectedGameVersion: 0, controlEpoch: 1, action: { type: 'fold' }, ...meta() });
+      expect(folded.error).toBeNull();
+      expect(folded.data.game.handResult.presentation.outcomeReason).toBe('fold');
+      guest.disconnect();
+      await ready(guest);
+      const reconnected = (await emit(guest, 'game:sync', { type: 'game:sync', roomId })).data.game;
+      expect(reconnected.handResult.presentation).toEqual(folded.data.game.handResult.presentation);
+      expect(reconnected.holeCards).toEqual(guestView.holeCards);
+      expect(reconnected.holeCards).not.toEqual(hostView.holeCards);
+      expect(reconnected.revealedCards).toEqual([]);
+      expect(reconnected.nextTransitionAt).toBe(folded.data.game.nextTransitionAt);
+      const history = await request(app.getHttpServer()).get(`/api/rooms/${roomId}/hands?sessionId=${hostView.sessionId}`)
+        .set('cookie', guestCookie).set('origin', origin).set('x-poker-proxy-secret', proxySecret);
+      expect(history.status).toBe(200);
+      expect(history.body.data.hands[0].presentation.rankings).toEqual([]);
+      expect(history.body.data.hands[0].revealedCards).toEqual([]);
+      expect(JSON.stringify(history.body.data)).not.toContain('holeCards');
     } finally {
       host.close(); guest.close(); outsider.close(); observer.close();
     }

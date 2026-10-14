@@ -6,6 +6,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { PokerTable, type PokerTableProps } from './PokerTable';
+import { showdownResult } from './handResultFixtures.test-support';
 
 const room: RoomView = {
   roomId: 'room-a', title: 'Friday table', revision: 3, hostAccountId: 'host', phase: 'playing',
@@ -31,6 +32,38 @@ const props: PokerTableProps = { room, game, accountId: 'host', status: 'connect
 
 describe('PokerTable', () => {
   afterEach(cleanup);
+  it('reveals only committed showdown seats and clears winners and ranks on a newer hand', () => {
+    const resultGame = { ...game, actorAccountId: null, handPhase: 'result' as const, handNumber: 5,
+      handResult: showdownResult, board: showdownResult.presentation!.board };
+    const view = render(<PokerTable {...props} game={resultGame} />);
+    const guest = screen.getByLabelText('Player: Guest').closest('li')!;
+    expect(guest).toHaveTextContent('K♠');
+    expect(screen.getAllByText('Winner')).toHaveLength(2);
+    expect(screen.queryByRole('button', { name: 'Fold' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: 'Dismiss hand result' })).not.toBeInTheDocument();
+    view.rerender(<PokerTable {...props} game={{ ...game, handId: 'next', handNumber: 6, handResult: showdownResult }} />);
+    expect(screen.queryByRole('heading', { name: 'Hand 5 result' })).not.toBeInTheDocument();
+    expect(screen.queryByText('Winner')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Hidden cards')).not.toHaveTextContent('K♠');
+  });
+  it('preserves a confirmed showdown while the next transition is paused', () => {
+    render(<PokerTable {...props} game={{ ...game, handNumber: 5, handPhase: 'paused', actorAccountId: null, handResult: showdownResult }} />);
+    expect(screen.getByRole('heading', { name: 'Hand 5 result' })).toBeVisible();
+    expect(screen.getByLabelText('Player: Guest').closest('li')).toHaveTextContent('K♠');
+    expect(screen.getByText('Result confirmation paused')).toBeVisible();
+  });
+  it('moves focus to the table heading only when a focused betting control is removed', () => {
+    const view = render(<PokerTable {...props} />);
+    screen.getByRole('button', { name: 'Fold' }).focus();
+    view.rerender(<PokerTable {...props} game={{ ...game, handPhase: 'result', actorAccountId: null, handNumber: 5, handResult: showdownResult }} />);
+    expect(screen.getByRole('heading', { name: 'Friday table' })).toHaveFocus();
+  });
+  it('keeps focus on a surviving control when a new hand arrives', () => {
+    const view = render(<PokerTable {...props} game={{ ...game, handNumber: 5, handPhase: 'result', handResult: showdownResult }} />);
+    screen.getByRole('button', { name: 'Lobby' }).focus();
+    view.rerender(<PokerTable {...props} game={{ ...game, handId: 'next', handNumber: 6 }} />);
+    expect(screen.getByRole('button', { name: 'Lobby' })).toHaveFocus();
+  });
   it('marks the acting portrait urgent in the final five seconds with a visible acting label', () => {
     const now = Date.now();
     render(<PokerTable {...props} game={{ ...game, serverTime: new Date(now).toISOString(), deadline: new Date(now + 4000).toISOString() }} />);
@@ -48,10 +81,11 @@ describe('PokerTable', () => {
     expect(screen.queryByText(/Winner:/)).not.toBeInTheDocument();
   });
   it('retains the final numbered result when the ended session clears its live hand ID', () => {
-    render(<PokerTable {...props} game={{ ...game, sessionPhase: 'ended', handId: null, handPhase: null, handResult: { handId: 'hand-a', handNumber: 1, winners: ['guest'], revealedCards: [{ accountId: 'guest', cards: [0, 13] }] } as NonNullable<GameView['handResult']> }} />);
+    render(<PokerTable {...props} game={{ ...game, sessionPhase: 'ended', handId: null, handPhase: null, handResult: { ...showdownResult, presentation: undefined, handNumber: 1, winners: ['guest'], revealedCards: [{ accountId: 'guest', cards: [0, 13] }] } }} />);
     expect(screen.getByRole('heading', { name: 'Hand 1 result' })).toBeVisible();
     expect(screen.getByText('Winner: Guest')).toBeVisible();
-    expect(screen.getByText('Showdown: Guest 2♣ 2♦')).toBeVisible();
+    expect(screen.getByText('Detailed cards unavailable')).toBeVisible();
+    expect(screen.getByLabelText('Player: Guest').closest('li')).toHaveTextContent('2♣');
   });
   it('offers four-colour suits without changing the ranks or exposing hidden cards', () => {
     render(<PokerTable {...props} />);

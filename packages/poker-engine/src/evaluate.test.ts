@@ -1,11 +1,27 @@
 import { describe, expect, it } from 'vitest';
 
-import { compareRanks, evaluateSeven } from './evaluate.js';
+import { compareRanks, evaluateSeven, evaluateSevenDetailed } from './evaluate.js';
 
 // Each suit occupies thirteen consecutive cards; ranks are 2 through 14.
 const c = (rank: number, suit: number) => suit * 13 + rank - 2;
 
 describe('seven-card ranking', () => {
+  it('explains three aces with deterministic best five and only combination highlights', () => {
+    const cards = [c(14, 1), c(13, 0), c(8, 2), c(5, 3), c(2, 1), c(14, 3), c(14, 2)];
+    const detail = evaluateSevenDetailed(cards);
+    expect(detail.rank).toEqual(evaluateSeven(cards));
+    expect(detail.handName).toBe('Three of a kind, aces');
+    expect(detail.bestFive).toEqual([c(14, 1), c(14, 3), c(14, 2), c(13, 0), c(8, 2)]);
+    expect(detail.combinationCards).toEqual([c(14, 1), c(14, 3), c(14, 2)]);
+    expect(detail.kickers).toEqual([13, 8]);
+  });
+  it('selects the board deterministically when the board is the best hand', () => {
+    const board = [c(10, 0), c(11, 0), c(12, 0), c(13, 0), c(14, 0)];
+    const detail = evaluateSevenDetailed([...board, c(2, 1), c(3, 2)]);
+    expect(new Set(detail.bestFive)).toEqual(new Set(board));
+    expect(detail.combinationCards).toEqual(detail.bestFive);
+    expect(detail.kickers).toEqual([]);
+  });
   it('wheelLosesToSixHighStraight', () => {
     const wheel = evaluateSeven([c(14, 0), c(2, 1), c(3, 2), c(4, 3), c(5, 0), c(9, 1), c(10, 2)]);
     const sixHigh = evaluateSeven([c(2, 0), c(3, 1), c(4, 2), c(5, 3), c(6, 0), c(9, 2), c(10, 1)]);

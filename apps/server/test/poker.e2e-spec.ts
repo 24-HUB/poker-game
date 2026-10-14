@@ -62,6 +62,69 @@ describe('authoritative poker actions', () => {
     action: { type: 'call' },
   });
 
+  it('persists fold presentation and exposes a stable next-hand timer, with private own cards only', async () => {
+    const reply = await game.execute(gameContext('host'), { ...action('host'), action: { type: 'fold' } });
+    const view = reply.data!.game!;
+    expect(view.handResult?.presentation).toMatchObject({ outcomeReason: 'fold', board: [], rankings: [], uncalledReturns: [{ accountId: 'guest', amount: 10 }] });
+    expect(view.nextTransition).toBe('next-hand');
+    expect(view.nextTransitionAt).toBe(new Date(clock.current + 5000).toISOString());
+    clock.current += 1500;
+    const synced = (await game.execute(gameContext('guest'), { type: 'game:sync', roomId })).data!.game!;
+    expect(synced.nextTransitionAt).toBe(view.nextTransitionAt);
+    expect(synced.holeCards).not.toEqual(view.holeCards);
+    expect(synced.handResult!.presentation).toEqual(view.handResult!.presentation);
+    expect(JSON.stringify(synced.handResult)).not.toContain('holeCards');
+    const history = await game.history('host', roomId, sessionId);
+    expect(history.hands[0]!.presentation).toEqual(view.handResult!.presentation);
+    expect(history.hands[0]!.revealedCards).toEqual([]);
+  });
+
+  it('keeps the committed final board after hand cleanup and projects ending rather than continuation', async () => {
+    await game.execute(gameContext('host'), { type: 'session:end', ...metadata(), sessionId, controlEpoch: 1 });
+    await game.execute(gameContext('host'), action('host'));
+    await game.execute(gameContext('guest'), { ...action('guest', 1), action: { type: 'check' } });
+    const complete = await game.execute(gameContext('guest'), { ...action('guest', 2), action: { type: 'fold' } });
+    expect(complete.data!.game!.board).toHaveLength(3);
+    expect(complete.data!.game!.nextTransition).toBe('session-end');
+    const timer = clock.callbacks.at(-1)!;
+    clock.current = timer.at; timer.callback();
+    await registry.enqueue(roomId, async () => undefined);
+    const final = (await game.execute(gameContext('host'), { type: 'game:sync', roomId })).data!.game!;
+    expect(final.sessionPhase).toBe('ended');
+    expect(final.handId).toBeNull();
+    expect(final.board).toEqual(complete.data!.game!.board);
+    expect(final.nextTransitionAt).toBeNull();
+    expect(final.nextTransition).toBeNull();
+    expect(final.holeCards).toBeNull();
+  });
+
+  it('commits the reference three-aces showdown with exact best five, net and persisted public identity', async () => {
+    const runtime = registry.controller(roomId).session!;
+    const first = [50, 51, 49, 38, 0, 25, 11, 32, 1, 42, 2, 13];
+    runtime.hand = startHand({ seats: runtime.participants.map((player) => ({ accountId: player.accountId, seat: player.seat, startingStack: 1000 })),
+      buttonSeat: 0, smallBlind: 10, bigBlind: 20, deck: [...first, ...Array.from({ length: 52 }, (_, i) => i).filter((card) => !first.includes(card))] }).state;
+    await game.execute(gameContext('host'), { ...action('host'), action: { type: 'raise', raiseTo: 776 } });
+    await game.execute(gameContext('guest'), { ...action('guest', 1), action: { type: 'call' } });
+    for (let version = 2; version < 8; version += 1) {
+      const actor = runtime.hand!.actorAccountId!;
+      const reply = await game.execute(gameContext(actor), { ...action(actor, version), action: { type: 'check' } });
+      expect(reply.error).toBeNull();
+    }
+    const result = runtime.committedHandResult!;
+    expect(result.presentation?.outcomeReason).toBe('showdown');
+    expect(result.presentation?.board).toEqual([25, 11, 32, 42, 13]);
+    expect(result.presentation?.rankings.find((rank) => rank.accountId === 'host')).toMatchObject({
+      handName: 'Three of a kind, aces', bestFive: [25, 51, 38, 11, 32], combinationCards: [25, 51, 38],
+    });
+    expect(result.payouts).toEqual([{ accountId: 'host', amount: 1552 }, { accountId: 'guest', amount: 0 }]);
+    expect(result.finalStacks).toEqual([{ accountId: 'host', amount: 1776 }, { accountId: 'guest', amount: 224 }]);
+    expect((await game.history('guest', roomId, sessionId)).hands[0]!.presentation).toEqual(result.presentation);
+    const { committedHandResultSchema } = await import('@poker/contracts');
+    const projected = (await game.execute(gameContext('guest'), { type: 'game:sync', roomId })).data!.game!.handResult!;
+    const parsed = committedHandResultSchema.safeParse(projected);
+    expect(parsed.error?.issues).toBeUndefined();
+  });
+
   beforeEach(async () => {
     database = await createTestDatabase();
     await applyMigrations(database.db);

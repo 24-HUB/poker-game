@@ -5,6 +5,7 @@ import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-libra
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { HandHistory } from './HandHistory';
 import type { HandHistoryPage, Result } from '@poker/contracts';
+import { showdownResult } from './handResultFixtures.test-support';
 
 afterEach(cleanup);
 function mount(reader: () => Promise<Result<HandHistoryPage>>) {
@@ -13,6 +14,34 @@ function mount(reader: () => Promise<Result<HandHistoryPage>>) {
   return { ...view, client };
 }
 describe('HandHistory', () => {
+  it('does not replay a closed disclosure request in a new session and accepts a new scoped request', async () => {
+    const reader = vi.fn(async () => ({ data: { hands: [], nextBeforeHandNumber: null }, error: null }));
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const subject = (sessionId: string, requestScope: string, openRequest = 1) => <QueryClientProvider client={client}>
+      <HandHistory key={sessionId} accountId="a" roomId="room" sessionId={sessionId} openRequest={openRequest} requestScope={requestScope} reader={reader} />
+    </QueryClientProvider>;
+    const view = render(subject('first', 'a:room:first'));
+    expect(screen.getByRole('button', { name: 'Hand history' })).toHaveAttribute('aria-expanded', 'true');
+    await screen.findByText('No completed hands yet.');
+    fireEvent.click(screen.getByRole('button', { name: 'Hand history' }));
+    reader.mockClear();
+    view.rerender(subject('second', 'a:room:first'));
+    expect(screen.getByRole('button', { name: 'Hand history' })).toHaveAttribute('aria-expanded', 'false');
+    expect(reader).not.toHaveBeenCalled();
+    view.rerender(subject('second', 'a:room:second', 2));
+    expect(screen.getByRole('button', { name: 'Hand history' })).toHaveAttribute('aria-expanded', 'true');
+    await waitFor(() => expect(reader).toHaveBeenCalledOnce());
+  });
+  it('uses the committed result panel and keeps disclosed history readable as the next hand runs', async () => {
+    const reader = vi.fn(async () => ({ data: { hands: [showdownResult], nextBeforeHandNumber: null }, error: null }));
+    const view = mount(reader);
+    fireEvent.click(screen.getByRole('button', { name: 'Hand history' }));
+    expect(await screen.findByText('Three of a kind, aces')).toBeVisible();
+    view.rerender(<QueryClientProvider client={view.client}><HandHistory accountId="a" roomId="room" sessionId="session" latestHandId="hand-next" reader={reader} /></QueryClientProvider>);
+    expect(screen.getByRole('button', { name: 'Hand history' })).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText('Three of a kind, aces')).toBeVisible();
+    expect(screen.getByText('Awarded 1,552 chips')).toBeVisible();
+  });
   it('loads only on disclosure and keeps unavailable history recoverable', async () => {
     const reader = vi.fn(async () => ({ data: null, error: { code: 'SERVICE_UNAVAILABLE', message: 'offline' } } as Result<HandHistoryPage>));
     mount(reader);

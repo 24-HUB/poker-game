@@ -1,5 +1,5 @@
 import { assertUniqueCards, cardRank, cardSuit } from './cards.js';
-import type { Card, HandRank } from './types.js';
+import type { Card, HandRank, HandDetail } from './types.js';
 
 function straightHigh(ranks: readonly number[]): number | null {
   const unique = new Set(ranks);
@@ -38,20 +38,45 @@ export function compareRanks(a: HandRank, b: HandRank): number {
 }
 
 export function evaluateSeven(cards: readonly Card[]): HandRank {
+  return evaluateSevenDetailed(cards).rank;
+}
+
+/** First equal combination in input order wins; the settlement supplies the board first. */
+export function evaluateSevenDetailed(cards: readonly Card[]): HandDetail {
   if (cards.length !== 7) throw new RangeError('Seven cards required');
   assertUniqueCards(cards);
   let best: HandRank | null = null;
+  let bestFive: Card[] = [];
   for (let a = 0; a < 3; a += 1) {
     for (let b = a + 1; b < 4; b += 1) {
       for (let c = b + 1; c < 5; c += 1) {
         for (let d = c + 1; d < 6; d += 1) {
           for (let e = d + 1; e < 7; e += 1) {
-            const rank = evaluateFive([cards[a]!, cards[b]!, cards[c]!, cards[d]!, cards[e]!]);
-            if (!best || compareRanks(rank, best) > 0) best = rank;
+            const selection = [cards[a]!, cards[b]!, cards[c]!, cards[d]!, cards[e]!];
+            const rank = evaluateFive(selection);
+            if (!best || compareRanks(rank, best) > 0) { best = rank; bestFive = selection; }
           }
         }
       }
     }
   }
-  return best!;
+  const rank = best!;
+  const names = ['two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'jack', 'queen', 'king', 'ace'];
+  const singular = (value: number) => names[value - 2]!;
+  const plural = (value: number) => value === 6 ? 'sixes' : `${singular(value)}s`;
+  const counts = new Map(bestFive.map((card) => [cardRank(card), bestFive.filter((other) => cardRank(other) === cardRank(card)).length]));
+  bestFive.sort((a, b) => counts.get(cardRank(b))! - counts.get(cardRank(a))! || cardRank(b) - cardRank(a));
+  const [first, second] = rank.tiebreak as readonly number[];
+  const handName = [
+    `High card, ${singular(first!)}`, `Pair of ${plural(first!)}`,
+    `Two pair, ${plural(first!)} and ${plural(second!)}`, `Three of a kind, ${plural(first!)}`,
+    `Straight, ${singular(first!)} high`, `Flush, ${singular(first!)} high`,
+    `Full house, ${plural(first!)} over ${plural(second!)}`, `Four of a kind, ${plural(first!)}`,
+    `Straight flush, ${singular(first!)} high`,
+  ][rank.category]!;
+  const combinationCards = [1, 2, 3, 6, 7].includes(rank.category)
+    ? bestFive.filter((card) => counts.get(cardRank(card))! > 1) : [...bestFive];
+  const kickerStart: Record<number, number> = { 1: 1, 2: 2, 3: 1, 7: 1 };
+  const kickers = kickerStart[rank.category] === undefined ? [] : [...rank.tiebreak.slice(kickerStart[rank.category])];
+  return { rank, handName, bestFive, combinationCards, kickers };
 }

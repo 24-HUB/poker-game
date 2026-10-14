@@ -1,6 +1,6 @@
 import { legalActions } from './betting.js';
 import { assertDeck } from './cards.js';
-import { evaluateSeven } from './evaluate.js';
+import { evaluateSevenDetailed } from './evaluate.js';
 import { settlePots } from './pots.js';
 import type { Card, EngineSeat, EngineSettlement, EngineTransition, HandSeat, HandState, PokerAction, Street } from './types.js';
 
@@ -41,8 +41,12 @@ function dealBoard(state: HandState, count: number, street: Street): HandState {
 
 function settle(state: HandState): EngineTransition {
   const contenders = state.seats.filter((seat) => !seat.folded);
+  const rankings = contenders.length > 1 ? contenders.map((seat) => {
+    const detail = evaluateSevenDetailed([...state.board, ...seat.holeCards]);
+    return { accountId: seat.accountId, ...detail, playsBoard: detail.bestFive.every((card) => state.board.includes(card)) };
+  }) : [];
   const ranks = new Map(contenders.map((seat) => [seat.accountId,
-    contenders.length === 1 ? { category: 0, tiebreak: [0] } : evaluateSeven([...state.board, ...seat.holeCards])]));
+    contenders.length === 1 ? { category: 0, tiebreak: [0] } : rankings.find((rank) => rank.accountId === seat.accountId)!.rank]));
   const result = settlePots({ buttonSeat: state.buttonSeat, seats: state.seats.map((seat) => ({
     accountId: seat.accountId, seat: seat.seat, contribution: seat.totalContribution,
     folded: seat.folded, rank: ranks.get(seat.accountId) ?? null,
@@ -55,6 +59,8 @@ function settle(state: HandState): EngineTransition {
     revealedCards: contenders.length > 1
       ? contenders.map((seat) => ({ accountId: seat.accountId, cards: seat.holeCards })) : [],
     pots: result.pots,
+    uncalledReturns: result.uncalledReturns,
+    presentation: { version: 1, outcomeReason: contenders.length > 1 ? 'showdown' : 'fold', board: [...state.board], rankings },
   };
   return { state: { ...state, street: 'complete', actorAccountId: null }, settlement };
 }

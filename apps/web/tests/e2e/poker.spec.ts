@@ -26,7 +26,11 @@ test('heads-up hands carry chips and the host ends after a committed hand', asyn
     await expect(host.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     await expect(host.getByRole('button', { name: 'Start poker session' })).toBeEnabled();
     await host.getByRole('button', { name: 'Start poker session' }).click();
-    await expect(host.getByRole('region', { name: 'Poker table' })).toBeVisible();
+    await expect(host.getByRole('region', { name: 'Poker table' })).toBeVisible().catch(async (error) => {
+      console.log('Session start state:', { messages: await host.locator('.room-control-message').allTextContents(),
+        guidance: await host.locator('.room-control-guidance').allTextContents(), connection: await host.locator('.connection-state').allTextContents() });
+      throw error;
+    });
     await expect(guest.getByRole('region', { name: 'Poker table' })).toBeVisible();
     await expect(host.getByLabel('Your cards')).toBeVisible();
     await expect(guest.getByLabel('Your cards')).toBeVisible();
