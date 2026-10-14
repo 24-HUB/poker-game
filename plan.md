@@ -520,6 +520,25 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Automatic server recovery specification — 2026-10-14
+
+The user requested an implementation specification after live first-open session
+checks returned 504 `Backend timeout` at approximately 15.7 seconds, then recovered
+to ready/200 and signed-out/401 in under one second. This strongly supports a
+Render cold start; instance logs were not inspected. The current 15-second Worker
+timeout and manual-only session recovery explain the blocked Sign in presentation.
+
+[Specification](docs/superpowers/specs/2026-10-14-server-recovery-design.md) on
+`codex/server-recovery-spec`, based on fetched `origin/dev` `af8aaa02`, proposes
+one shared visible-page session GET recovery loop: 90-second wall-clock window,
+five-second post-response spacing, no overlapping probes, bounded cancellation,
+honest terminal/rate-limit errors and no automatic mutation replay or keep-alive.
+Implementation and deployment are pending. The diagnostic 29/29 baseline tests
+do not verify this proposed behavior. Documentation review/publication is next;
+see `CHECKPOINT.md` for branch/PR and actual verification evidence. The user merges
+manually. Usage at 2026-10-14 21:48 Bangkok: 96% five-hour and 52% weekly remaining,
+resetting 2026-10-15 02:40:00 and 2026-10-20 12:12:41 Bangkok respectively.
+
 ### PR #29 CI follow-up — 2026-10-14
 
 Same task/branch `codex/hand-result-ux-spec`, PR #29 targeting `dev`; prior published

@@ -1,5 +1,27 @@
 # Checkpoint — Remaining phases through production
 
+## Automatic server recovery specification — 2026-10-14
+
+- Task branch: `codex/server-recovery-spec`, from fetched `origin/dev` `af8aaa02`.
+  [Specification](docs/superpowers/specs/2026-10-14-server-recovery-design.md)
+  defines one visible-page session recovery loop, a 90-second window, five-second
+  post-response spacing, request/cancellation bounds and safe error handling.
+- Live diagnosis reproduced 504 `Backend timeout` after about 15.7 seconds;
+  readiness later returned 200 and signed-out `/api/me` returned 401 in under
+  one second. Render cold start is strongly supported; instance logs were not read.
+- Earlier diagnosis passed 29/29 existing auth/session/UI/proxy tests. These are
+  baseline results, not automatic-recovery verification. This task changes only
+  documentation; implementation, new tests and deployment are pending.
+- Last completed step: specification written against the inspected baseline.
+  Commit and PR publication are pending. Next: review the documentation diff,
+  run `git diff --check`, commit task-owned files, push this branch and create a
+  PR explicitly targeting `dev`. The user merges manually.
+- Usage observed 2026-10-14 21:48 Bangkok: five-hour 96% and weekly 52% remaining;
+  resets 2026-10-15 02:40:00 and 2026-10-20 12:12:41 Bangkok, respectively.
+  No usage threshold blocker or billing action.
+
+---
+
 ## PR #29 CI follow-up — 2026-10-14
 
 - Same task and branch `codex/hand-result-ux-spec`, PR #29 targeting `dev`.
