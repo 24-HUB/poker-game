@@ -15,7 +15,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: ALLOW_NEW_SESSIONS
-        value: "false"
+        value: "true"
       - key: ECONOMY_WRITES_ENABLED
         value: "false"
       - key: PUBLIC_ORIGIN
