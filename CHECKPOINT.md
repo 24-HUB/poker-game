@@ -12,10 +12,17 @@
 - Earlier diagnosis passed 29/29 existing auth/session/UI/proxy tests. These are
   baseline results, not automatic-recovery verification. This task changes only
   documentation; implementation, new tests and deployment are pending.
-- Last completed step: specification written against the inspected baseline.
-  Commit and PR publication are pending. Next: review the documentation diff,
-  run `git diff --check`, commit task-owned files, push this branch and create a
-  PR explicitly targeting `dev`. The user merges manually.
+- Published specification commit: `0ba10c4c`, in
+  [draft PR #30](https://github.com/24-HUB/poker-game/pull/30), explicitly targeting
+  `dev`. Only the spec and existing checkpoint documents changed.
+- Passed: documentation accuracy/self-review, local spec link check,
+  `git diff --check` and full `git diff origin/dev --check`. Application checks
+  were not rerun for this documentation-only task. Final fetch confirms this
+  branch contains latest `origin/dev` `af8aaa02`; working tree was clean before
+  this publication-record update. No merge/rebase or deployment.
+- Next: open the specification and review its behavior/acceptance before requesting
+  implementation. Continue this task's branch/PR if still open, or start from
+  freshly fetched `origin/dev` if the PR has already merged. The user merges manually.
 - Usage observed 2026-10-14 21:48 Bangkok: five-hour 96% and weekly 52% remaining;
   resets 2026-10-15 02:40:00 and 2026-10-20 12:12:41 Bangkok, respectively.
   No usage threshold blocker or billing action.

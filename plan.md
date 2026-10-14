@@ -534,9 +534,13 @@ one shared visible-page session GET recovery loop: 90-second wall-clock window,
 five-second post-response spacing, no overlapping probes, bounded cancellation,
 honest terminal/rate-limit errors and no automatic mutation replay or keep-alive.
 Implementation and deployment are pending. The diagnostic 29/29 baseline tests
-do not verify this proposed behavior. Documentation review/publication is next;
-see `CHECKPOINT.md` for branch/PR and actual verification evidence. The user merges
-manually. Usage at 2026-10-14 21:48 Bangkok: 96% five-hour and 52% weekly remaining,
+do not verify this proposed behavior. Specification commit `0ba10c4c` is published
+in [draft PR #30](https://github.com/24-HUB/poker-game/pull/30), targeting `dev`.
+Documentation self-review, local link validation and working-tree/branch diff
+checks passed. Final fetch confirms latest `origin/dev` `af8aaa02` is included.
+Next: review the spec before requesting implementation; see `CHECKPOINT.md` for
+resumption evidence. The user merges manually. Usage at 2026-10-14 21:48 Bangkok:
+96% five-hour and 52% weekly remaining,
 resetting 2026-10-15 02:40:00 and 2026-10-20 12:12:41 Bangkok respectively.
 
 ### PR #29 CI follow-up — 2026-10-14
