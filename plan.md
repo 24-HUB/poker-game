@@ -520,6 +520,24 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### PR #29 CI follow-up — 2026-10-14
+
+Same task/branch `codex/hand-result-ux-spec`, PR #29 targeting `dev`; prior published
+head `28f3f7d8` failed Linux browser acceptance (26/28). A stale history disclosure
+request reopened history in a new session. The regression reproduced RED and
+passes GREEN after scoping requests to account, room and session. Browser result
+assertions now select the live table. The subsequent poker start timeout did not
+reproduce locally; an unfinished previous session may have triggered the global
+active-session limit, but that remains an inference. Public start diagnostics were
+added without changing timeouts or server rules.
+
+Verified frozen install, frontend 145/145, typecheck, production build and full
+CI-mode Chromium 28/28. Independent review found no Important issues. Next: commit
+and push the follow-up to this PR, inspect fresh Linux CI and fetch origin before
+handoff; the user merges manually. Usage at 2026-10-14 17:55 Bangkok: 18% five-hour
+and 55% weekly remaining, resetting 2026-10-14 21:20:51 and 2026-10-20 12:12:42
+Bangkok. See CHECKPOINT.md for the follow-up and historical implementation evidence.
+
 ### Hand-result implementation — locally verified, 2026-10-14
 
 The user requested implementation of PR #29's design and updates to the same PR.

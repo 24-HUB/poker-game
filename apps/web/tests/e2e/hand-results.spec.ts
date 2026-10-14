@@ -22,7 +22,7 @@ async function inspectLayouts(page: Page, prefix: string) {
       const a = seats[i]!, b = seats[j]!;
       expect(a.right <= b.x || b.right <= a.x || a.bottom <= b.y || b.bottom <= a.y).toBe(true);
     }
-    const cardRows = page.locator('.hand-result__cards');
+    const cardRows = page.locator('.poker-table .hand-result__cards');
     const cards = await cardRows.count() ? await cardRows.first().evaluate((element) => {
       const box = element.getBoundingClientRect(); return { right: box.right, width: box.width };
     }) : null;
@@ -59,13 +59,13 @@ test('showdown and six-seat flop fold remain readable after session completion a
       await guest.getByRole('button', { name: 'Check', exact: true }).click();
       await host.getByRole('button', { name: 'Check', exact: true }).click();
     }
-    await expect(host.locator('.hand-result__reason')).toHaveText('Showdown');
-    await expect(host.locator('.hand-result__cards')).toHaveCount(2);
+    await expect(host.locator('.poker-table .hand-result__reason')).toHaveText('Showdown');
+    await expect(host.locator('.poker-table .hand-result__cards')).toHaveCount(2);
     await expect(guest.getByLabel('Revealed cards')).toBeVisible();
     await expect(host.getByText('Finishing session…', { exact: true })).toBeVisible();
     await expect(host.getByRole('heading', { name: 'Session standings' })).toBeVisible({ timeout: 10000 });
     await host.reload();
-    await expect(host.locator('.hand-result__reason')).toHaveText('Showdown');
+    await expect(host.locator('.poker-table .hand-result__reason')).toHaveText('Showdown');
     await expect(host.locator('.poker-table__board .poker-card:not(.poker-card--empty)')).toHaveCount(5);
     await inspectLayouts(host, 'result-showdown');
     await host.setViewportSize({ width: 1440, height: 900 });
@@ -96,6 +96,7 @@ test('showdown and six-seat flop fold remain readable after session completion a
     await expect(guest.getByRole('button', { name: 'Start new session' })).toBeEnabled();
     await guest.getByRole('button', { name: 'Start new session' }).click();
     await expect(host.locator('.poker-seat')).toHaveCount(6);
+    await expect(host.getByRole('button', { name: 'Hand history', exact: true })).toHaveAttribute('aria-expanded', 'false');
     await endAfterHand(guest);
     // All six call/check preflop, then five players fold on the flop.
     for (let turn = 0; turn < 6; turn++) {
@@ -118,13 +119,13 @@ test('showdown and six-seat flop fold remain readable after session completion a
       }).toBe(true);
       await actor!.getByRole('button', { name: 'Fold', exact: true }).click();
     }
-    await expect(host.locator('.hand-result__reason')).toHaveText('Won by fold');
-    await expect(host.locator('.hand-result__cards')).toHaveCount(0);
+    await expect(host.locator('.poker-table .hand-result__reason')).toHaveText('Won by fold');
+    await expect(host.locator('.poker-table .hand-result__cards')).toHaveCount(0);
     await expect(host.getByLabel('Hidden cards')).toHaveCount(5);
     await expect(host.getByText('Only visible to you', { exact: true })).toBeVisible();
     await expect(host.getByRole('heading', { name: 'Session standings' })).toBeVisible({ timeout: 10000 });
     await host.reload();
-    await expect(host.locator('.hand-result__reason')).toHaveText('Won by fold');
+    await expect(host.locator('.poker-table .hand-result__reason')).toHaveText('Won by fold');
     await expect(host.locator('.poker-table__board .poker-card:not(.poker-card--empty)')).toHaveCount(3);
     await expect(host.getByLabel('Empty community card slot')).toHaveCount(2);
     await expect(host.getByText('Only visible to you', { exact: true })).toHaveCount(0);
@@ -136,7 +137,7 @@ test('showdown and six-seat flop fold remain readable after session completion a
     await zoomContext.addCookies(await host.context().cookies());
     const zoomPage = await zoomContext.newPage();
     await zoomPage.goto(host.url());
-    await expect(zoomPage.locator('.hand-result__reason')).toHaveText('Won by fold');
+    await expect(zoomPage.locator('.poker-table .hand-result__reason')).toHaveText('Won by fold');
     await expect.poll(() => zoomPage.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
     await zoomPage.screenshot({ path: 'test-results/result-six-fold-200-percent.png', fullPage: true });
   } catch (error) {

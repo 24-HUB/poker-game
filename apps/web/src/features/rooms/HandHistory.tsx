@@ -5,13 +5,15 @@ import { readHandHistory } from '../../lib/hand-history';
 import { HandReward } from '../wallet/HandReward';
 import { HandResultPanel } from './HandResultPanel';
 
-export function HandHistory({ accountId, roomId, sessionId, latestHandId, openRequest = 0, names = {}, reader = readHandHistory }: {
+export function HandHistory({ accountId, roomId, sessionId, latestHandId, openRequest = 0, requestScope, names = {}, reader = readHandHistory }: {
   accountId: string; roomId: string; sessionId: string; latestHandId?: string;
   openRequest?: number;
+  requestScope?: string;
   names?: Record<string, string>; reader?: typeof readHandHistory;
 }) {
   const [open, setOpen] = useState(false);
-  useEffect(() => { if (openRequest > 0) setOpen(true); }, [openRequest]);
+  const scope = `${accountId}:${roomId}:${sessionId}`;
+  useEffect(() => { if (openRequest > 0 && requestScope === scope) setOpen(true); }, [openRequest, requestScope, scope]);
   const query = useInfiniteQuery({
     queryKey: ['hand-history', accountId, roomId, sessionId], enabled: open,
     initialPageParam: undefined as number | undefined,

@@ -1,5 +1,26 @@
 # Checkpoint — Remaining phases through production
 
+## PR #29 CI follow-up — 2026-10-14
+
+- Same task and branch `codex/hand-result-ux-spec`, PR #29 targeting `dev`.
+  Prior published head `28f3f7d8` failed Linux Chromium acceptance: 26/28 passed.
+- Reproduced a stale history disclosure request reopening history in a new session.
+  Requests now match account, room and session; the regression failed before the
+  fix and passes afterward. Browser assertions explicitly select the live table.
+- The subsequent poker start timeout did not reproduce locally. The preceding
+  failed test left a session finishing, which may have blocked the next start under
+  the single-active-session limit. Added public command/connection diagnostics;
+  this explanation remains an inference until fresh Linux CI confirms recovery.
+- Passed: frozen install, frontend 145/145, typecheck, production build and full
+  CI-mode Chromium 28/28. Independent review found no Important issues.
+- Next: commit and push this follow-up to the same PR, inspect fresh Linux CI,
+  fetch origin and confirm branch freshness before final handoff. The user merges
+  manually. No deployment or production data operations.
+- Usage observed 2026-10-14 17:55 Bangkok: five-hour 18% remaining, weekly 55%
+  remaining; resets 2026-10-14 21:20:51 and 2026-10-20 12:12:42 Bangkok.
+
+---
+
 ## Hand-result implementation — locally verified, 2026-10-14
 
 - User approved implementation of PR #29's specification and updates to the same
