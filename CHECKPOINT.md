@@ -34,12 +34,16 @@
   reclaim a refreshed tab when needed. Existing release assertions now verify the
   structured showdown/board/pot details and absence of completed-hand betting
   controls. Earlier fixture failures are superseded by the full **28/28** run.
-- Last completed code step is `74d87b98`. This save point changes only documentation
-  and the plan checklist; no application work remains. Push explicitly with
-  `git push -u origin codex/hand-result-ux-spec`, update PR #29 and inspect its
-  Linux CI/Worker packaging before manual merge. Do not merge or rebase `dev`.
-- Last successful fetch confirms `origin/dev` `7927a9c4` is contained; repeat fetch
-  before final handoff. Hosted acceptance, a native screen-reader run and physical
+- Last completed code step is `74d87b98`; implementation and the first verification
+  checkpoint are pushed through `b1b8afd1`. PR #29's title/description now describe
+  implementation and retain base `dev`. This follow-up records publication and
+  closes the plan checklist; no application work remains.
+- CI on `b1b8afd1` was [in progress](https://github.com/24-HUB/poker-game/actions/runs/38551136128)
+  at inspection. This documentation follow-up starts a fresh head run. Next: inspect
+  PR #29's latest Linux CI/Worker packaging, then review and merge manually only
+  after checks pass. Do not merge or rebase `dev` automatically.
+- Final successful fetch at 2026-10-14 17:41 Bangkok confirms `origin/dev` `7927a9c4`
+  is contained. Hosted acceptance, a native screen-reader run and physical
   phone keyboards remain playtest checks. No deployment or production data operation.
 - Usage observed 2026-10-14 17:37:44 Bangkok: five-hour **27% remaining**, weekly
   **56% remaining**; resets 2026-10-14 21:20:51 and 2026-10-20 12:12:42 Bangkok.

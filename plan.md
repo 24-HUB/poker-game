@@ -547,10 +547,12 @@ viewport passed. Independent re-review found no Critical/Important blockers.
 
 See [the implementation plan](docs/superpowers/plans/2026-10-14-hand-result-implementation.md)
 and `CHECKPOINT.md` for the evidence and fixture corrections. This documentation
-save point follows `74d87b98`; next push `codex/hand-result-ux-spec`, update
-[PR #29](https://github.com/24-HUB/poker-game/pull/29) (base `dev`) and inspect Linux
-CI/Worker packaging. Latest successful fetch contains `origin/dev` `7927a9c4`;
-repeat fetch before handoff. The user merges manually. Hosted acceptance, native
+save point follows `74d87b98`. Implementation/checkpoints are pushed through
+`b1b8afd1`; [PR #29](https://github.com/24-HUB/poker-game/pull/29) has an implementation
+description and base `dev`. This follow-up records publication. CI was in progress;
+next inspect the latest head's Linux CI/Worker packaging, then review and merge
+manually after checks pass. Final fetch at 2026-10-14 17:41 Bangkok confirms
+`origin/dev` `7927a9c4` is contained. Hosted acceptance, native
 screen-reader and physical-phone checks remain playtest gates; no deployment.
 Usage at 2026-10-14 17:37:44 Bangkok: five-hour 27%, weekly 56% remaining;
 resets 2026-10-14 21:20:51 and 2026-10-20 12:12:42 Bangkok respectively.

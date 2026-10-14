@@ -65,7 +65,7 @@
 - [x] Run meaningful Playwright fold/showdown, refresh/history and responsive acceptance.
 - [x] Run `pnpm check`, inspect full diff and `git diff --check`.
 - [x] Review correctness/privacy; fix required findings and repeat affected checks.
-- [ ] Record actual evidence, fetch origin, commit task files, push explicit branch and update PR #29.
+- [x] Record actual evidence, fetch origin, commit task files, push explicit branch and update PR #29.
 
 ## Execution decisions
 
