@@ -520,6 +520,22 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Hand-result UX/UI specification — 2026-10-14
+
+- Requested scope: documentation only, based on the supplied showdown and
+  win-by-fold references. See [the proposed specification](docs/superpowers/specs/2026-10-14-hand-result-ux-design.md).
+- Branch: `codex/hand-result-ux-spec`, from fetched `origin/dev` `7927a9c4`.
+  Draft PR creation is pending at this checkpoint; no application changes.
+- Covers persistent results, authorized reveals, best-five explanation, chip
+  accounting, session transitions, responsive/accessibility criteria and history.
+  Records missing public result/transition data rather than claiming UI-only work.
+- Existing five-second server progression is preserved. Review the proposed
+  design before requesting implementation planning; no milestone status changes.
+- Usage observed 2026-10-14, approximately 16:29 Bangkok: five-hour 89% remaining,
+  weekly 66% remaining. No low-capacity save-point trigger.
+- Next: review the specification; finish documentation diff checks, commit/push
+  and create a draft PR targeting `dev`. The user merges manually.
+
 ### PR #28 CI corrections — Linux verification passed, 2026-10-13
 
 Commit `4d2ec8ab` resolves the mock-account sign-in ambiguity and mobile action

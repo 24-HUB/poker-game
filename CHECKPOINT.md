@@ -1,5 +1,25 @@
 # Checkpoint — Remaining phases through production
 
+## Hand-result UX/UI specification — 2026-10-14
+
+- Task branch: `codex/hand-result-ux-spec`, based on fetched `origin/dev`
+  `7927a9c4`; no application files changed.
+- [Proposed specification](docs/superpowers/specs/2026-10-14-hand-result-ux-design.md)
+  translates both supplied references into showdown/fold layouts, privacy and
+  accounting rules, responsive states, proposed data requirements and acceptance.
+- Read the existing table, history, contracts, game progression and projection.
+  Five-second result scheduling already exists; public transition timing and
+  durable board/rank details need implementation work after design review.
+- Documentation verification and commit/push/PR are pending at this entry.
+  Application tests are not required for this documentation-only task.
+- Usage observed 2026-10-14, approximately 16:29 Bangkok: five-hour 89% remaining,
+  weekly 66% remaining. No threshold-triggered pause or billing action.
+- Next: run `git diff --check`, inspect the full task diff, commit/push only these
+  documentation files, and create a draft PR targeting `dev` for user review.
+  Implementation is not started; the user merges manually.
+
+---
+
 ## PR #28 CI corrections — Linux verification passed, 2026-10-13
 
 - Commit `4d2ec8ab` is pushed on `codex/room-ux-audit` in PR #28 (base `dev`).
