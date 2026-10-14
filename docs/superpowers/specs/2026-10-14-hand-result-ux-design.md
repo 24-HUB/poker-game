@@ -1,6 +1,6 @@
 # Poker hand results — UX/UI specification
 
-Date: 2026-10-14 (Asia/Bangkok)  
+Date: 2026-10-14 (Asia/Bangkok)
 Status: Proposed design for review; application changes are not implemented by this document.
 
 ## 1. Intent and scope
