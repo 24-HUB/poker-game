@@ -525,16 +525,20 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 - Requested scope: documentation only, based on the supplied showdown and
   win-by-fold references. See [the proposed specification](docs/superpowers/specs/2026-10-14-hand-result-ux-design.md).
 - Branch: `codex/hand-result-ux-spec`, from fetched `origin/dev` `7927a9c4`.
-  Draft PR creation is pending at this checkpoint; no application changes.
+  [Draft PR #29](https://github.com/24-HUB/poker-game/pull/29) targets `dev`;
+  specification/correction pushed through `aef8c416`. No application changes.
 - Covers persistent results, authorized reveals, best-five explanation, chip
   accounting, session transitions, responsive/accessibility criteria and history.
   Records missing public result/transition data rather than claiming UI-only work.
 - Existing five-second server progression is preserved. Review the proposed
   design before requesting implementation planning; no milestone status changes.
-- Usage observed 2026-10-14, approximately 16:29 Bangkok: five-hour 89% remaining,
-  weekly 66% remaining. No low-capacity save-point trigger.
-- Next: review the specification; finish documentation diff checks, commit/push
-  and create a draft PR targeting `dev`. The user merges manually.
+- Documentation review and both working-tree/full-task whitespace checks pass
+  after correcting one trailing space. Application tests not run (Markdown only).
+- Final fetch at 2026-10-14 16:38 Bangkok confirms latest `origin/dev` `7927a9c4`
+  is contained. Latest handoff usage: five-hour 74%, weekly 64% remaining.
+  Resets: 2026-10-14 21:20:50 / 2026-10-20 12:12:42 Bangkok, respectively.
+- Next: review the specification in PR #29 and request revisions or implementation
+  planning. The user merges manually; this follow-up records the completed handoff.
 
 ### PR #28 CI corrections — Linux verification passed, 2026-10-13
 

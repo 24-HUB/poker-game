@@ -10,13 +10,19 @@
 - Read the existing table, history, contracts, game progression and projection.
   Five-second result scheduling already exists; public transition timing and
   durable board/rank details need implementation work after design review.
-- Documentation verification and commit/push/PR are pending at this entry.
-  Application tests are not required for this documentation-only task.
-- Usage observed 2026-10-14, approximately 16:29 Bangkok: five-hour 89% remaining,
-  weekly 66% remaining. No threshold-triggered pause or billing action.
-- Next: run `git diff --check`, inspect the full task diff, commit/push only these
-  documentation files, and create a draft PR targeting `dev` for user review.
-  Implementation is not started; the user merges manually.
+- Specification and whitespace correction are pushed through `aef8c416` in
+  [draft PR #29](https://github.com/24-HUB/poker-game/pull/29), targeting `dev`.
+  Full documentation reviewed; `git diff --check` and
+  `git diff origin/dev --check` pass after correcting one trailing space.
+  Application tests were not run for this documentation-only task.
+- Final fetch at 2026-10-14 16:38 Bangkok confirms this branch contains latest
+  `origin/dev` `7927a9c4`. No merge/rebase or application change.
+- Latest usage observed during handoff: five-hour 74% remaining, weekly 64%
+  remaining; resets 2026-10-14 21:20:50 and 2026-10-20 12:12:42 Bangkok,
+  respectively. No threshold-triggered pause or billing action.
+- Next: review the proposed specification in PR #29, then request any revisions
+  or implementation planning. Implementation is not started; the user merges
+  manually. This follow-up commit records the completed documentation handoff.
 
 ---
 
