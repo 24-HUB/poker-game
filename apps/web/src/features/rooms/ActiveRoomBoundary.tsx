@@ -27,6 +27,7 @@ export function ActiveRoomBoundary({ children, reader = readCurrentRoom }: { chi
   const router = useRouter();
   const pathname = usePathname();
   const leaveHandler = useRef<((destination: string) => void) | null>(null);
+  const mountedPathname = useRef<string | null>(null);
   const liveRoom = useStore(roomStore, (state) => state.accountId === accountId ? state.room : null);
   const query = useQuery({
     queryKey: currentRoomKey(accountId), enabled: accountId !== null,
@@ -70,12 +71,16 @@ export function ActiveRoomBoundary({ children, reader = readCurrentRoom }: { chi
       client.setQueryData(currentRoomKey(accountId), { data: null, error: null });
     },
   };
-  const checking = !recovery && (session.status === 'loading' || (accountId !== null && !liveRoom && (query.isPending || query.data?.error || query.isError)));
+  const checking = !recovery && (session.status === 'loading' || (accountId !== null && !liveRoom && Boolean(query.isPending || query.data?.error || query.isError)));
+  // Preserve this page's effects through recovery, but never mount a new
+  // destination until that pathname has passed the navigation guard.
+  if (!checking && !redirect) mountedPathname.current = pathname;
   return <RoomBoundaryContext.Provider value={value}>
     {checking || redirect ? <div className="session-boundary" role="status">
       <AccountAccess />
       <p>{session.status === 'loading' ? 'Checking private access…' : query.data?.error || query.isError ? 'Your current room could not be checked. Reconnect to continue.' : 'Recovering your current room…'}</p>
       {query.data?.error || query.isError ? <button type="button" onClick={() => void query.refetch()}>Retry room connection</button> : null}
-    </div> : children}
+    </div> : null}
+    {mountedPathname.current === pathname ? <div hidden={checking || redirect} style={{ display: checking || redirect ? 'none' : 'contents' }}>{children}</div> : null}
   </RoomBoundaryContext.Provider>;
 }

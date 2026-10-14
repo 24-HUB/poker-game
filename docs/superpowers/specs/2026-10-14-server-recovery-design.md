@@ -1,7 +1,7 @@
 # Automatic server recovery — implementation specification
 
 Date: 2026-10-14 (Asia/Bangkok)
-Status: Requested specification; application implementation and deployment are pending.
+Status: User-requested implementation is locally verified on PR #30. Deployment remains separate; see CHECKPOINT.md for verification and publication evidence.
 Baseline: freshly fetched `origin/dev` commit `af8aaa02`.
 
 ## 1. Outcome and scope
@@ -35,7 +35,7 @@ This strongly supports a sleeping/waking backend, but backend logs were not
 inspected; the precise Render instance event is not proven. Render's public
 status API reported All Systems Operational during the investigation.
 
-Current implementation:
+Pre-implementation behavior observed during diagnosis:
 
 - `worker/proxy.ts` aborts ordinary upstream requests after 15,000 ms.
 - `lib/auth-client.ts` maps session transport, non-401 HTTP and invalid-body
@@ -175,6 +175,9 @@ reduced motion and preserve clear status text without animation.
 | `apps/web/src/features/auth/SessionBoundary.tsx` | Integrate the coordinator into the shared provider and expose consistent recovery controls; preserve account cleanup. |
 | `apps/web/src/features/auth/AccountAccess.tsx` | Consume shared recovery status; keep its isolated fallback using the same policy rather than a second production poller. |
 | `apps/web/src/app/globals.css` | Only necessary responsive/status styling. |
+| `apps/web/src/features/rooms/useRoomConnection.ts` | Retain connection ownership/caches during unverified session recovery while gating private views and commands. |
+| `apps/web/src/features/rooms/ActiveRoomBoundary.tsx` | Preserve the current mounted destination through recovery; require every new pathname to pass navigation gating. |
+| `apps/web/src/features/gacha/Banner.tsx` | Distinguish recovery from real account entry so restoring the same account cannot replay an uncertain purchase. |
 | Existing auth tests plus `useSessionRecovery.test.tsx` (new) | Deterministic request, timer and lifecycle regressions. |
 | `apps/web/tests/e2e/backend-recovery.spec.ts`, `session.spec.ts` | Automatic and terminal recovery through real UI; retain restart/privacy acceptance. |
 
@@ -224,9 +227,9 @@ approval. No deployment or live database operation is authorized by this spec.
 
 ## 9. Handoff
 
-This task publishes documentation through a PR targeting `dev`; the user merges
-manually. Review this specification before requesting application implementation.
-Future implementation should update the same open task PR if it remains open,
-or create a new task branch/PR from freshly fetched `origin/dev` if already merged.
-Do not claim automatic recovery is complete until its implementation and required
-checks are recorded. Preserve existing hosting and mutation/idempotency contracts.
+The user requested implementation of PR #30 on 2026-10-14. The same open task
+branch, `codex/server-recovery-spec`, implements this specification and updates
+PR #30 targeting `dev`; the user merges manually. Verification and publication
+evidence belongs in `CHECKPOINT.md` and the `plan.md` checkpoint. Preserve existing
+hosting and mutation/idempotency contracts. No deployment or natural Render
+sleep/wake drill is part of this implementation request.

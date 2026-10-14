@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
 
 import { readSession, signIn, signOut, signUp, resendVerification, requestPasswordReset, verifyEmail, resetPassword } from './auth-client';
 
@@ -43,6 +43,37 @@ describe('authentication error copy', () => {
 });
 
 describe('readSession', () => {
+  afterEach(() => vi.useRealTimers());
+  it.each([
+    [403, undefined, 'blocked', undefined],
+    [408, undefined, 'retryable', undefined],
+    [504, undefined, 'retryable', undefined],
+    [429, '12', 'rate-limited', 12_000],
+    [429, 'invalid', 'rate-limited', 60_000],
+    [429, '0', 'rate-limited', 0],
+    [429, '-1', 'rate-limited', 60_000],
+  ])('classifies %s with Retry-After %s', async (status, retryAfter, reason, delay) => {
+    const result = await readSession(async () => new Response('{}', { status: status as number, headers: retryAfter === undefined ? {} : { 'retry-after': String(retryAfter) } }));
+    expect(result).toMatchObject({ status: 'unavailable', reason });
+    if (delay !== undefined) expect(result).toMatchObject({ retryAt: expect.any(Number) });
+    if (delay !== undefined && result.status === 'unavailable') expect(result.retryAt! - Date.now()).toBeGreaterThanOrEqual((delay as number) - 50);
+  });
+  it('honors HTTP-date rate limits', async () => {
+    vi.useFakeTimers(); vi.setSystemTime(new Date('2026-10-14T00:00:00Z'));
+    await expect(readSession(async () => new Response('{}', { status: 429, headers: { 'retry-after': 'Wed, 14 Oct 2026 00:00:30 GMT' } })))
+      .resolves.toMatchObject({ reason: 'rate-limited', retryAt: Date.now() + 30_000 });
+  });
+  it('bounds body parsing and cancels an external signal without classifying logout', async () => {
+    vi.useFakeTimers();
+    const fetcher = vi.fn().mockResolvedValue({ ok: true, status: 200, json: () => new Promise(() => {}) });
+    const pending = readSession(fetcher, { timeoutMs: 100 });
+    await vi.advanceTimersByTimeAsync(100);
+    await expect(pending).resolves.toMatchObject({ status: 'unavailable', reason: 'retryable' });
+    const controller = new AbortController();
+    const canceled = readSession(fetcher, { signal: controller.signal });
+    controller.abort();
+    await expect(canceled).rejects.toMatchObject({ name: 'AbortError' });
+  });
   it('returns an authenticated identity from the application envelope', async () => {
     const fetcher = vi.fn().mockResolvedValue(new Response(JSON.stringify({
       data: { accountId: 'account-a', displayName: 'Alice' },
@@ -56,6 +87,7 @@ describe('readSession', () => {
     expect(fetcher).toHaveBeenCalledWith('/api/me', {
       credentials: 'include',
       cache: 'no-store',
+      signal: expect.any(AbortSignal),
       headers: { accept: 'application/json' },
     });
   });
@@ -65,7 +97,7 @@ describe('readSession', () => {
     const unavailable = vi.fn().mockResolvedValue(new Response('{}', { status: 503 }));
 
     await expect(readSession(signedOut)).resolves.toEqual({ status: 'unauthenticated' });
-    await expect(readSession(unavailable)).resolves.toEqual({ status: 'unavailable' });
+    await expect(readSession(unavailable)).resolves.toEqual({ status: 'unavailable', reason: 'retryable' });
   });
 
   it('treats transport and malformed-response failures as unavailable', async () => {
@@ -75,8 +107,8 @@ describe('readSession', () => {
       headers: { 'content-type': 'application/json' },
     }));
 
-    await expect(readSession(offline)).resolves.toEqual({ status: 'unavailable' });
-    await expect(readSession(malformed)).resolves.toEqual({ status: 'unavailable' });
+    await expect(readSession(offline)).resolves.toEqual({ status: 'unavailable', reason: 'retryable' });
+    await expect(readSession(malformed)).resolves.toEqual({ status: 'unavailable', reason: 'retryable' });
   });
 });
 
