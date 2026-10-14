@@ -2,7 +2,7 @@
 
 import '@testing-library/jest-dom/vitest';
 
-import { cleanup, render, screen } from '@testing-library/react';
+import { act, cleanup, render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { createElement } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
@@ -10,16 +10,30 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { AccountAccess } from './AccountAccess';
 import { readPendingInvitation, storePendingInvitation } from '../rooms/invitation';
 import { roomStore } from '../rooms/roomStore';
+import type { SessionState } from '../../lib/auth-client';
 
 afterEach(cleanup);
 
 describe('AccountAccess', () => {
+  it.each(['unauthenticated', 'authenticated'] as const)('moves a focused Retry to the recovered %s control without opening a dialog', async (status) => {
+    let finish!: (session: SessionState) => void;
+    const reader = vi.fn().mockResolvedValueOnce({ status: 'unavailable' })
+      .mockImplementationOnce(() => new Promise<SessionState>((resolve) => { finish = resolve; }));
+    const user = userEvent.setup();
+    render(createElement(AccountAccess, { sessionReader: reader }));
+    const retry = await screen.findByRole('button', { name: 'Retry' });
+    await user.click(retry);
+    expect(retry).toHaveFocus(); expect(retry).toBeDisabled();
+    await act(async () => finish(status === 'authenticated' ? { status, account: { accountId: 'a', displayName: 'Alice' } } : { status }));
+    expect(status === 'authenticated' ? screen.getByText('Alice').closest('[data-account-control]') : screen.getByRole('button', { name: 'Sign in' })).toHaveFocus();
+    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
+  });
   it('shows backend recovery without presenting the player as signed out', async () => {
     const sessionReader = vi.fn().mockResolvedValue({ status: 'unavailable' });
     const user = userEvent.setup();
     render(createElement(AccountAccess, { sessionReader }));
 
-    expect(await screen.findByText('Server starting')).toBeVisible();
+    expect(await screen.findByText('Connecting to server…')).toBeVisible();
     expect(screen.queryByRole('button', { name: 'Sign in' })).not.toBeInTheDocument();
     await user.click(screen.getByRole('button', { name: 'Retry' }));
     expect(sessionReader).toHaveBeenCalledTimes(2);
@@ -30,7 +44,7 @@ describe('AccountAccess', () => {
     render(createElement(AccountAccess, { sessionReader }));
 
     expect(await screen.findByRole('button', { name: 'Sign in' })).toBeVisible();
-    expect(screen.queryByText('Server starting')).not.toBeInTheDocument();
+    expect(screen.queryByText('Connecting to server…')).not.toBeInTheDocument();
   });
 
   it('shows the verified display name for an authenticated account', async () => {

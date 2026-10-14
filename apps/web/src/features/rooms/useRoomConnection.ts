@@ -24,6 +24,13 @@ export function useRoomConnection(roomId: string | null) {
   const queryClient = useQueryClient();
   const { session, refresh: refreshSession } = useSession();
   const accountId = session.status === 'authenticated' ? session.account.accountId : null;
+  // Retain ownership during an unverified GET; only an authoritative account
+  // change/logout may dispose this connection and its cached private state.
+  // Views and commands below still require the currently verified accountId.
+  const connectionOwner = useRef<string | null>(null);
+  if (session.status === 'authenticated') connectionOwner.current = accountId;
+  else if (session.status === 'unauthenticated') connectionOwner.current = null;
+  const connectionAccountId = connectionOwner.current;
   const room = useStore(roomStore, (state) => state.accountId === accountId ? state.room : null);
   const pendingCommand = useStore(roomStore, (state) => state.accountId === accountId ? state.pendingCommand : null);
   const game = useStore(gameStore, (state) => state.accountId === accountId ? state.game : null);
@@ -44,11 +51,12 @@ export function useRoomConnection(roomId: string | null) {
 
   const sync = useCallback(async (): Promise<Result<RoomReply>> => {
     const socket = socketRef.current;
-    if (!socket?.connected || !roomId) return unavailableReply();
+    if (!socket?.connected || !roomId || !accountId) return unavailableReply();
     return emitWithAck(socket, 'room:sync', { type: 'room:sync', roomId });
-  }, [roomId]);
+  }, [roomId, accountId]);
 
   useEffect(() => {
+    const accountId = connectionAccountId;
     if (!accountId) {
       roomStore.getState().clear();
       gameStore.getState().clear();
@@ -117,7 +125,7 @@ export function useRoomConnection(roomId: string | null) {
       gameStore.getState().clear();
       socket.close();
     };
-  }, [accountId, queryClient]);
+  }, [connectionAccountId, queryClient]);
 
   useEffect(() => {
     gameStore.getState().clear();
@@ -126,7 +134,7 @@ export function useRoomConnection(roomId: string | null) {
 
   useEffect(() => {
     const socket = socketRef.current;
-    setPendingGameCommand(accountId && roomId ? readPendingGameCommand(accountId, roomId, sessionStorage) : null);
+    if (accountId) setPendingGameCommand(roomId ? readPendingGameCommand(accountId, roomId, sessionStorage) : null);
     if (!socket?.connected || !accountId || !roomId || status !== 'connected' || !authorityBootId) return;
     setSyncFailed(false);
     setSynchronizedRoomId(null);

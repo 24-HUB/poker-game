@@ -92,12 +92,20 @@ test('showdown and six-seat flop fold remain readable after session completion a
     }
     if (await host.getByRole('button', { name: 'Use this tab to play' }).count()) await host.getByRole('button', { name: 'Use this tab to play' }).click();
     await expect(host.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
-    // Refresh can transfer host controls to the connected guest; use the actual host.
-    await expect(guest.getByRole('button', { name: 'Start new session' })).toBeEnabled();
-    await guest.getByRole('button', { name: 'Start new session' }).click();
+    // Refresh may retain or transfer host controls; select the authoritative host.
+    let sessionHost: Page | undefined;
+    await expect.poll(async () => {
+      sessionHost = undefined;
+      for (const page of pages) {
+        const start = page.getByRole('button', { name: 'Start new session' });
+        if (await start.isVisible() && await start.isEnabled()) sessionHost = page;
+      }
+      return Boolean(sessionHost);
+    }).toBe(true);
+    await sessionHost!.getByRole('button', { name: 'Start new session' }).click();
     await expect(host.locator('.poker-seat')).toHaveCount(6);
     await expect(host.getByRole('button', { name: 'Hand history', exact: true })).toHaveAttribute('aria-expanded', 'false');
-    await endAfterHand(guest);
+    await endAfterHand(sessionHost!);
     // All six call/check preflop, then five players fold on the flop.
     for (let turn = 0; turn < 6; turn++) {
       let actor: Page | undefined;

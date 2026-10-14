@@ -1,10 +1,12 @@
+import { abortable } from './abortable';
+
 export type AccountIdentity = { accountId: string; displayName: string };
 
 export type SessionState =
   | { status: 'loading' }
   | { status: 'authenticated'; account: AccountIdentity }
   | { status: 'unauthenticated' }
-  | { status: 'unavailable' };
+  | { status: 'unavailable'; reason?: 'retryable' | 'rate-limited' | 'blocked'; retryAt?: number };
 
 export type SignInInput = { email: string; password: string };
 export type SignUpInput = SignInInput & { name: string; registrationCode: string };
@@ -17,22 +19,52 @@ export class AuthRequestError extends Error {
   }
 }
 
-export async function readSession(fetcher: Fetcher = fetch): Promise<SessionState> {
-  try {
-    const response = await fetcher('/api/me', {
-      credentials: 'include',
-      cache: 'no-store',
-      headers: { accept: 'application/json' },
-    });
-    if (response.status === 401) return { status: 'unauthenticated' };
-    if (!response.ok) return { status: 'unavailable' };
+export type SessionReadOptions = { signal?: AbortSignal; timeoutMs?: number };
 
-    const body: unknown = await response.json();
-    if (!isIdentityEnvelope(body)) return { status: 'unavailable' };
-    return { status: 'authenticated', account: body.data };
-  } catch {
-    return { status: 'unavailable' };
+export async function readSession(fetcher: Fetcher = fetch, options: SessionReadOptions = {}): Promise<SessionState> {
+  const controller = new AbortController();
+  const cancel = () => controller.abort();
+  options.signal?.addEventListener('abort', cancel, { once: true });
+  if (options.signal?.aborted) cancel();
+  const timer = setTimeout(cancel, Math.max(0, Math.min(20_000, options.timeoutMs ?? 20_000)));
+  try {
+    return await abortable(async () => {
+      const response = await fetcher('/api/me', {
+        credentials: 'include', cache: 'no-store', signal: controller.signal,
+        headers: { accept: 'application/json' },
+      });
+      if (response.status === 401) return { status: 'unauthenticated' };
+      if (response.status === 429) {
+        return { status: 'unavailable', reason: 'rate-limited', retryAt: retryAfter(response.headers.get('retry-after')) };
+      }
+      if (response.status >= 400 && response.status < 500 && response.status !== 408) {
+        return { status: 'unavailable', reason: 'blocked' };
+      }
+      if (response.status !== 200) return { status: 'unavailable', reason: 'retryable' };
+      const body: unknown = await response.json();
+      if (!isIdentityEnvelope(body)) return { status: 'unavailable', reason: 'retryable' };
+      return { status: 'authenticated', account: body.data };
+    }, controller.signal);
+  } catch (error) {
+    if (options.signal?.aborted) throw error;
+    return { status: 'unavailable', reason: 'retryable' };
+  } finally {
+    clearTimeout(timer);
+    options.signal?.removeEventListener('abort', cancel);
   }
+}
+
+function retryAfter(header: string | null): number {
+  const now = Date.now();
+  if (header !== null && /^\d+$/.test(header.trim())) {
+    const delay = Number(header) * 1_000;
+    if (Number.isFinite(delay) && Number.isSafeInteger(now + delay)) return now + delay;
+  }
+  if (header !== null && /^[A-Za-z]{3}, /.test(header)) {
+    const date = Date.parse(header);
+    if (Number.isFinite(date)) return Math.max(now, date);
+  }
+  return now + 60_000;
 }
 
 export async function signIn(input: SignInInput, fetcher: Fetcher = fetch): Promise<void> {

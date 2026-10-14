@@ -1,5 +1,79 @@
 # Checkpoint — Remaining phases through production
 
+## Automatic server recovery implementation — locally verified, 2026-10-14
+
+- The user requested implementation of [PR #30](https://github.com/24-HUB/poker-game/pull/30).
+  Continued its existing `codex/server-recovery-spec` branch; implementation commit
+  `e2dd67a5`. The PR targets `dev`; the user merges manually.
+- One shared coordinator checks only session GET `/api/me`, with a 90-second
+  wall-clock window, five-second post-completion delay, 20-second request/body
+  bound, 18-request cap, lifecycle cancellation and stale-read rejection. Valid
+  account/401 stops checking. Rate limits honor Retry-After; blocked and exhausted
+  states require explicit Retry. Auth/game/economy mutations are not replayed by
+  recovery, and no healthy-state polling or keep-alive was added.
+- Header and private-access boundaries share honest status and Retry controls.
+  Keyboard focus moves to Sign in/the verified account without opening a dialog.
+  Inspected 360px/1440px recovery screenshots and reduced motion; no overflow.
+- Review reproduced and fixed room/game/pending-command loss during recovery and
+  same-account pending-pull resubmission. The current destination retains its
+  component state, while each new pathname must pass navigation gating before
+  mounting. Private views/actions require the currently verified identity.
+  Independent final review found no remaining Important findings.
+- Passed: pinned frozen install; aggregate `pnpm check` (server **236/236**,
+  contracts **16/16**, engine **21/21**, script suites, typechecks and builds);
+  final frontend **174/174**, frontend typecheck and production build; fresh
+  CI-mode full Chromium **33/33**. Real Socket.IO and isolated replica-set checks
+  ran. No lint script exists. Earlier browser fixture failures are superseded:
+  current status copy, visible account selection and authoritative host selection
+  now pass. Delayed one-minute recovery, offline/hidden pause, terminal restart,
+  keyboard focus, restart, privacy and existing economy flows are covered.
+- Verification logs/screenshots are local ignored artifacts under
+  `.artifacts/server-recovery-implementation-2026-10-14/`; no credentials are
+  included in committed evidence. There are no pending application changes or
+  known local check failures. CI/Worker packaging must be inspected after push.
+- Successful fetch before publication confirms this branch contains latest
+  `origin/dev` `af8aaa02`. No automatic merge/rebase, deployment or production
+  database operation. A natural Render sleep/wake drill remains a separate
+  authorized playtest; controlled clocks do not establish provider timing.
+- Next: commit/push this publication checkpoint to the same PR, then inspect its
+  latest CI with `dev` as base. Resume with `git fetch origin --prune` and a usage
+  reading; do not repeat implemented steps. The user reviews and merges manually.
+- Final usage reading on 2026-10-14 at approximately 22:36 Bangkok: five-hour
+  **53%** and weekly **46%** remaining; resets 2026-10-15 **02:40:01** and
+  2026-10-20 **12:12:42** Bangkok, respectively. Earlier temporary usage-tool
+  unavailability resolved. No usage threshold blocker or billing action.
+
+---
+
+## Automatic server recovery specification — 2026-10-14
+
+- Task branch: `codex/server-recovery-spec`, from fetched `origin/dev` `af8aaa02`.
+  [Specification](docs/superpowers/specs/2026-10-14-server-recovery-design.md)
+  defines one visible-page session recovery loop, a 90-second window, five-second
+  post-response spacing, request/cancellation bounds and safe error handling.
+- Live diagnosis reproduced 504 `Backend timeout` after about 15.7 seconds;
+  readiness later returned 200 and signed-out `/api/me` returned 401 in under
+  one second. Render cold start is strongly supported; instance logs were not read.
+- Earlier diagnosis passed 29/29 existing auth/session/UI/proxy tests. These are
+  baseline results, not automatic-recovery verification. This task changes only
+  documentation; implementation, new tests and deployment are pending.
+- Published specification commit: `0ba10c4c`, in
+  [draft PR #30](https://github.com/24-HUB/poker-game/pull/30), explicitly targeting
+  `dev`. Only the spec and existing checkpoint documents changed.
+- Passed: documentation accuracy/self-review, local spec link check,
+  `git diff --check` and full `git diff origin/dev --check`. Application checks
+  were not rerun for this documentation-only task. Final fetch confirms this
+  branch contains latest `origin/dev` `af8aaa02`; working tree was clean before
+  this publication-record update. No merge/rebase or deployment.
+- Next: open the specification and review its behavior/acceptance before requesting
+  implementation. Continue this task's branch/PR if still open, or start from
+  freshly fetched `origin/dev` if the PR has already merged. The user merges manually.
+- Usage observed 2026-10-14 21:48 Bangkok: five-hour 96% and weekly 52% remaining;
+  resets 2026-10-15 02:40:00 and 2026-10-20 12:12:41 Bangkok, respectively.
+  No usage threshold blocker or billing action.
+
+---
+
 ## PR #29 CI follow-up — 2026-10-14
 
 - Same task and branch `codex/hand-result-ux-spec`, PR #29 targeting `dev`.

@@ -2,9 +2,9 @@
 import '@testing-library/jest-dom/vitest';
 import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { createElement } from 'react';
+import { createElement, useEffect } from 'react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { SessionProvider } from '../auth/SessionBoundary';
+import { SessionProvider, useSession } from '../auth/SessionBoundary';
 import { roomStore } from './roomStore';
 import { ActiveRoomBoundary } from './ActiveRoomBoundary';
 import type { SessionState } from '../../lib/auth-client';
@@ -17,20 +17,44 @@ afterEach(() => { cleanup(); roomStore.getState().setAccount(null); vi.clearAllM
 function mount(reader: () => Promise<Result<CurrentRoom | null>>, initialSession: SessionState = { status: 'authenticated', account: { accountId: 'a', displayName: 'Alice' } }, sessionReader?: () => Promise<SessionState>) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   client.setQueryData(['session'], initialSession);
+  let refreshSession!: () => Promise<void>;
+  function SessionProbe() { refreshSession = useSession().refresh; return null; }
   render(createElement(QueryClientProvider, { client }, createElement(SessionProvider, {
     sessionReader: sessionReader ?? (async () => client.getQueryData(['session']) as SessionState),
-    children: createElement(ActiveRoomBoundary, { reader, children: createElement('p', null, 'Destination content') }),
+    children: createElement('div', null, createElement(SessionProbe), createElement(ActiveRoomBoundary, { reader, children: createElement('p', null, 'Destination content') })),
   })));
-  return client;
+  return Object.assign(client, { refreshSession: () => refreshSession() });
 }
 
 describe('ActiveRoomBoundary', () => {
+  it('never mounts a newly blocked route after another destination was allowed', async () => {
+    const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
+    const identity: SessionState = { status: 'authenticated', account: { accountId: 'a', displayName: 'Alice' } };
+    const entered = vi.fn();
+    function BlockedDestination() { useEffect(() => { entered(); }, []); return <button>Private pull action</button>; }
+    const reader = async () => ({ data: { roomId: 'own-room', title: 'Friday', phase: 'waiting' as const }, error: null });
+    const tree = (blocked: boolean) => <QueryClientProvider client={client}><SessionProvider sessionReader={async () => identity}>
+      <ActiveRoomBoundary reader={reader}>{blocked ? <BlockedDestination /> : <p>Allowed destination</p>}</ActiveRoomBoundary>
+    </SessionProvider></QueryClientProvider>;
+    const view = render(tree(false));
+    await screen.findByText('Allowed destination');
+    act(() => {
+      roomStore.getState().applySnapshot({ roomId: 'own-room', title: 'Friday', revision: 1, hostAccountId: 'a', phase: 'playing', sessionId: 'session-a', members: [], control: { isController: true, epoch: 1 } });
+      navigation.pathname = '/pulls';
+      view.rerender(tree(true));
+    });
+    expect(entered).not.toHaveBeenCalled();
+    expect(screen.queryByText('Private pull action')).not.toBeInTheDocument();
+    await waitFor(() => expect(navigation.replace).toHaveBeenCalledWith('/rooms/own-room'));
+    client.clear();
+  });
   it('does not expose an interactive destination while initial authentication is still loading', async () => {
     const reader = vi.fn(async () => ({ data: null, error: null } as Result<CurrentRoom | null>));
     let finishSession!: (session: SessionState) => void;
     mount(reader, { status: 'loading' }, () => new Promise((resolve) => { finishSession = resolve; }));
     expect(screen.queryByText('Destination content')).not.toBeInTheDocument();
     expect(reader).not.toHaveBeenCalled();
+    await waitFor(() => expect(finishSession).toBeTypeOf('function'));
     await act(async () => { finishSession({ status: 'authenticated', account: { accountId: 'a', displayName: 'Alice' } }); });
     expect(await screen.findByText('Destination content')).toBeVisible();
     expect(reader).toHaveBeenCalled();
@@ -55,7 +79,7 @@ describe('ActiveRoomBoundary', () => {
       await client.invalidateQueries({ queryKey: ['current-room', 'a'] });
     });
     await waitFor(() => expect(navigation.replace).toHaveBeenCalledWith('/rooms/own-room'));
-    expect(screen.queryByText('Destination content')).not.toBeInTheDocument();
+    expect(screen.getByText('Destination content')).not.toBeVisible();
   });
   it('ignores a stale request after the authenticated account changes', async () => {
     let resolve!: (result: Result<CurrentRoom | null>) => void;
@@ -63,6 +87,7 @@ describe('ActiveRoomBoundary', () => {
     await waitFor(() => expect(resolve).toBeTypeOf('function'));
     await act(async () => {
       client.setQueryData(['session'], { status: 'unauthenticated' });
+      await client.refreshSession();
       resolve({ data: { roomId: 'alice-room', title: 'Alice', phase: 'playing' }, error: null });
     });
     expect(navigation.replace).not.toHaveBeenCalled();

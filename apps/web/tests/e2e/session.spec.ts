@@ -32,7 +32,7 @@ test('an unavailable backend is not presented as a signed-out session', async ({
   await page.route('**/api/me', (route) => route.fulfill({ status: 503, body: '{}' }));
   await page.goto('/');
 
-  await expect(page.getByText('Server starting')).toBeVisible();
+  await expect(page.getByText('Connecting to server…')).toBeVisible();
   await expect(page.getByRole('button', { name: 'Retry' })).toBeVisible();
   await expect(page.getByRole('button', { name: 'Sign in' })).toBeHidden();
 });

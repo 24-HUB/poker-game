@@ -8,16 +8,19 @@ import { cosmeticItemSchema, type PullReceipt } from '@poker/contracts';
 import manifest from '../../../public/art/cosmetics/manifest.json';
 import { Banner } from './Banner';
 import { readPendingPull } from './pendingPull';
+import { ActiveRoomBoundary } from '../rooms/ActiveRoomBoundary';
 
-const mocks = vi.hoisted(() => ({ owner: 'alice', get: vi.fn(), mutate: vi.fn(), refresh: vi.fn() }));
+const mocks = vi.hoisted(() => ({ owner: 'alice', status: 'authenticated' as 'authenticated' | 'unavailable' | 'loading', get: vi.fn(), mutate: vi.fn(), refresh: vi.fn() }));
 vi.mock('../../lib/api', () => ({ apiGet: mocks.get }));
 vi.mock('../../lib/economy-api', () => ({ economyMutation: mocks.mutate }));
 vi.mock('../auth/SessionBoundary', () => ({
-  useSession: () => ({ session: { status: 'authenticated', account: { accountId: mocks.owner } }, refresh: mocks.refresh }),
+  useSession: () => ({ session: { status: mocks.status, account: { accountId: mocks.owner } }, refresh: mocks.refresh }),
   SessionBoundary: ({ children }: { children: ReactNode }) => children,
 }));
 vi.mock('../wallet/useWallet', () => ({ useWallet: () => ({ data: { balance: 5 }, refetch: vi.fn() }) }));
 vi.mock('../collection/useAccountSync', () => ({ useAccountSync: vi.fn() }));
+vi.mock('next/navigation', () => ({ usePathname: () => '/pulls', useRouter: () => ({ push: vi.fn(), replace: vi.fn() }) }));
+vi.mock('../auth/AccountAccess', () => ({ AccountAccess: () => <p>Checking account access</p> }));
 const banner = { id: 'celestial', version: 'celestial-v1', name: 'Celestial Companions', items: manifest.items,
   prices: { single: 5, ten: 50 }, weights: { R: 70, SR: 25, SSR: 5 }, guarantees: { sr: 10, ssr: 90 } };
 const failure = (code: string) => ({ data: null, error: { code, message: code } });
@@ -27,11 +30,44 @@ function mount() {
   return render(<QueryClientProvider client={client}><Banner /></QueryClientProvider>);
 }
 beforeEach(() => {
-  mocks.owner = 'alice'; sessionStorage.clear();
+  mocks.owner = 'alice'; mocks.status = 'authenticated'; sessionStorage.clear();
   mocks.get.mockImplementation(async (path: string) => path === '/api/banner' ? { data: banner, error: null } : failure('NOT_FOUND'));
   vi.stubGlobal('matchMedia', () => ({ matches: true }));
 });
 afterEach(() => { cleanup(); clients.splice(0).forEach((client) => client.clear()); vi.resetAllMocks(); vi.unstubAllGlobals(); });
+
+it('does not replay an uncertain cosmetic purchase when session recovery restores the same account', async () => {
+  mocks.mutate.mockResolvedValue(failure('COMMAND_UNCERTAIN'));
+  const view = mount(); await screen.findByRole('button', { name: 'Open 1 — 5 tickets' });
+  fireEvent.click(screen.getByRole('button', { name: 'Open 1 — 5 tickets' }));
+  await screen.findByRole('heading', { name: 'Recover your invitation' });
+  const pending = readPendingPull('alice');
+  mocks.status = 'unavailable';
+  await act(async () => view.rerender(<QueryClientProvider client={clients[0]!}><Banner /></QueryClientProvider>));
+  mocks.status = 'authenticated';
+  await act(async () => view.rerender(<QueryClientProvider client={clients[0]!}><Banner /></QueryClientProvider>));
+  expect(mocks.mutate).toHaveBeenCalledTimes(1);
+  expect(readPendingPull('alice')).toEqual(pending);
+  fireEvent.click(screen.getByRole('button', { name: 'Recover existing invitation' }));
+  await waitFor(() => expect(mocks.mutate).toHaveBeenCalledTimes(2));
+});
+
+it('preserves pending purchases through the production navigation boundary during refresh', async () => {
+  mocks.mutate.mockResolvedValue(failure('COMMAND_UNCERTAIN'));
+  const client = new QueryClient({ defaultOptions: { queries: { retry: false } } }); clients.push(client);
+  const currentRoomReader = async () => ({ data: null, error: null });
+  const tree = () => <QueryClientProvider client={client}><ActiveRoomBoundary reader={currentRoomReader}><Banner /></ActiveRoomBoundary></QueryClientProvider>;
+  const view = render(tree());
+  await screen.findByRole('button', { name: 'Open 1 — 5 tickets' });
+  fireEvent.click(screen.getByRole('button', { name: 'Open 1 — 5 tickets' }));
+  await screen.findByRole('heading', { name: 'Recover your invitation' });
+  mocks.status = 'loading'; await act(async () => view.rerender(tree()));
+  expect(screen.queryByRole('button', { name: 'Recover existing invitation' })).not.toBeInTheDocument();
+  mocks.status = 'unavailable'; await act(async () => view.rerender(tree()));
+  mocks.status = 'authenticated'; await act(async () => view.rerender(tree()));
+  await screen.findByRole('button', { name: 'Recover existing invitation' });
+  expect(mocks.mutate).toHaveBeenCalledTimes(1);
+});
 
 it('keeps the original identity after an uncertain response and retries only that purchase', async () => {
   mocks.mutate.mockResolvedValue(failure('COMMAND_UNCERTAIN'));
