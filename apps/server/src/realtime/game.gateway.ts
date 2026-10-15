@@ -108,6 +108,16 @@ export class GameGateway implements OnGatewayInit, OnGatewayConnection, OnGatewa
     acknowledge?.({ data: { accountId: socket.data.verifiedIdentity.accountId }, error: null });
   }
 
+  @SubscribeMessage('room:addBot')
+  public addBot(@ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody(new RoomCommandPipe('room:addBot')) command: RoomCommand, @Ack() ack?: RoomAck,
+  ) { return this.handle(socket, command, ack); }
+
+  @SubscribeMessage('room:removeBot')
+  public removeBot(@ConnectedSocket() socket: AuthenticatedSocket,
+    @MessageBody(new RoomCommandPipe('room:removeBot')) command: RoomCommand, @Ack() ack?: RoomAck,
+  ) { return this.handle(socket, command, ack); }
+
   @SubscribeMessage('room:create')
   public create(
     @ConnectedSocket() socket: AuthenticatedSocket,

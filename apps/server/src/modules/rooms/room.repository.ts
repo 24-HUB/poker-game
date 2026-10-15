@@ -252,7 +252,7 @@ export class RoomRepository {
         .find({ roomId: input.roomId, leftAt: null, seat: { $ne: null } }, { session })
         .project<{ seat: number }>({ seat: 1 })
         .toArray();
-      const occupiedSeats = new Set(occupied.map(({ seat }) => seat));
+      const occupiedSeats = new Set([...occupied.map(({ seat }) => seat), ...(room.bots ?? []).map((bot) => bot.seat)]);
       const seat = [0, 1, 2, 3, 4, 5].find((candidate) => !occupiedSeats.has(candidate));
       if (seat === undefined) return this.record(input, {
         ok: false,
@@ -396,7 +396,7 @@ export class RoomRepository {
         seat: input.seat,
         leftAt: null,
       }, { session });
-      if (occupied) return this.record(input, {
+      if (occupied || room.bots?.some((bot) => bot.seat === input.seat)) return this.record(input, {
         ok: false,
         code: 'SEAT_TAKEN',
         message: 'That seat is already occupied.',
@@ -416,6 +416,44 @@ export class RoomRepository {
         { $inc: { revision: 1 } },
         { session },
       );
+      return this.record(input, { ok: true, roomId: input.roomId }, session);
+    });
+  }
+
+  public async mutateBot(input: CommandInput & { roomId: string; connectionId: string; controlEpoch: number;
+    authority: AuthorityToken; add?: { botId: string; seat: number }; removeId?: string }): Promise<StoredCommandOutcome> {
+    return this.transactions.run(async (session) => {
+      const existing = await this.findCommandInSession(input.accountId, input.commandId, session);
+      if (existing) return existing.payloadHash === input.payloadHash ? existing.outcome
+        : { ok: false, code: 'COMMAND_CONFLICT', message: 'Command ID reused.' };
+      await this.authority.fence(session, input.authority);
+      const reject = (code: string, message: string) => this.record(input, { ok: false, code, message }, session);
+      const room = await this.db.collection<RoomDocument>('rooms').findOne({ _id: input.roomId, status: 'OPEN',
+        authorityBootId: input.authority.bootId, authorityEpoch: input.authority.epoch }, { session });
+      if (!room) return reject('ROOM_CLOSED', 'The room is no longer available.');
+      if (room.phase === 'playing') return reject('SESSION_IN_PROGRESS', 'Bot seats are locked during a session.');
+      if (room.hostAccountId !== input.accountId) return reject('FORBIDDEN', 'Only the host can change bot seats.');
+      const host = await this.db.collection<MembershipDocument>('roomMemberships').findOne({ roomId: input.roomId,
+        accountId: input.accountId, leftAt: null }, { session });
+      if (!host || host.controllerConnectionId !== input.connectionId || host.controllerEpoch !== input.controlEpoch) {
+        return reject('NOT_CONTROLLER', 'This tab does not control the host.');
+      }
+      let bots = [...(room.bots ?? [])];
+      if (input.add) {
+        const occupied = await this.db.collection<MembershipDocument>('roomMemberships').findOne({
+          roomId: input.roomId, seat: input.add.seat, leftAt: null }, { session });
+        if (occupied || bots.some((bot) => bot.seat === input.add!.seat)) return reject('SEAT_TAKEN', 'That seat is already occupied.');
+        if (bots.length >= 5) return reject('ROOM_FULL', 'The room already has six seats.');
+        const displayName = [1, 2, 3, 4, 5].map((n) => `Bot ${n}`).find((name) => !bots.some((bot) => bot.displayName === name))!;
+        bots.push({ ...input.add, displayName });
+      } else {
+        if (!bots.some((bot) => bot.botId === input.removeId)) return reject('BOT_NOT_FOUND', 'That bot is no longer seated.');
+        bots = bots.filter((bot) => bot.botId !== input.removeId);
+      }
+      const updated = await this.db.collection<RoomDocument>('rooms').updateOne({ _id: input.roomId,
+        status: 'OPEN', revision: room.revision, phase: { $ne: 'playing' } },
+      { $set: { bots }, $inc: { revision: 1 } }, { session });
+      if (updated.matchedCount !== 1) throw new Error('Room changed while updating bots');
       return this.record(input, { ok: true, roomId: input.roomId }, session);
     });
   }

@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 
 import { Inject, Injectable, Optional, ServiceUnavailableException, type OnApplicationShutdown } from '@nestjs/common';
 import type { CurrentRoom, Result, RoomCommand, RoomReply } from '@poker/contracts' with { 'resolution-mode': 'import' };
@@ -301,7 +301,13 @@ export class RoomService implements OnApplicationShutdown {
   ): Promise<Result<RoomReply>> {
     let outcome: StoredCommandOutcome;
     let invitation: { token: string; expiresAt: string } | undefined;
-    if (command.type === 'room:claimControl') {
+    if (command.type === 'room:addBot' || command.type === 'room:removeBot') {
+      outcome = await this.repository.mutateBot({ accountId: context.identity.accountId,
+        commandId: command.commandId, payloadHash, type: command.type, issuedAt: new Date(command.issuedAt),
+        roomId: command.roomId, connectionId: context.connectionId, controlEpoch: command.controlEpoch, authority,
+        ...(command.type === 'room:addBot' ? { add: { botId: `bot:${randomUUID()}`, seat: command.seat } } : { removeId: command.botId }),
+      });
+    } else if (command.type === 'room:claimControl') {
       outcome = await this.repository.claimControl({
         accountId: context.identity.accountId,
         commandId: command.commandId,
