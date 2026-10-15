@@ -1,5 +1,31 @@
 # Checkpoint — Remaining phases through production
 
+## Bot-player specification — 2026-10-15
+
+- New task branch: `codex/bot-player-plan`, created from freshly fetched
+  `origin/dev` `17a43ba5`. The user approved host-added bots for solo/friends,
+  practice sessions without tickets, a pre-session-only roster, one casual
+  difficulty, 1–3 second turns, ending when all humans bust, and two-minute
+  disconnect pause/reconnect. Bots never become host or see hidden opponent cards.
+- [Written specification](docs/superpowers/specs/2026-10-15-bot-player-design.md)
+  records those choices and proposed contracts, identity compatibility, immutable
+  practice mode, settlement/economy guards, deterministic strategy, fenced timers,
+  pause/cleanup rules, UI changes, migration preparation and acceptance coverage.
+  No application code/configuration changed; implementation has not begun.
+- Last completed step: in-chat design approval and specification self-review.
+  Baseline commit: `17a43ba5`; specification/checkpoint publication is pending.
+  Written-spec user review is required before writing the implementation plan.
+- Passed: source-path/placeholder checks, repository accuracy review and the staged
+  specification whitespace/full-task checks. Final three-file diff checks follow
+  staging. Application tests were not run for this documentation-only change.
+- Next: commit/push the specification and these existing checkpoint files; create
+  a draft PR targeting `dev`; ask the user to review the written specification.
+  After approval, use writing-plans to create the implementation plan on this
+  same branch/PR. The user merges manually. No deployment or hosted migration.
+- Usage observed 2026-10-15 around 19:15 Bangkok: five-hour **96% remaining**
+  (resets 2026-10-16 **00:03:39** Bangkok), weekly **87% remaining** (resets
+  2026-10-22 **13:13:35** Bangkok). No usage threshold blocker or billing action.
+
 ## Automatic server recovery implementation — locally verified, 2026-10-14
 
 - The user requested implementation of [PR #30](https://github.com/24-HUB/poker-game/pull/30).

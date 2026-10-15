@@ -520,6 +520,36 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Bot-player specification — 2026-10-15
+
+New task branch `codex/bot-player-plan` starts from freshly fetched `origin/dev`
+`17a43ba5`. The user approved the combined bot design after seven focused choices:
+host-added bots for solo/friends; no tickets for an entire bot session; add/remove
+only before sessions; one casual difficulty; 1–3 second turns; end when all humans
+bust; pause without connected humans and allow two minutes to reconnect.
+
+The [written specification](docs/superpowers/specs/2026-10-15-bot-player-design.md)
+also defines proposed engineering defaults: separate bot roster and human account
+identity, server-owned practice mode, no bot/practice economy writes, restricted
+strategy observations, deterministic legal actions, cancellable clock-driven
+turns, presence pause/resume, legacy-data compatibility and a new prepared
+migration. It preserves six seats, existing stack/blind values, human host
+authority, free-tier admission and normal human-only rewards.
+
+Status: product design approved; written spec awaiting user review; implementation
+plan and application code not begun. Baseline commit is `17a43ba5`; the spec and
+both checkpoint updates await publication in a draft PR targeting `dev`.
+Source-path/placeholder checks, accuracy/self-review and staged spec whitespace
+checks passed; final three-file checks follow staging. No application tests were
+run for documentation only, and no provider or database operation occurred.
+
+Next: publish this documentation, request written-spec review, then write the
+implementation plan on the same task branch/PR after approval. The user merges
+manually. Resume with usage, Git status/branch, fetch and this checkpoint.
+Usage observed around 2026-10-15 19:15 Bangkok: five-hour **96% remaining**, reset
+2026-10-16 **00:03:39**; weekly **87% remaining**, reset 2026-10-22 **13:13:35**
+Bangkok. Below 10% in either window triggers the repository's save-point decision.
+
 ### Automatic server recovery implementation — 2026-10-14
 
 The user requested implementation of [PR #30](https://github.com/24-HUB/poker-game/pull/30).
