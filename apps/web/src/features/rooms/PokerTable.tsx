@@ -26,10 +26,11 @@ export type PokerTableProps = {
   onClaimControl: () => void;
   onRetryPending: () => void;
   onOpenHistory?: () => void;
+  onManageSeats?: () => void;
 };
 
 export function PokerTable({ room, game, accountId, status, pending, message,
-  onAction, onEnd, onStart, onLeave, onClaimControl, onRetryPending, onOpenHistory }: PokerTableProps) {
+  onAction, onEnd, onStart, onLeave, onClaimControl, onRetryPending, onOpenHistory, onManageSeats }: PokerTableProps) {
   const [fourColour, setFourColour] = useState(false);
   const tableRef = useRef<HTMLElement>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -40,7 +41,7 @@ export function PokerTable({ room, game, accountId, status, pending, message,
   const seconds = useTurnClock(game);
   const navigation = useActiveRoom();
   const host = room.hostAccountId === accountId;
-  const canStart = host && room.phase === 'waiting' && room.members.filter((member) => member.seat !== null).length >= 2;
+  const canStart = host && room.phase === 'waiting' && room.members.filter((member) => member.seat !== null).length + (room.bots?.length ?? 0) >= 2;
 
   const committed = game?.handResult;
   const result = committed && game && game.sessionPhase !== 'aborted' &&
@@ -66,6 +67,9 @@ export function PokerTable({ room, game, accountId, status, pending, message,
         </details>
       </div>
     </header>
+    {game?.mode === 'practice' ? <p className="practice-notice"><strong>Practice · No tickets</strong><span>Remove all bots before starting to earn tickets.</span></p> : null}
+    {game?.presencePaused ? <p role="status">Practice paused · Waiting for a human to reconnect.</p> : null}
+    {game?.sessionPhase === 'ended' && onManageSeats ? <button type="button" className="secondary-button" onClick={onManageSeats}>Manage seats</button> : null}
     {!game ? <p role="status">Synchronizing the hand…</p> : <>
       <div className="poker-table__felt">
         <div className="poker-table__center">
@@ -93,8 +97,9 @@ export function PokerTable({ room, game, accountId, status, pending, message,
             <span className="poker-seat__markers">
               {result?.winners.includes(participant.accountId) ? <WinnerBadge /> : null}
               {participant.accountId === accountId ? <span className="poker-seat__you">(you)</span> : null}
+              {participant.kind === 'bot' ? <span>Bot</span> : null}
               {participant.folded ? <span>Folded</span> : !completed && participant.allIn ? <span>All-in</span> : !participant.connected ? <span>Disconnected</span> : null}
-              {!completed && participant.accountId === game.actorAccountId ? <span className="poker-seat__acting-label">Acting{seconds === null ? '' : ` · ${seconds}s`}</span> : null}
+              {!completed && participant.accountId === game.actorAccountId ? <span className="poker-seat__acting-label">{participant.kind === 'bot' ? game.presencePaused ? 'Paused' : 'Thinking…' : `Acting${seconds === null ? '' : ` · ${seconds}s`}`}</span> : null}
               {participant.seat === game.buttonSeat ? <span className="poker-dealer" aria-label="Dealer">D</span> : null}
               {participant.seat === game.smallBlindSeat ? <span className="poker-blind" aria-label="Small blind">SB</span> : null}
               {participant.seat === game.bigBlindSeat ? <span className="poker-blind" aria-label="Big blind">BB</span> : null}
@@ -116,7 +121,7 @@ export function PokerTable({ room, game, accountId, status, pending, message,
       {game.sessionResult ? <div className="poker-table__result"><h2>Session standings</h2>
         <p>Session {game.sessionResult.leaderAccountIds.length > 1 ? 'leaders' : 'leader'}: {game.sessionResult.leaderAccountIds.map((id) => names[id] ?? id).join(', ')}</p>
         <ol>{[...game.sessionResult.standings].sort((a, b) => b.stack - a.stack).map((entry) => <li key={entry.accountId}>
-          {game.participants.find((player) => player.accountId === entry.accountId)?.displayName ?? entry.accountId}: {entry.stack} chips
+          {game.participants.find((player) => player.accountId === entry.accountId)?.displayName ?? entry.accountId}{entry.kind === 'bot' ? ' (Bot)' : ''}: {entry.stack} chips
         </li>)}</ol></div> : null}
     </>}
   </section>;

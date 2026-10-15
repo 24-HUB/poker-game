@@ -1,7 +1,8 @@
 import type { RewardReceipt } from '@poker/contracts';
 import { Ticket } from 'lucide-react';
 
-export function HandReward({ receipt, announce = true }: { receipt?: RewardReceipt; announce?: boolean }) {
+export function HandReward({ receipt, announce = true, mode }: { receipt?: RewardReceipt; announce?: boolean; mode?: 'standard' | 'practice' }) {
+  if (mode === 'practice') return <p>Practice hand · No tickets earned.</p>;
   if (!receipt) return <p>Ticket reward not confirmed for this hand.</p>;
   const earned = receipt.grantedParticipation + receipt.grantedBonus;
   if (receipt.reason === 'NOT_DEALT_IN') return <p>No tickets: you were not dealt into this hand.</p>;

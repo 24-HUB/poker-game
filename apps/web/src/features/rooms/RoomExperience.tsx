@@ -35,6 +35,7 @@ export function RoomExperience({ roomId }: { roomId: string }) {
     retrySynchronization,
   } = useSharedRoomConnection();
   const [message, setMessage] = useState<string | null>(null);
+  const [manageSeats, setManageSeats] = useState(false);
   const [historyOpenRequest, setHistoryOpenRequest] = useState<{ scope: string; revision: number } | null>(null);
   const leaveDestination = useRef('/');
   const accountId = session.status === 'authenticated' ? session.account.accountId : null;
@@ -87,6 +88,7 @@ export function RoomExperience({ roomId }: { roomId: string }) {
   }
 
   function startSession() {
+    setManageSeats(false);
     const bootId = requireBootId();
     if (bootId) void runGame(createGameMutationCommand('session:start', bootId, {
       roomId, controlEpoch: activeRoom.control.epoch,
@@ -142,10 +144,10 @@ export function RoomExperience({ roomId }: { roomId: string }) {
     if (bootId) void run(createMutationCommand('room:claimControl', bootId, { roomId }));
   }
 
-  if (currentRoom.phase === 'playing' || game?.sessionPhase === 'ended') {
+  if (currentRoom.phase === 'playing' || game?.sessionPhase === 'ended' && !manageSeats) {
     return <>{recovery}{pendingCommand ? exitControls : null}<PokerTable room={currentRoom} game={game} accountId={accountId} status={status}
       pending={pendingGameCommand !== null} message={message} onAction={act} onEnd={endSession}
-      onStart={startSession} onLeave={() => leave()} onClaimControl={claimControl}
+      onStart={startSession} onLeave={() => leave()} onClaimControl={claimControl} onManageSeats={() => setManageSeats(true)}
       onOpenHistory={() => { if (game) setHistoryOpenRequest((value) => ({ scope: `${accountId}:${roomId}:${game.sessionId}`, revision: (value?.revision ?? 0) + 1 })); }}
       onRetryPending={() => void retryPendingGame().then((result) => {
         if (result.error) setMessage(result.error.message);
@@ -166,6 +168,14 @@ export function RoomExperience({ roomId }: { roomId: string }) {
       invitationCode={invitationCode}
       message={message}
       canRetryPending={canRetryPending}
+      onAddBot={(seat) => {
+        const bootId = requireBootId();
+        if (bootId) void run(createMutationCommand('room:addBot', bootId, { roomId, seat, controlEpoch: currentRoom.control.epoch }));
+      }}
+      onRemoveBot={(botId) => {
+        const bootId = requireBootId();
+        if (bootId) void run(createMutationCommand('room:removeBot', bootId, { roomId, botId, controlEpoch: currentRoom.control.epoch }));
+      }}
       onTakeSeat={(seat) => {
         const bootId = requireBootId();
         if (bootId) void run(createMutationCommand('room:takeSeat', bootId, {

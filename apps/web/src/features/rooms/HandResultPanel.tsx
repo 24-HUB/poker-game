@@ -7,7 +7,7 @@ const rankNames: Record<number, string> = { 2: 'two', 3: 'three', 4: 'four', 5: 
 export function WinnerBadge() { return <span className="poker-winner"><Crown aria-hidden="true" />Winner</span>; }
 
 export function resultNames(result: CommittedHandResult, names: Record<string, string> = {}) {
-  return { ...names, ...Object.fromEntries(result.presentation?.participants.map((player) => [player.accountId, player.displayName]) ?? []) };
+  return { ...names, ...Object.fromEntries(result.presentation?.participants.map((player) => [player.accountId, `${player.displayName}${player.kind === 'bot' ? ' (Bot)' : ''}`]) ?? []) };
 }
 export function resultSummary(result: CommittedHandResult, names: Record<string, string> = {}) {
   const players = resultNames(result, names);
