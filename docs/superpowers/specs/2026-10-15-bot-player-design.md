@@ -1,10 +1,10 @@
 # Bot players for solo and friends play
 
 Date: 2026-10-15 (Asia/Bangkok)
-Status: In-chat product design approved. Written specification awaiting user review;
-implementation plan and application implementation have not begun.
+Status: Written specification approved by the user's 2026-10-15 request to implement
+PR #31. Implementation plan prepared; awaiting plan review before application changes.
 Baseline: freshly fetched `origin/dev` `17a43ba5`.
-Task branch: `codex/bot-player-plan`; documentation only, targeting `dev`.
+Task branch: `codex/bot-player-plan`; specification/plan documentation, targeting `dev`.
 
 ## 1. Outcome and approved decisions
 
@@ -315,5 +315,6 @@ and apply migrations only to isolated local test data for verification.
 Documentation verification for this task is repository accuracy, self-review,
 link review and `git diff --check`; application tests are unnecessary until
 executable code/configuration changes. Publish planning work in a PR targeting
-`dev`, with the user merging manually. The implementation plan is the next
-artifact only after written-spec review; application execution is a later task.
+`dev`, with the user merging manually. The
+[implementation plan](../plans/2026-10-15-bot-player-implementation.md) now covers
+the approved specification. Application execution follows plan review.

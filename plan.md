@@ -520,6 +520,31 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Bot-player implementation plan — 2026-10-15
+
+The user requested implementation of [PR #31](https://github.com/24-HUB/poker-game/pull/31),
+approving its written specification. Continue its existing clean branch
+`codex/bot-player-plan`; the authenticated PR read confirmed open/draft with base
+`dev` and no inline review comments. Prior published head: `bf78510d`.
+The [implementation plan](docs/superpowers/plans/2026-10-15-bot-player-implementation.md)
+now maps contracts/legacy compatibility, roster/admission, durable practice reward
+guards and migration 007, restricted strategy, fenced timers/presence pause,
+UI/browser acceptance and final verification to seven sequential tasks.
+
+No application implementation has begun; all execution checkboxes remain open.
+The writing-plans workflow requires user plan review before executing Task 1
+inline on this same branch/PR. Resume with status/branch, usage and fetch, then
+the approved plan; do not repeat completed design work. Only plan/spec/checkpoint
+documentation changed. Documentation checks cover source/link accuracy,
+specification coverage/self-review, placeholders, whitespace and complete diff;
+application tests have not run for this step. Successful fetch confirms the branch
+contains latest `origin/dev` `17a43ba5`. Publish to existing draft PR #31, targeting
+`dev`; the user merges manually. No deployment or hosted database operation.
+
+Usage observed 2026-10-15 19:34 Bangkok: five-hour **85% remaining**, reset
+2026-10-16 **00:03:39**; weekly **85% remaining**, reset 2026-10-22 **13:13:35**
+Bangkok. No usage threshold blocker or billing action.
+
 ### Bot-player specification — 2026-10-15
 
 New task branch `codex/bot-player-plan` starts from freshly fetched `origin/dev`

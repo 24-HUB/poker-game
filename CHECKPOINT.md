@@ -1,5 +1,31 @@
 # Checkpoint — Remaining phases through production
 
+## Bot-player implementation plan — 2026-10-15
+
+- The user requested implementation of [PR #31](https://github.com/24-HUB/poker-game/pull/31),
+  approving its written specification. Continued clean existing task branch
+  `codex/bot-player-plan`; authenticated PR read confirmed open/draft, targeting `dev`,
+  with no inline review comments. Last published commit before this plan: `bf78510d`.
+- Prepared and self-reviewed the [implementation plan](docs/superpowers/plans/2026-10-15-bot-player-implementation.md):
+  contracts/compatibility, roster/session admission, durable economy guards and
+  migration 007, fair-information strategy, fenced timers/presence lifecycle,
+  UI/browser acceptance and verification/publication. All execution steps remain
+  unchecked; no application code or configuration has changed.
+- Review checked actual source boundaries, manifests, test paths and migration
+  registration. The Superpowers writing-plans workflow requires user plan review
+  before execution. Next: review the plan, then execute Task 1 inline on this same
+  branch/PR after approval; first run status/branch, usage and fetch. Preserve
+  completed planning work and do not repeat the product-design interview.
+- Documentation validation: source/link accuracy, spec coverage and self-review,
+  placeholder scan and whitespace/full-diff checks. Application checks have not
+  run for this documentation-only step; the plan's commands are future checks.
+- Successful fetch confirms this branch contains latest `origin/dev` `17a43ba5`.
+  Publish this plan/checkpoint to existing draft PR #31. The user merges manually;
+  no deployment or hosted migration is authorized.
+- Usage observed 2026-10-15 19:34 Bangkok: five-hour **85% remaining**, reset
+  2026-10-16 **00:03:39**; weekly **85% remaining**, reset 2026-10-22 **13:13:35**
+  Bangkok. No usage threshold blocker or billing action.
+
 ## Bot-player specification — 2026-10-15
 
 - New task branch: `codex/bot-player-plan`, created from freshly fetched
