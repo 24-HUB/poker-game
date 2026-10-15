@@ -44,14 +44,24 @@ export function evaluateSeven(cards: readonly Card[]): HandRank {
 /** First equal combination in input order wins; the settlement supplies the board first. */
 export function evaluateSevenDetailed(cards: readonly Card[]): HandDetail {
   if (cards.length !== 7) throw new RangeError('Seven cards required');
+  return evaluateCardsDetailed(cards);
+}
+
+/** Evaluate a made hand using only currently visible cards (flop through river). */
+export function evaluateCards(cards: readonly Card[]): HandRank {
+  return evaluateCardsDetailed(cards).rank;
+}
+
+function evaluateCardsDetailed(cards: readonly Card[]): HandDetail {
+  if (cards.length < 5 || cards.length > 7) throw new RangeError('Five to seven cards required');
   assertUniqueCards(cards);
   let best: HandRank | null = null;
   let bestFive: Card[] = [];
-  for (let a = 0; a < 3; a += 1) {
-    for (let b = a + 1; b < 4; b += 1) {
-      for (let c = b + 1; c < 5; c += 1) {
-        for (let d = c + 1; d < 6; d += 1) {
-          for (let e = d + 1; e < 7; e += 1) {
+  for (let a = 0; a < cards.length - 4; a += 1) {
+    for (let b = a + 1; b < cards.length - 3; b += 1) {
+      for (let c = b + 1; c < cards.length - 2; c += 1) {
+        for (let d = c + 1; d < cards.length - 1; d += 1) {
+          for (let e = d + 1; e < cards.length; e += 1) {
             const selection = [cards[a]!, cards[b]!, cards[c]!, cards[d]!, cards[e]!];
             const rank = evaluateFive(selection);
             if (!best || compareRanks(rank, best) > 0) { best = rank; bestFive = selection; }
