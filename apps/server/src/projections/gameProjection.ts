@@ -40,6 +40,7 @@ export function projectGame(runtime: SessionRuntime, room: InternalRoom, control
     ((a.seat - runtime.buttonSeat + 5) % 6) - ((b.seat - runtime.buttonSeat + 5) % 6));
   const headsUp = dealingOrder.length === 2;
   return {
+    mode: runtime.mode ?? 'standard', presencePaused: runtime.presencePaused ?? false,
     roomId: runtime.roomId, authorityBootId: room.authorityBootId,
     sessionId: runtime.sessionId, handId: hand ? runtime.handId : null,
     snapshotRevision: runtime.snapshotRevision, gameVersion: runtime.gameVersion,
@@ -56,7 +57,8 @@ export function projectGame(runtime: SessionRuntime, room: InternalRoom, control
           ? runtime.stacks[index]! : seat?.stack ?? runtime.stacks[index]!,
         streetContribution: seat?.streetContribution ?? 0, totalContribution: seat?.totalContribution ?? 0,
         folded: seat?.folded ?? (showingResult ? committed?.presentation?.participants.find((player) => player.accountId === participant.accountId)?.folded ?? false : false), allIn: seat?.allIn ?? false,
-        connected: controller.isConnected(participant.accountId),
+        kind: participant.kind ?? 'human',
+        connected: participant.kind === 'bot' || controller.isConnected(participant.accountId),
         equipment: runtime.equipmentByAccount?.[participant.accountId] ?? { avatar: null, cardBack: null },
       };
     }),

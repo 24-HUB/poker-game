@@ -5,6 +5,8 @@ import { z } from 'zod';
 const identifier = z.string().min(1).max(128);
 const metadata = { commandId: z.uuid(), authorityBootId: identifier, issuedAt: z.iso.datetime() };
 const schemas = {
+  'room:addBot': z.object({ type: z.literal('room:addBot'), roomId: identifier, seat: z.number().int().min(0).max(5), controlEpoch: z.number().int().nonnegative(), ...metadata }).strict(),
+  'room:removeBot': z.object({ type: z.literal('room:removeBot'), roomId: identifier, botId: z.string().regex(/^bot:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i), controlEpoch: z.number().int().nonnegative(), ...metadata }).strict(),
   'room:create': z.object({ type: z.literal('room:create'), title: z.string().trim().min(1).max(24), ...metadata }).strict(),
   'room:join': z.object({ type: z.literal('room:join'), token: z.string().min(1).max(512), ...metadata }).strict(),
   'room:sync': z.object({ type: z.literal('room:sync'), roomId: identifier }).strict(),

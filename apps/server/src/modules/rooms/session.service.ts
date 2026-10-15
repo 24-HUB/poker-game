@@ -10,6 +10,8 @@ import { RoomRegistry } from './roomRegistry';
 import { SessionError, SessionRepository, type SessionParticipant, type StoredGameSession } from './session.repository';
 
 export type SessionRuntime = {
+  mode?: 'standard' | 'practice';
+  presencePaused?: boolean;
   sessionId: string;
   roomId: string;
   firstHandId: string;
@@ -37,8 +39,9 @@ export type SessionRuntime = {
 
 function runtime(document: StoredGameSession): SessionRuntime {
   return {
+    mode: document.mode ?? 'standard', presencePaused: false,
     sessionId: document._id, roomId: document.roomId, firstHandId: document.firstHandId,
-    handNumber: document.handNumber, participants: document.participants, stacks: document.stacks,
+    handNumber: document.handNumber, participants: document.participants.map((player) => ({ ...player, kind: player.kind ?? 'human' })), stacks: document.stacks,
     buttonSeat: document.buttonSeat, smallBlind: 10, bigBlind: 20,
     ending: document.endingRequested, hand: null, handId: document.firstHandId,
     gameVersion: 0, snapshotRevision: 0, deadline: null, nextTransitionAt: null, settlement: null, previousHandId: null,
@@ -122,10 +125,10 @@ export class SessionService {
     const authority = this.authority.currentToken();
     if (!authority) throw new SessionError('SERVICE_UNAVAILABLE', 'Room authority is unavailable.');
     const standings = runtime.participants.map((participant, index) => ({
-      accountId: participant.accountId, seat: participant.seat, stack: runtime.stacks[index]!,
+      accountId: participant.accountId, kind: participant.kind ?? 'human', seat: participant.seat, stack: runtime.stacks[index]!,
     }));
     const highest = Math.max(...runtime.stacks);
-    const result: SessionResult = { sessionId: runtime.sessionId, roomId: runtime.roomId,
+    const result: SessionResult = { mode: runtime.mode ?? 'standard', sessionId: runtime.sessionId, roomId: runtime.roomId,
       endedAt: endedAt.toISOString(), reason, standings,
       leaderAccountIds: standings.filter((entry) => entry.stack === highest).map((entry) => entry.accountId) };
     await this.repository.complete({ sessionId: runtime.sessionId, roomId: runtime.roomId, result, authority });

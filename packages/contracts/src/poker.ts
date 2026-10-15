@@ -5,6 +5,10 @@ import { rewardReceiptSchema } from './tickets.js';
 import { handEquipmentSchema } from './collection.js';
 
 const id = z.string().min(1).max(128);
+export const participantKindSchema = z.enum(['human', 'bot']);
+export const sessionModeSchema = z.enum(['standard', 'practice']);
+export type ParticipantKind = z.infer<typeof participantKindSchema>;
+export type SessionMode = z.infer<typeof sessionModeSchema>;
 const chips = z.number().int().nonnegative().safe();
 const card = z.number().int().min(0).max(51);
 const mutation = {
@@ -42,6 +46,7 @@ export const POKER_ERROR_CODES = [
 export type PokerErrorCode = (typeof POKER_ERROR_CODES)[number];
 
 const participantSchema = z.object({
+  kind: participantKindSchema.optional(),
   accountId: id, displayName: z.string().min(1).max(128),
   seat: z.number().int().min(0).max(5), stack: chips,
   streetContribution: chips, totalContribution: chips,
@@ -54,7 +59,7 @@ const payoutSchema = z.object({ accountId: id, amount: chips }).strict();
 export const handResultPresentationSchema = z.object({
   version: z.literal(1), outcomeReason: z.enum(['showdown', 'fold']), board: z.array(card).max(5),
   participants: z.array(z.object({ accountId: id, displayName: z.string().min(1).max(128),
-    seat: z.number().int().min(0).max(5), folded: z.boolean(), equipment: handEquipmentSchema.optional() }).strict()).min(2).max(6),
+    kind: participantKindSchema.optional(), seat: z.number().int().min(0).max(5), folded: z.boolean(), equipment: handEquipmentSchema.optional() }).strict()).min(2).max(6),
   rankings: z.array(z.object({ accountId: id,
     rank: z.object({ category: z.number().int().min(0).max(8), tiebreak: z.array(z.number().int().min(2).max(14)).min(1).max(5) }).strict(),
     handName: z.string().min(1).max(100), bestFive: z.array(card).length(5),
@@ -65,6 +70,7 @@ export const handResultPresentationSchema = z.object({
 }).strict();
 export type HandResultPresentation = z.infer<typeof handResultPresentationSchema>;
 export const committedHandResultSchema = z.object({
+  mode: sessionModeSchema.optional(),
   handId: id, sessionId: id, handNumber: chips.positive(),
   completedAt: z.iso.datetime(), completedDateUtc: z.iso.date(), rulesVersion: chips.positive(),
   contributions: z.array(payoutSchema).min(2).max(6),
@@ -108,9 +114,10 @@ export const handHistorySchema = z.object({
 export type HandHistoryPage = z.infer<typeof handHistorySchema>;
 
 export const sessionResultSchema = z.object({
+  mode: sessionModeSchema.optional(),
   sessionId: id, roomId: id, endedAt: z.iso.datetime(),
-  reason: z.enum(['HOST_ENDED', 'ONE_FUNDED', 'ABANDONED', 'RESTARTED']),
-  standings: z.array(z.object({ accountId: id, seat: z.number().int().min(0).max(5), stack: chips }).strict()).min(2).max(6),
+  reason: z.enum(['HOST_ENDED', 'ONE_FUNDED', 'NO_FUNDED_HUMANS', 'ABANDONED', 'RESTARTED']),
+  standings: z.array(z.object({ accountId: id, kind: participantKindSchema.optional(), seat: z.number().int().min(0).max(5), stack: chips }).strict()).min(2).max(6),
   leaderAccountIds: z.array(id).max(6),
 }).strict();
 export type SessionResult = z.infer<typeof sessionResultSchema>;
@@ -122,6 +129,7 @@ export const legalActionsSchema = z.object({
 export type LegalActionsView = z.infer<typeof legalActionsSchema>;
 
 export const gameViewSchema = z.object({
+  mode: sessionModeSchema.optional(), presencePaused: z.boolean().optional(),
   roomId: id, authorityBootId: id, sessionId: id, handId: id.nullable(),
   snapshotRevision: chips, gameVersion: chips,
   handNumber: chips.positive(), smallBlind: chips.positive(), bigBlind: chips.positive(), currentBet: chips,

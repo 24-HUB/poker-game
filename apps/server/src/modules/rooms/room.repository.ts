@@ -2,7 +2,7 @@ import { randomUUID } from 'node:crypto';
 
 import { Inject, Injectable } from '@nestjs/common';
 import type { ClientSession, Db } from 'mongodb';
-import type { CurrentRoom } from '@poker/contracts' with { 'resolution-mode': 'import' };
+import type { CurrentRoom, RoomBot } from '@poker/contracts' with { 'resolution-mode': 'import' };
 
 import { AuthorityLease, type AuthorityToken } from '../../authority/authorityLease';
 import { MONGO_DB, TRANSACTION_RUNNER } from '../../database/database.tokens';
@@ -24,6 +24,7 @@ export type StoredRoomCommand = {
 };
 
 type RoomDocument = {
+  bots?: RoomBot[];
   _id: string;
   hostAccountId: string;
   title: string;
@@ -744,6 +745,7 @@ function membershipId(roomId: string, accountId: string): string {
 
 function toInternalRoom(room: RoomDocument, memberships: MembershipDocument[]): InternalRoom {
   return {
+    bots: room.bots ?? [],
     roomId: room._id,
     title: room.title,
     revision: room.revision,

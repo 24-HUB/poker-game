@@ -9,8 +9,9 @@ import type { CommittedHandResult, HandEquipment, HandHistoryPage, SessionResult
 import { M3_REWARD_POLICY } from '../tickets/rewardPolicy';
 import { snapshotEquipment } from '../collection/collection.repository';
 
-export type SessionParticipant = { accountId: string; displayName: string; seat: number };
+export type SessionParticipant = { accountId: string; displayName: string; seat: number; kind?: 'human' | 'bot' };
 export type StoredGameSession = {
+  mode?: 'standard' | 'practice';
   _id: string;
   roomId: string;
   status: 'ACTIVE' | 'COMPLETED' | 'ABORTED';
