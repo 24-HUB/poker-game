@@ -520,6 +520,30 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Bot-player verified implementation save point — 2026-10-15
+
+Implementation is complete on `codex/bot-player-plan`, [PR #31](https://github.com/24-HUB/poker-game/pull/31)
+targeting `dev`; last code/test commit `004760ea`. Fresh local Chromium **35/35**,
+contracts **19/19**, engine **21/21**, frontend **177/177**, economy audit **29/29**,
+affected server **56/56**, and production builds passed. Mobile/desktop screenshots
+were inspected. Independent review fixes passed; no remaining Important findings.
+Local aggregate had one five-second catalogue setup timeout among 282 server
+tests; the isolated catalogue rerun passed **2/2**. The
+[Linux implementation run](https://github.com/24-HUB/poker-game/actions/runs/38741106896)
+passed `pnpm check`, migration idempotency, encrypted backup/restore and Worker
+packaging; its final Chromium step was still running at this save point.
+
+No application work remains. Keep PR draft until current required CI succeeds,
+then mark ready; user merges manually. This save-point update is documentation
+only. No deployment or hosted migration. Resume with status/branch, usage and
+fetch, then inspect latest PR CI (including the documentation rerun); preserve
+completed work. Prior fetch confirmed latest `origin/dev` `17a43ba5` is included.
+Exact logs and resume details are in `CHECKPOINT.md`.
+
+Usage observed **2026-10-15 20:24 Bangkok**: five-hour **5% remaining**, reset
+2026-10-16 **00:03:39**; weekly **72% remaining**, reset 2026-10-22 **13:13:35**
+Bangkok. Save-point threshold reached; no billing/reset-credit action.
+
 ### Bot-player implementation — verification in progress, 2026-10-15
 
 The user approved the plan; implementation on `codex/bot-player-plan` updates

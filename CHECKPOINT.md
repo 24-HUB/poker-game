@@ -1,5 +1,35 @@
 # Checkpoint — Remaining phases through production
 
+## Bot-player verified implementation save point — 2026-10-15
+
+- Feature implementation is complete on `codex/bot-player-plan`, published in
+  [PR #31](https://github.com/24-HUB/poker-game/pull/31), base `dev`.
+  Last code/test commit: `004760ea`; this save-point commit changes documentation
+  only. No pending application changes. User merges manually; no deployment or
+  hosted migration was performed.
+- Fresh local full Chromium **35/35 passed** in 4.4 minutes, including solo bots,
+  mixed play, takeover/reload, practice history and later standard ticket rewards.
+  Desktop/mobile screenshots inspected. Contracts **19/19**, engine **21/21**,
+  frontend **177/177**, economy audit **29/29**, affected server **56/56** and
+  production builds passed. Independent review fixes were verified; no remaining
+  Important findings. Generated `next-env.d.ts` dev imports were restored.
+- Local aggregate ran 282 server tests: 281 passed and one catalogue setup hook
+  timed out at five seconds; isolated catalogue rerun **2/2 passed**. The
+  [Linux implementation run](https://github.com/24-HUB/poker-game/actions/runs/38741106896)
+  has already passed `pnpm check`, migration idempotency, backup/restore rehearsal
+  and Worker packaging. Its final Chromium step was still running at this save
+  point, so PR remains draft pending CI completion. Logs are ignored under
+  `.artifacts/bot-players-2026-10-15/`.
+- Next: inspect the latest PR CI (including the documentation-triggered rerun),
+  fix any actual failure, then mark PR ready after required checks succeed.
+  Resume with `git status --short --branch`, usage, `git fetch origin --prune`
+  and this save point; do not reimplement completed tasks. Prior final fetch
+  confirmed `origin/dev` `17a43ba5` is included; fetch again before final handoff.
+- Usage observed 2026-10-15 **20:24 Bangkok**: five-hour **5% remaining**,
+  resets 2026-10-16 **00:03:39**; weekly **72% remaining**, resets 2026-10-22
+  **13:13:35** Bangkok. Save-point threshold reached; finish only bounded
+  verification/publication work. No billing or reset-credit action.
+
 ## Bot-player implementation — verification in progress, 2026-10-15
 
 - The user approved the implementation plan. Feature code is on

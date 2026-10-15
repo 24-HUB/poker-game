@@ -10,7 +10,7 @@
 
 **Spec:** [Bot-player design](../specs/2026-10-15-bot-player-design.md), approved for implementation by the user's request to implement PR #31 on 2026-10-15.
 
-**Status:** Approved and implemented inline on `codex/bot-player-plan`, updating draft PR #31 targeting `dev`. Final aggregate/browser/CI verification is in progress; actual evidence and rulings are in `CHECKPOINT.md` and the execution ledger. Do not merge or deploy.
+**Status:** Implemented on `codex/bot-player-plan`, PR #31 targeting `dev`. Full local Chromium 35/35 and production builds pass; Linux aggregate, migration/backup and Worker checks pass. Final CI Chromium/publication is pending. `CHECKPOINT.md` records actual checks, one isolated local setup timeout, implementation deviations and the below-10% usage save point. Do not repeat completed application work or claim pending CI complete. Do not merge or deploy.
 
 ## Global constraints
 

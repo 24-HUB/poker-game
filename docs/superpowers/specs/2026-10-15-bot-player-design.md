@@ -2,7 +2,7 @@
 
 Date: 2026-10-15 (Asia/Bangkok)
 Status: Written specification approved by the user's 2026-10-15 request to implement
-PR #31. Implementation plan approved; application implemented, final verification in progress.
+PR #31. Application implemented and locally verified; final CI/publication pending.
 Baseline: freshly fetched `origin/dev` `17a43ba5`.
 Task branch: `codex/bot-player-plan`; implementation and evidence, targeting `dev`.
 
