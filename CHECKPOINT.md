@@ -12,18 +12,20 @@
   practice mode, settlement/economy guards, deterministic strategy, fenced timers,
   pause/cleanup rules, UI changes, migration preparation and acceptance coverage.
   No application code/configuration changed; implementation has not begun.
-- Last completed step: in-chat design approval and specification self-review.
-  Baseline commit: `17a43ba5`; specification/checkpoint publication is pending.
-  Written-spec user review is required before writing the implementation plan.
-- Passed: source-path/placeholder checks, repository accuracy review and the staged
-  specification whitespace/full-task checks. Final three-file diff checks follow
-  staging. Application tests were not run for this documentation-only change.
-- Next: commit/push the specification and these existing checkpoint files; create
-  a draft PR targeting `dev`; ask the user to review the written specification.
-  After approval, use writing-plans to create the implementation plan on this
-  same branch/PR. The user merges manually. No deployment or hosted migration.
-- Usage observed 2026-10-15 around 19:15 Bangkok: five-hour **96% remaining**
-  (resets 2026-10-16 **00:03:39** Bangkok), weekly **87% remaining** (resets
+- Published specification commit: `fbb711f1`, in
+  [draft PR #31](https://github.com/24-HUB/poker-game/pull/31), explicitly targeting
+  `dev` and attached to this chat. Only the spec and existing checkpoint files
+  changed. This publication-record correction follows that commit.
+- Passed: source-path/placeholder checks, repository accuracy/self-review,
+  `git diff --check`, staged/full-task whitespace checks and full documentation
+  diff review. Final fetch confirms this branch contains latest `origin/dev`
+  `17a43ba5`. Application tests were not run for documentation-only changes.
+- Next: the user reviews the written specification. After approval, use
+  writing-plans to create the implementation plan on this same branch/PR.
+  No application changes are pending. The user merges manually; do not merge
+  or deploy. Resume with status/branch, usage, fetch and this checkpoint.
+- Usage observed 2026-10-15 at 19:21 Bangkok: five-hour **90% remaining**
+  (resets 2026-10-16 **00:03:39** Bangkok), weekly **86% remaining** (resets
   2026-10-22 **13:13:35** Bangkok). No usage threshold blocker or billing action.
 
 ## Automatic server recovery implementation — locally verified, 2026-10-14

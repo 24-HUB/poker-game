@@ -537,17 +537,20 @@ migration. It preserves six seats, existing stack/blind values, human host
 authority, free-tier admission and normal human-only rewards.
 
 Status: product design approved; written spec awaiting user review; implementation
-plan and application code not begun. Baseline commit is `17a43ba5`; the spec and
-both checkpoint updates await publication in a draft PR targeting `dev`.
-Source-path/placeholder checks, accuracy/self-review and staged spec whitespace
-checks passed; final three-file checks follow staging. No application tests were
-run for documentation only, and no provider or database operation occurred.
+plan and application code not begun. Specification commit `fbb711f1` is published
+in [draft PR #31](https://github.com/24-HUB/poker-game/pull/31), targeting `dev`
+and attached to this chat; this publication-record correction follows that commit.
+Source-path/placeholder checks, accuracy/self-review, full documentation diff
+review and working-tree/staged/full-task whitespace checks passed. Final fetch
+confirms the task branch contains latest `origin/dev` `17a43ba5`. Application
+tests were not run for documentation only; no deployment or database operation.
 
-Next: publish this documentation, request written-spec review, then write the
-implementation plan on the same task branch/PR after approval. The user merges
-manually. Resume with usage, Git status/branch, fetch and this checkpoint.
-Usage observed around 2026-10-15 19:15 Bangkok: five-hour **96% remaining**, reset
-2026-10-16 **00:03:39**; weekly **87% remaining**, reset 2026-10-22 **13:13:35**
+Next: the user reviews the written spec, then writing-plans produces the
+implementation plan on this same branch/PR after approval. No application
+changes are pending. The user merges manually. Resume with usage, Git
+status/branch, fetch and this checkpoint.
+Usage observed 2026-10-15 19:21 Bangkok: five-hour **90% remaining**, reset
+2026-10-16 **00:03:39**; weekly **86% remaining**, reset 2026-10-22 **13:13:35**
 Bangkok. Below 10% in either window triggers the repository's save-point decision.
 
 ### Automatic server recovery implementation — 2026-10-14
