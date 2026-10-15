@@ -11,6 +11,7 @@ import { SettlementError } from './settlement.error';
 export { SettlementError } from './settlement.error';
 
 export type SettlementCandidate = {
+  mode?: 'standard' | 'practice';
   roomId: string;
   sessionId: string;
   handId: string;
@@ -49,6 +50,7 @@ function toResult(candidate: SettlementCandidate): CommittedHandResult {
     throw new SettlementError('INVALID_SETTLEMENT', 'The settlement has no valid winner.');
   }
   return {
+    mode: candidate.mode ?? 'standard',
     handId: candidate.handId, sessionId: candidate.sessionId, handNumber: candidate.handNumber,
     completedAt: candidate.completedAt.toISOString(), completedDateUtc: candidate.completedDateUtc,
     rulesVersion: candidate.rulesVersion, contributions, payouts, finalStacks,

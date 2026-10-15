@@ -8,6 +8,7 @@ import { TransactionRunner } from '../../database/transactionRunner';
 import type { CommittedHandResult, HandEquipment, HandHistoryPage, SessionResult, RoomBot } from '@poker/contracts' with { 'resolution-mode': 'import' };
 import { M3_REWARD_POLICY } from '../tickets/rewardPolicy';
 import { snapshotEquipment } from '../collection/collection.repository';
+import { normalizeHandResult } from './botCompatibility';
 
 export type SessionParticipant = { accountId: string; displayName: string; seat: number; kind?: 'human' | 'bot' };
 export type StoredGameSession = {
@@ -79,7 +80,7 @@ export class SessionRepository {
       .find({ sessionId, status: 'COMPLETED', ...(beforeHandNumber === undefined ? {} : { handNumber: { $lt: beforeHandNumber } }) },
         { projection: { _id: 0, result: 1 }, readConcern: { level: 'majority' } })
       .sort({ handNumber: -1 }).limit(21).toArray();
-    const hands = records.slice(0, 20).map((record) => record.result);
+    const hands = records.slice(0, 20).map((record) => normalizeHandResult(record.result));
     return { hands, nextBeforeHandNumber: records.length > 20 ? hands.at(-1)!.handNumber : null };
   }
 

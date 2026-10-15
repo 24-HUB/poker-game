@@ -90,6 +90,35 @@ describe('atomic chip settlement', () => {
       .rejects.toMatchObject({ code: 'SETTLEMENT_CONFLICT' });
   });
 
+  it('commits practice chips once without creating or changing any economy records even with a reward policy', async () => {
+    await database.db.collection('gameSessions').updateOne({ roomId: candidate.roomId }, { $set: { mode: 'practice' } });
+    const practice = { ...candidate, mode: 'practice' as const, rewardPolicyVersion: 1, dealtInAccountIds: ['host', 'guest'] };
+    const tickets = new TicketsRepository(database.db);
+    await tickets.ensureWallet('host');
+    const collections = ['ticketWallets', 'dailyEarnings', 'ticketLedger', 'rewardReceipts'];
+    const before = await Promise.all(collections.map((name) => database.db.collection(name).find({}).toArray()));
+    const first = await settlement.commit(practice);
+    expect(first).toMatchObject({ mode: 'practice', finalStacks: [{ accountId: 'host', amount: 990 }, { accountId: 'guest', amount: 1010 }] });
+    expect(first.rewardReceipts).toBeUndefined();
+    expect(await settlement.commit(practice)).toEqual(first);
+    expect(await Promise.all(collections.map((name) => database.db.collection(name).find({}).toArray()))).toEqual(before);
+  });
+
+  it('rejects a forged standard candidate before preparing wallets for a durable practice session', async () => {
+    await database.db.collection('gameSessions').updateOne({ roomId: candidate.roomId }, { $set: { mode: 'practice' } });
+    await expect(settlement.commit({ ...candidate, rewardPolicyVersion: 1 })).rejects.toMatchObject({ code: 'INVALID_SETTLEMENT' });
+    expect(await database.db.collection('ticketWallets').countDocuments()).toBe(0);
+    expect(await database.db.collection('rewardReceipts').countDocuments()).toBe(0);
+    expect(await database.db.collection('hands').countDocuments({ status: 'COMPLETED' })).toBe(0);
+  });
+
+  it('rejects forged participant kinds and actor rosters before any economy mutation', async () => {
+    await expect(settlement.commit({ ...candidate, rewardPolicyVersion: 1,
+      participants: candidate.participants.map((player) => ({ ...player, kind: 'bot' as const })) }))
+      .rejects.toMatchObject({ code: 'INVALID_SETTLEMENT' });
+    expect(await database.db.collection('ticketWallets').countDocuments()).toBe(0);
+  });
+
   it('rolls back the hand when updating session stacks fails', async () => {
     const invalid = { ...candidate, engine: { ...candidate.engine, finalStacks: [990, -1] } };
     await expect(settlement.commit(invalid)).rejects.toThrow();

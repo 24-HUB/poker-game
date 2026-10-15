@@ -69,7 +69,7 @@ export class GameService implements OnApplicationShutdown {
         const authority = this.authority.currentToken();
         if (!authority || authority.bootId !== token.bootId || authority.epoch !== token.epoch) throw new Error('Authority changed');
         return { ...page, hands: page.hands.map((result) => ({
-          handId: result.handId, sessionId: result.sessionId, handNumber: result.handNumber,
+          mode: result.mode ?? 'standard', handId: result.handId, sessionId: result.sessionId, handNumber: result.handNumber,
           completedAt: result.completedAt, completedDateUtc: result.completedDateUtc, rulesVersion: result.rulesVersion,
           contributions: result.contributions, payouts: result.payouts, finalStacks: result.finalStacks,
           manualActionAccountIds: result.manualActionAccountIds, winners: result.winners, revealedCards: result.revealedCards,
@@ -278,7 +278,7 @@ export class GameService implements OnApplicationShutdown {
       const authority = this.authority.currentToken();
       if (!authority) { runtime.paused = true; return; }
       const completedAt = new Date(this.clock.now());
-      candidate = { roomId: runtime.roomId, sessionId: runtime.sessionId, handId: runtime.handId,
+      candidate = { mode: runtime.mode ?? 'standard', roomId: runtime.roomId, sessionId: runtime.sessionId, handId: runtime.handId,
         handNumber: runtime.handNumber, authority, expectedRevision: 0, rulesVersion: 1,
         completedAt, completedDateUtc: completedAt.toISOString().slice(0, 10),
         rewardPolicyVersion: runtime.rewardPolicyVersion,
