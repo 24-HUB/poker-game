@@ -134,6 +134,19 @@ describe('durable poker sessions', () => {
     expect(await database.db.collection('gameSessions').countDocuments()).toBe(0);
   });
 
+  it('normalizes persisted legacy sessions as standard human-only sessions', async () => {
+    const { roomId, token } = await create(); await join(token, 'guest');
+    const command = startCommand(roomId);
+    const started = await registry.enqueue(roomId, () => sessions.startInQueue(context('host'), command));
+    await database.db.collection<{ _id: string }>('gameSessions').updateOne({ _id: started.sessionId }, {
+      $unset: { mode: '' }, $set: { participants: started.participants.map((player) => ({ accountId: player.accountId, displayName: player.displayName, seat: player.seat })) },
+    });
+    const restored = new SessionService(new SessionRepository(database.db, new TransactionRunner(database.client), authority), new RoomRegistry(), authority);
+    const legacy = await restored.startInQueue(context('host'), command);
+    expect(legacy.mode).toBe('standard');
+    expect(legacy.participants.map((player) => player.kind)).toEqual(['human', 'human']);
+  });
+
   it('startRequiresTwoToSixSeats', async () => {
     const { roomId } = await create();
     await expect(registry.enqueue(roomId, () => sessions.startInQueue(context('host'), startCommand(roomId))))

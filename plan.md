@@ -520,6 +520,33 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Bot-player implementation — verification in progress, 2026-10-15
+
+The user approved the plan; implementation on `codex/bot-player-plan` updates
+[draft PR #31](https://github.com/24-HUB/poker-game/pull/31), targeting `dev`.
+Commits through `0fce9719` implement host-owned bots, frozen practice mode with
+no economy effects, restricted casual decisions, fenced clocks/retries,
+presence pause/cleanup and practice UI/history. Two review-discovered timer
+recovery bugs and a final asynchronous lease-loss race were reproduced and fixed.
+Independent focused follow-up found no remaining Important findings.
+
+Passed: frozen install; contracts 19/19; engine 21/21; frontend 177/177;
+economy audit 29/29; actual Socket.IO observer/revocation/reconnect; latest
+affected server suites 56/56. Solo Chromium acceptance passed, including 1–5
+bot roster controls, practice history/no rewards and later human-only rewards;
+360px/1440px room/table screenshots were inspected. Mixed browser acceptance,
+full Chromium regression and latest CI/Worker packaging remain pending.
+Aggregate rerun is in progress after updating a catalogue migration-count
+assertion from six to seven (the previous run passed 280 server tests).
+See `CHECKPOINT.md` and ignored `.artifacts/bot-players-2026-10-15/` logs for
+exact resume details. The generated `next-env.d.ts` dev-path change should be
+restored by the production build. No deployment or hosted migration; user merges
+manually. Latest fetched `origin/dev` `17a43ba5` is included.
+
+Usage observed 2026-10-15 20:14 Bangkok: five-hour **16% remaining**, reset
+2026-10-16 **00:03:39**; weekly **74% remaining**, reset 2026-10-22 **13:13:35**
+Bangkok. Complete verification/save before substantial additional work.
+
 ### Bot-player implementation plan — 2026-10-15
 
 The user requested implementation of [PR #31](https://github.com/24-HUB/poker-game/pull/31),

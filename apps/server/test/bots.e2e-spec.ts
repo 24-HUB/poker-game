@@ -278,4 +278,16 @@ describe('practice bot lifecycle', () => {
     expect(runtime().gameVersion).toBe(version);
     expect(clock.jobs.filter((entry) => !entry.cancelled)).toHaveLength(0);
   });
+
+  it('rechecks the lease after asynchronous room reads before applying a bot action', async () => {
+    await act({ type: 'call' });
+    const version = runtime().gameVersion;
+    const job = [...clock.jobs].reverse().find((entry) => !entry.cancelled && entry.at <= clock.time + 3000)!;
+    const load = RoomRepository.prototype.load;
+    jest.spyOn(RoomRepository.prototype, 'load').mockImplementationOnce(async function (this: RoomRepository, id: string) {
+      const room = await load.call(this, id); authority.markNotReady(); return room;
+    });
+    await fire(job);
+    expect(runtime().gameVersion).toBe(version);
+  });
 });

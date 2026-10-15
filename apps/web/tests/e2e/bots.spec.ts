@@ -83,3 +83,46 @@ test('solo practice bots, results and roster editing preserve later human-only t
     await expect(host.getByRole('heading', { name: 'Session standings' })).toBeVisible({ timeout: 10000 });
   } finally { await Promise.allSettled([hostContext.close(), guestContext.close()]); }
 });
+
+test('mixed human/bot practice keeps controls private through tab takeover and reload', async ({ browser }) => {
+  test.setTimeout(90000);
+  const hostContext = await browser.newContext({ viewport: { width: 360, height: 800 } });
+  const guestContext = await browser.newContext();
+  try {
+    const suffix = crypto.randomUUID();
+    const host = await hostContext.newPage(); await host.goto('/');
+    await createAccount(host, { displayName: 'Mixed Host', email: `mixed-host-${suffix}@example.test` });
+    await host.getByRole('button', { name: 'Create Room', exact: true }).click();
+    await host.getByLabel('Room title').fill('Mixed practice');
+    await host.getByRole('button', { name: 'Create private room' }).click();
+    const invitation = await host.getByLabel('Invite code', { exact: true }).inputValue();
+    const guest = await guestContext.newPage(); await guest.goto('/#invite=' + encodeURIComponent(invitation));
+    await createAccount(guest, { displayName: 'Mixed Guest', email: `mixed-guest-${suffix}@example.test` });
+    await expect(host.getByText('2 of 6 members')).toBeVisible();
+    await host.getByRole('button', { name: 'Add bot to seat 3', exact: true }).click();
+    await expect(guest.getByText('Practice · No tickets', { exact: true })).toBeVisible();
+    await expect(guest.getByRole('button', { name: 'Remove Bot 1' })).toHaveCount(0);
+    await host.getByRole('button', { name: 'Start poker session' }).click();
+    await expect(guest.getByRole('region', { name: 'Poker table', exact: true })).toBeVisible();
+    const observer = await hostContext.newPage(); await observer.goto(host.url());
+    await observer.getByRole('button', { name: 'Use this tab to play' }).click();
+    await expect(host.getByRole('button', { name: 'Fold', exact: true })).toBeDisabled();
+    await observer.reload();
+    await observer.getByRole('button', { name: 'Use this tab to play' }).click();
+    await expect(observer.getByLabel('Your cards', { exact: true })).toBeVisible();
+    await observer.getByLabel('Room options', { exact: true }).click();
+    observer.once('dialog', (dialog) => void dialog.accept());
+    await observer.getByRole('button', { name: 'End after this hand' }).click();
+    await observer.getByLabel('Room options', { exact: true }).click();
+    await observer.getByRole('button', { name: 'Fold', exact: true }).click();
+    await expect(guest.getByRole('button', { name: 'Fold', exact: true })).toBeEnabled();
+    await guest.getByRole('button', { name: 'Fold', exact: true }).click();
+    await expect(observer.getByText('Practice hand · No tickets earned.', { exact: true })).toBeVisible();
+    await expect(guest.getByText('Practice hand · No tickets earned.', { exact: true })).toBeVisible();
+    await expect(observer.getByRole('heading', { name: 'Session standings' })).toBeVisible({ timeout: 10000 });
+    await expect(observer.getByLabel('0 tickets, 20 can be earned today')).toBeVisible();
+    await expect(guest.getByLabel('0 tickets, 20 can be earned today')).toBeVisible();
+    await expect.poll(() => observer.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+    await observer.screenshot({ path: 'test-results/bots-mobile-mixed-results.png', fullPage: true });
+  } finally { await Promise.allSettled([hostContext.close(), guestContext.close()]); }
+});

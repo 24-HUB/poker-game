@@ -1,5 +1,37 @@
 # Checkpoint — Remaining phases through production
 
+## Bot-player implementation — verification in progress, 2026-10-15
+
+- The user approved the implementation plan. Feature code is on
+  `codex/bot-player-plan`, updating [draft PR #31](https://github.com/24-HUB/poker-game/pull/31)
+  targeting `dev`. Implementation commits through `0fce9719` cover contracts,
+  host-owned bot seats, immutable practice mode, economy protection, restricted
+  casual strategy, fenced turn/retry timers, presence pause/cleanup and room/table UI.
+- Independent review found two timer-recovery bugs; both were reproduced and
+  fixed, and focused follow-up found no remaining Important findings. A final
+  lease recheck after asynchronous reads was also reproduced and fixed.
+- Passed: frozen pnpm 10.33.0 install, contracts 19/19, engine 21/21, frontend
+  177/177, economy audit 29/29, real Socket.IO observer/revocation/reconnect,
+  and latest affected server suites 56/56. Lifecycle acceptance includes one
+  human against 1–5 bots, strategy fallback, stale callbacks, retained countdowns,
+  pending settlement after retention and authority/shutdown cancellation.
+- Solo Chromium acceptance passed, including five-seat bot roster, private cards,
+  bot thinking, practice history/no rewards, post-reload tab takeover, bot removal
+  and subsequent human-only rewards. Inspected 360px/1440px room/table screenshots.
+  A mixed human/bot takeover/reload browser case is prepared but not yet run.
+- Aggregate rerun is in progress. Previous run passed 280 server tests and failed
+  one catalogue assertion expecting six migrations; updated it to seven. An
+  earlier audit fixture lacked durable session data and now uses a valid isolated
+  two-human session (one qualifying account); the audit passes. A browser-discovered
+  BSON undefined-to-null equipment issue is fixed with explicit default equipment.
+- Next: inspect `.artifacts/bot-players-2026-10-15/check.log`, complete full fresh
+  Chromium acceptance, inspect current PR CI/Worker packaging, then record final
+  evidence and publish. `next-env.d.ts` has a generated dev-path change; production
+  build restores it. No deployment or hosted migration. User merges manually.
+- Fetch confirms latest `origin/dev` `17a43ba5` is included. Usage observed
+  2026-10-15 20:14 Bangkok: five-hour **16% remaining**, reset 2026-10-16
+  **00:03:39**; weekly **74% remaining**, reset 2026-10-22 **13:13:35** Bangkok.
+
 ## Bot-player implementation plan — 2026-10-15
 
 - The user requested implementation of [PR #31](https://github.com/24-HUB/poker-game/pull/31),

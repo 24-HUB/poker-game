@@ -10,7 +10,7 @@
 
 **Spec:** [Bot-player design](../specs/2026-10-15-bot-player-design.md), approved for implementation by the user's request to implement PR #31 on 2026-10-15.
 
-**Status:** Plan prepared and self-reviewed; awaiting user review before application implementation. Continue inline on `codex/bot-player-plan`, updating draft PR #31 targeting `dev`. Do not merge or deploy.
+**Status:** Approved and implemented inline on `codex/bot-player-plan`, updating draft PR #31 targeting `dev`. Final aggregate/browser/CI verification is in progress; actual evidence and rulings are in `CHECKPOINT.md` and the execution ledger. Do not merge or deploy.
 
 ## Global constraints
 

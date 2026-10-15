@@ -2,9 +2,9 @@
 
 Date: 2026-10-15 (Asia/Bangkok)
 Status: Written specification approved by the user's 2026-10-15 request to implement
-PR #31. Implementation plan prepared; awaiting plan review before application changes.
+PR #31. Implementation plan approved; application implemented, final verification in progress.
 Baseline: freshly fetched `origin/dev` `17a43ba5`.
-Task branch: `codex/bot-player-plan`; specification/plan documentation, targeting `dev`.
+Task branch: `codex/bot-player-plan`; implementation and evidence, targeting `dev`.
 
 ## 1. Outcome and approved decisions
 
@@ -296,7 +296,8 @@ chat, spectator product or art-generation task is included.
 
 ## 9. Verification and acceptance
 
-This is a specification, not test evidence. No bot acceptance checks have run.
+This section defines acceptance. Executed checks and remaining verification are
+recorded in `CHECKPOINT.md` and `plan.md` section 18.
 
 | Area | Required evidence before implementation completion |
 |---|---|

@@ -311,6 +311,10 @@ export class GameService implements OnApplicationShutdown {
         const room = await this.rooms.load(runtime.roomId);
         if (!room || room.phase !== 'playing' || room.authorityBootId !== identity.bootId || room.authorityEpoch !== identity.epoch) { this.cancelTurn(runtime.roomId); return; }
         if (!await this.canProgress(current)) return;
+        const finalAuthority = this.authority.currentToken();
+        if (!finalAuthority || finalAuthority.bootId !== identity.bootId || finalAuthority.epoch !== identity.epoch) {
+          this.cancelTurn(runtime.roomId); return;
+        }
         if (botDue) {
           if (!identity.action || current.participants.find((player) => player.accountId === identity.actor)?.kind !== 'bot') return;
           let transition;
