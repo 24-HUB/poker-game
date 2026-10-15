@@ -4,6 +4,7 @@ import type { Server } from 'socket.io';
 import { IdentityService, toWebHeaders } from '../modules/identity/identity.service';
 import { RoomService } from '../modules/rooms/room.service';
 import { GameService } from '../modules/rooms/game.service';
+import { RoomRegistry } from '../modules/rooms/roomRegistry';
 
 @Injectable()
 export class RoomPublisher {
@@ -13,8 +14,19 @@ export class RoomPublisher {
     private readonly identity: IdentityService,
     private readonly rooms: RoomService,
     private readonly games: GameService,
+    private readonly registry: RoomRegistry,
   ) {
     this.games.subscribeUpdates((roomId) => { void this.publish(roomId).catch(() => undefined); });
+    this.games.subscribePresenceVerifier(async (roomId) => {
+      if (!this.server) return false;
+      for (const socket of this.server.sockets.sockets.values()) {
+        if (!this.registry.roomsForConnection(socket.id).includes(roomId)) continue;
+        const verified = await this.identity.resolve(toWebHeaders(socket.handshake.headers));
+        if (!verified) { socket.disconnect(true); continue; }
+        if (this.registry.peek(roomId)?.isConnected(verified.accountId)) return true;
+      }
+      return false;
+    });
   }
 
   public attach(server: Server): void {

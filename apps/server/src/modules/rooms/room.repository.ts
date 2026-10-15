@@ -610,7 +610,7 @@ export class RoomRepository {
           },
           {
             $set: { status: 'CLOSED', closedAt: input.now, closedReason: 'LEFT' },
-            $unset: { invitationHash: '', invitationExpiresAt: '' },
+            $unset: { invitationHash: '', invitationExpiresAt: '', bots: '' },
             $inc: { revision: 1 },
           },
           { session },
@@ -660,7 +660,7 @@ export class RoomRepository {
         },
         {
           $set: { status: 'CLOSED', closedAt: now, closedReason: 'EMPTY' },
-          $unset: { invitationHash: '', invitationExpiresAt: '' },
+          $unset: { invitationHash: '', invitationExpiresAt: '', bots: '' },
           $inc: { revision: 1 },
         },
         { session },

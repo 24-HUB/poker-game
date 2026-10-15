@@ -24,6 +24,10 @@ class SerialQueue {
 }
 
 export class RoomRegistry {
+  private gameLifecycle?: { presence(roomId: string): Promise<void>; close(roomId: string): void };
+  public subscribeGameLifecycle(hooks: { presence(roomId: string): Promise<void>; close(roomId: string): void }): void { this.gameLifecycle = hooks; }
+  public async presenceChangedInQueue(roomId: string): Promise<void> { await this.gameLifecycle?.presence(roomId); }
+  public peek(roomId: string): RoomController | undefined { return this.controllers.get(roomId); }
   private readonly createQueue = new SerialQueue();
   private readonly queues = new Map<string, SerialQueue>();
   private readonly controllers = new Map<string, RoomController>();
@@ -80,6 +84,7 @@ export class RoomRegistry {
   }
 
   public remove(roomId: string): void {
+    this.gameLifecycle?.close(roomId);
     this.controllers.delete(roomId);
     this.queues.delete(roomId);
     for (const [connectionId, roomIds] of this.roomsByConnection) {

@@ -8,6 +8,7 @@ import { AuthorityLease } from '../../authority/authorityLease';
 import type { RoomContext } from './room.service';
 import { RoomRegistry } from './roomRegistry';
 import { SessionError, SessionRepository, type SessionParticipant, type StoredGameSession } from './session.repository';
+import { normalizeSessionResult } from './botCompatibility';
 
 export type SessionRuntime = {
   mode?: 'standard' | 'practice';
@@ -45,7 +46,7 @@ function runtime(document: StoredGameSession): SessionRuntime {
     buttonSeat: document.buttonSeat, smallBlind: 10, bigBlind: 20,
     ending: document.endingRequested, hand: null, handId: document.firstHandId,
     gameVersion: 0, snapshotRevision: 0, deadline: null, nextTransitionAt: null, settlement: null, previousHandId: null,
-    committedHandResult: null, sessionResult: document.result ?? null, paused: false,
+    committedHandResult: null, sessionResult: document.result ? normalizeSessionResult(document.result) : null, paused: false,
     rewardPolicyVersion: document.rewardPolicyVersion,
     equipmentByAccount: document.equipmentByAccount,
   };

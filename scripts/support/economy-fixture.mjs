@@ -23,13 +23,20 @@ export async function seedEconomyFixture(db, client, accountId = 'isolated-accou
   const runner = new TransactionRunner(client);
   const tickets = new TicketsRepository(db);
   await tickets.ensureWallet(accountId);
+  const opponent = 'zz-fixture-opponent';
+  await tickets.ensureWallet(opponent);
   const completedAt = new Date('2026-10-07T08:00:00.000Z');
+  const participants = [{ accountId, displayName: 'Fixture player', seat: 0, kind: 'human' },
+    { accountId: opponent, displayName: 'Fixture opponent', seat: 1, kind: 'human' }];
+  await db.collection('gameSessions').insertOne({ _id: 'fixture-session', roomId: 'fixture-room', status: 'COMPLETED', mode: 'standard',
+    startedByAccountId: accountId, startCommandId: 'fixture-start', startPayloadHash: 'a'.repeat(64), authorityBootId: 'fixture-boot', authorityEpoch: 1,
+    participants, stacks: [1100, 900], firstHandId: 'fixture-hand-1', handNumber: 5, buttonSeat: 0, startedAt: completedAt, endingRequested: false });
   for (let handNumber = 1; handNumber <= 5; handNumber++) {
     const handId = `fixture-hand-${handNumber}`;
     await runner.run(async (session) => {
       const receipts = await tickets.awardHand({
-        handId, completedAt, completedDateUtc: '2026-10-07', rewardPolicyVersion: 1,
-        participants: [{ accountId }], dealtInAccountIds: [accountId],
+        handId, roomId: 'fixture-room', sessionId: 'fixture-session', mode: 'standard', completedAt, completedDateUtc: '2026-10-07', rewardPolicyVersion: 1,
+        participants, dealtInAccountIds: [accountId, opponent],
         engine: { manualActionAccountIds: [accountId], payouts: { [accountId]: 40 }, contributions: { [accountId]: 20 } },
       }, session);
       await db.collection('hands').insertOne({

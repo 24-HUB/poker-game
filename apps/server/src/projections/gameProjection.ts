@@ -4,6 +4,7 @@ import { legalActions } from '@poker/poker-engine';
 import type { InternalRoom } from '../modules/rooms/roomController';
 import type { SessionRuntime } from '../modules/rooms/session.service';
 import type { RoomController } from '../modules/rooms/roomController';
+import { sessionEndReason } from '../modules/rooms/sessionEndReason';
 
 function currentPots(runtime: SessionRuntime): GameView['pots'] {
   if (runtime.settlement && runtime.committedHandResult?.handId === runtime.handId &&
@@ -29,11 +30,11 @@ export function projectGame(runtime: SessionRuntime, room: InternalRoom, control
   const hand = runtime.hand;
   const committed = runtime.committedHandResult;
   const showingResult = committed?.handId === runtime.handId && (hand?.street === 'complete' || !!runtime.sessionResult);
-  const transitionAt = showingResult && !runtime.paused && !runtime.sessionResult ? runtime.nextTransitionAt ?? null : null;
+  const transitionAt = showingResult && !runtime.paused && !runtime.presencePaused && !runtime.sessionResult ? runtime.nextTransitionAt ?? null : null;
   const control = controller.controller(accountId);
   const member = room.members.find((candidate) => candidate.accountId === accountId);
   const isController = control?.connectionId === connectionId;
-  const legal = hand && isController ? legalActions(hand, accountId)
+  const legal = hand && isController && !runtime.presencePaused ? legalActions(hand, accountId)
     : { canFold: false, canCheck: false, callAmount: 0, raise: null };
   // Retain every dealt seat, including folded players and all-in blinds.
   const dealingOrder = [...(hand?.seats ?? [])].sort((a, b) =>
@@ -66,7 +67,7 @@ export function projectGame(runtime: SessionRuntime, room: InternalRoom, control
     actorAccountId: hand?.actorAccountId ?? null, serverTime: new Date(now).toISOString(),
     deadline: runtime.deadline === null ? null : new Date(runtime.deadline).toISOString(),
     nextTransitionAt: transitionAt === null ? null : new Date(transitionAt).toISOString(),
-    nextTransition: transitionAt === null ? null : runtime.ending || runtime.stacks.filter((stack) => stack > 0).length < 2 ? 'session-end' : 'next-hand',
+    nextTransition: transitionAt === null ? null : sessionEndReason(runtime) ? 'session-end' : 'next-hand',
     holeCards: hand?.seats.find((seat) => seat.accountId === accountId)?.holeCards
       ? [...hand.seats.find((seat) => seat.accountId === accountId)!.holeCards] as [number, number]
       : null,

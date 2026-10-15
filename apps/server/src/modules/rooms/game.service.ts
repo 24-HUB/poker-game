@@ -1,6 +1,6 @@
 import { createHash, randomUUID } from 'node:crypto';
 
-import { ForbiddenException, Inject, Injectable, ServiceUnavailableException, type OnApplicationShutdown } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable, Optional, Logger, ServiceUnavailableException, type OnApplicationShutdown } from '@nestjs/common';
 import type { CommandOutcome, GameCommand, GameReply, HandHistoryPage, Result } from '@poker/contracts' with { 'resolution-mode': 'import' };
 import { applyAction, assertDeck, legalActions, startHand } from '@poker/poker-engine';
 
@@ -16,9 +16,13 @@ import { RoomQueueFullError, RoomRegistry } from './roomRegistry';
 import { SessionError } from './session.repository';
 import { SessionService, type SessionRuntime } from './session.service';
 import { SettlementService, type SettlementCandidate } from '../settlement/settlement.service';
+import { BOT_RANDOM, CryptoBotRandom, type BotRandom } from './bots/botRandom';
+import { buildBotObservation } from './bots/botObservation';
+import { chooseBotAction } from './bots/botStrategy';
+import { BotTurnScheduler, type TurnPlan, type ScheduledTurn } from './bots/botTurnScheduler';
+import { sessionEndReason } from './sessionEndReason';
 
 export type GameContext = RoomContext & { headers: Headers };
-type TimerIdentity = { sessionId: string; handId: string; gameVersion: number; actor: string; deadline: number };
 
 function fail(code: string, message: string): Result<GameReply> {
   return { data: null, error: { code, message } };
@@ -36,7 +40,14 @@ function hash(command: GameCommand): string {
 
 @Injectable()
 export class GameService implements OnApplicationShutdown {
-  private readonly timers = new Map<string, CancelTimer>();
+  private readonly turns: BotTurnScheduler;
+  private readonly pausedTurns = new Map<string, TurnPlan>();
+  private readonly pausedResults = new Map<string, number>();
+  private readonly resultGenerations = new Map<string, number>();
+  private readonly resultTransitions = new Map<string, number>();
+  private resultGeneration = 0;
+  private presenceVerifier: ((roomId: string) => Promise<boolean>) | null = null;
+  private readonly logger = new Logger(GameService.name);
   private readonly resultTimers = new Map<string, CancelTimer>();
   private readonly candidates = new Map<string, SettlementCandidate>();
   private rewardListener: ((accountIds: string[]) => void) | null = null;
@@ -53,7 +64,57 @@ export class GameService implements OnApplicationShutdown {
     @Inject(DECK_FACTORY) private readonly decks: DeckFactory,
     private readonly cache: GameCommandCache,
     private readonly settlements: SettlementService,
-  ) {}
+    @Optional() @Inject(BOT_RANDOM) private readonly random: BotRandom = new CryptoBotRandom(),
+  ) {
+    this.turns = new BotTurnScheduler(clock);
+    registry.subscribeGameLifecycle({ presence: (roomId) => this.reconcilePresenceInQueue(roomId), close: (roomId) => this.cancelRoomInQueue(roomId) });
+  }
+
+  public subscribePresenceVerifier(verifier: (roomId: string) => Promise<boolean>): void { this.presenceVerifier = verifier; }
+
+  private async reconcilePresenceInQueue(roomId: string, verifiedPresence?: boolean): Promise<void> {
+    const controller = this.registry.peek(roomId);
+    const runtime = controller?.session;
+    if (!runtime || runtime.mode !== 'practice' || runtime.sessionResult) return;
+    const present = verifiedPresence ?? runtime.participants.some((player) => player.kind !== 'bot' && controller!.isConnected(player.accountId));
+    if (!present && !runtime.presencePaused) {
+      runtime.presencePaused = true;
+      const turn = this.turns.pause(roomId);
+      if (turn) this.pausedTurns.set(roomId, turn);
+      runtime.deadline = null;
+      const transitionAt = this.resultTransitions.get(roomId);
+      if (transitionAt != null) {
+        this.pausedResults.set(roomId, Math.max(0, transitionAt - this.clock.now()));
+        this.cancelResult(roomId);
+        runtime.nextTransitionAt = null;
+      }
+      runtime.snapshotRevision += 1;
+    } else if (present && runtime.presencePaused) {
+      runtime.presencePaused = false;
+      const turn = this.pausedTurns.get(roomId);
+      this.pausedTurns.delete(roomId);
+      if (turn && runtime.hand?.street !== 'complete') this.scheduleTurn(runtime, turn);
+      const resultMs = this.pausedResults.get(roomId);
+      this.pausedResults.delete(roomId);
+      if (resultMs !== undefined && runtime.committedHandResult?.handId === runtime.handId) this.scheduleResult(runtime, resultMs);
+      runtime.snapshotRevision += 1;
+    }
+  }
+
+  private async canProgress(runtime: SessionRuntime): Promise<boolean> {
+    if (runtime.mode !== 'practice') return true;
+    const present = this.presenceVerifier ? await this.presenceVerifier(runtime.roomId)
+      : runtime.participants.some((player) => player.kind !== 'bot' && this.registry.peek(runtime.roomId)?.isConnected(player.accountId));
+    await this.reconcilePresenceInQueue(runtime.roomId, present);
+    return !runtime.presencePaused;
+  }
+
+  private cancelRoomInQueue(roomId: string): void {
+    this.turns.cancel(roomId); this.cancelResult(roomId);
+    this.pausedTurns.delete(roomId); this.pausedResults.delete(roomId);
+    const runtime = this.registry.peek(roomId)?.session;
+    if (runtime) this.candidates.delete(runtime.handId);
+  }
 
   public subscribeUpdates(listener: (roomId: string) => void): void { this.updateListener = listener; }
   public subscribeRewards(listener: (accountIds: string[]) => void): void { this.rewardListener = listener; }
@@ -161,6 +222,7 @@ export class GameService implements OnApplicationShutdown {
     if (cached.kind === 'hit') return this.reply(runtime, command.roomId, verified.accountId, context.connectionId, cached.outcome);
     if (command.handId !== runtime.handId) return fail('STALE_STATE', 'This action belongs to an earlier hand.');
     if (!runtime.hand || runtime.hand.street === 'complete') return fail('HAND_SETTLING', 'The hand is settling.');
+    if (runtime.presencePaused) return fail('HAND_SETTLING', 'Practice play is paused until a human reconnects.');
     if (runtime.deadline !== null && this.clock.now() >= runtime.deadline) {
       await this.applyTimeout(runtime);
       this.updateListener?.(runtime.roomId);
@@ -216,32 +278,54 @@ export class GameService implements OnApplicationShutdown {
       legal.canCheck ? { type: 'check' } : { type: 'fold' }, 'timeout'));
   }
 
-  private scheduleTurn(runtime: SessionRuntime): void {
+  private scheduleTurn(runtime: SessionRuntime, restored?: TurnPlan): void {
     this.cancelTurn(runtime.roomId);
     const actor = runtime.hand?.actorAccountId;
-    if (!actor || !runtime.hand || this.disposed) { runtime.deadline = null; return; }
-    const deadline = this.clock.now() + 30_000;
-    runtime.deadline = deadline;
-    const identity: TimerIdentity = {
-      sessionId: runtime.sessionId, handId: runtime.handId,
-      gameVersion: runtime.gameVersion, actor, deadline,
-    };
-    const cancel = this.clock.schedule(deadline, () => {
+    const token = this.authority.currentToken();
+    if (!actor || !runtime.hand || this.disposed || runtime.presencePaused || runtime.paused || !token) { runtime.deadline = null; return; }
+    const bot = runtime.participants.find((player) => player.accountId === actor)?.kind === 'bot';
+    let action = restored?.action ?? null;
+    if (bot && !restored) {
+      try { action = chooseBotAction(buildBotObservation(runtime.hand, actor), this.random.next()); }
+      catch { this.logger.warn('Bot strategy failed; using legal fallback.');
+        action = legalActions(runtime.hand, actor).canCheck ? { type: 'check' } : { type: 'fold' }; }
+    }
+    const plan: TurnPlan = restored ?? { sessionId: runtime.sessionId, handId: runtime.handId,
+      gameVersion: runtime.gameVersion, actor, bootId: token.bootId, epoch: token.epoch, action,
+      safetyMs: 30_000, botMs: bot ? 1000 + Math.floor(this.random.next() * 2001) : null };
+    runtime.deadline = this.clock.now() + plan.safetyMs;
+    this.turns.arm(runtime.roomId, plan, (identity: ScheduledTurn, botDue: boolean) => {
+      if (this.disposed || !this.turns.isCurrent(runtime.roomId, identity)) return;
       void this.registry.enqueue(runtime.roomId, async () => {
-        if (this.disposed) return;
-        if (!this.authority.currentToken()) {
+        if (this.disposed || !this.turns.isCurrent(runtime.roomId, identity)) return;
+        const authority = this.authority.currentToken();
+        if (!authority || authority.bootId !== identity.bootId || authority.epoch !== identity.epoch) {
           this.cancelTurn(runtime.roomId);
           return;
         }
-        const current = this.registry.controller(runtime.roomId).session;
+        const current = this.registry.peek(runtime.roomId)?.session;
+        const dueAt = botDue ? identity.botAt : identity.safetyAt;
         if (!current || current.sessionId !== identity.sessionId || current.handId !== identity.handId ||
             current.gameVersion !== identity.gameVersion || current.hand?.actorAccountId !== identity.actor ||
-            current.deadline !== identity.deadline || this.clock.now() < identity.deadline) return;
-        await this.applyTimeout(current);
+            current.presencePaused || current.paused || current.sessionResult || dueAt === null || this.clock.now() < dueAt) return;
+        const room = await this.rooms.load(runtime.roomId);
+        if (!room || room.phase !== 'playing' || room.authorityBootId !== identity.bootId || room.authorityEpoch !== identity.epoch) { this.cancelTurn(runtime.roomId); return; }
+        if (!await this.canProgress(current)) return;
+        if (botDue) {
+          if (!identity.action || current.participants.find((player) => player.accountId === identity.actor)?.kind !== 'bot') return;
+          let transition;
+          try { transition = applyAction(current.hand!, identity.actor, identity.action, 'bot'); }
+          catch (error) {
+            if (!(error instanceof RangeError)) throw error;
+            this.logger.warn('Bot action rejected; using legal fallback.');
+            const legal = legalActions(current.hand!, identity.actor);
+            transition = applyAction(current.hand!, identity.actor, legal.canCheck ? { type: 'check' } : { type: 'fold' }, 'bot');
+          }
+          await this.accept(current, transition);
+        } else await this.applyTimeout(current);
         this.updateListener?.(current.roomId);
-      }).catch(() => undefined);
+      }).catch(() => this.turns.retry(runtime.roomId, identity, botDue));
     });
-    this.timers.set(runtime.roomId, cancel);
   }
 
   private async reply(runtime: SessionRuntime, roomId: string, accountId: string,
@@ -256,19 +340,23 @@ export class GameService implements OnApplicationShutdown {
 
   public dispose(): void {
     this.disposed = true;
-    for (const roomId of this.timers.keys()) this.cancelTurn(roomId);
+    this.turns.dispose();
     for (const cancel of this.resultTimers.values()) cancel();
     this.resultTimers.clear();
+    this.resultGenerations.clear(); this.resultTransitions.clear(); this.pausedTurns.clear(); this.pausedResults.clear();
   }
 
   private cancelTurn(roomId: string): void {
-    this.timers.get(roomId)?.();
-    this.timers.delete(roomId);
-    const runtime = this.registry.controller(roomId).session;
+    this.turns.cancel(roomId);
+    const runtime = this.registry.peek(roomId)?.session;
     if (runtime) runtime.deadline = null;
   }
 
   public onApplicationShutdown(): void { this.dispose(); }
+
+  private cancelResult(roomId: string): void {
+    this.resultTimers.get(roomId)?.(); this.resultTimers.delete(roomId); this.resultGenerations.delete(roomId); this.resultTransitions.delete(roomId);
+  }
 
   private async commitSettlement(runtime: SessionRuntime): Promise<void> {
     const engine = runtime.settlement;
@@ -286,7 +374,7 @@ export class GameService implements OnApplicationShutdown {
         participants: runtime.participants,
         presentationParticipants: runtime.participants.map((player) => ({ ...player,
           folded: runtime.hand?.seats.find((seat) => seat.accountId === player.accountId)?.folded ?? false,
-          equipment: runtime.equipmentByAccount?.[player.accountId],
+          equipment: runtime.equipmentByAccount?.[player.accountId] ?? { avatar: null, cardBack: null },
         })),
         engine: { ...engine, finalStacks: runtime.participants.map((participant) => {
           const seatIndex = runtime.hand?.seats.findIndex((seat) => seat.accountId === participant.accountId) ?? -1;
@@ -312,18 +400,28 @@ export class GameService implements OnApplicationShutdown {
   }
 
   private scheduleResult(runtime: SessionRuntime, delay: number, retry = false): void {
-    this.resultTimers.get(runtime.roomId)?.();
+    this.cancelResult(runtime.roomId);
+    if (runtime.presencePaused && !retry) {
+      this.pausedResults.set(runtime.roomId, delay); runtime.nextTransitionAt = null; return;
+    }
     const handId = runtime.handId;
+    const authority = this.authority.currentToken();
+    if (!authority || this.disposed) return;
+    const generation = ++this.resultGeneration;
+    this.resultGenerations.set(runtime.roomId, generation);
     const at = this.clock.now() + delay;
+    if (!retry) this.resultTransitions.set(runtime.roomId, at);
     runtime.nextTransitionAt = retry || runtime.paused ? null : at;
     this.resultTimers.set(runtime.roomId, this.clock.schedule(at, () => {
       void this.registry.enqueue(runtime.roomId, async () => {
-        if (this.disposed || !this.authority.currentToken() || this.clock.now() < at) return;
-        const current = this.registry.controller(runtime.roomId).session;
+        const token = this.authority.currentToken();
+        if (this.disposed || !token || token.bootId !== authority.bootId || token.epoch !== authority.epoch ||
+            this.resultGenerations.get(runtime.roomId) !== generation || this.clock.now() < at) return;
+        const current = this.registry.peek(runtime.roomId)?.session;
         if (!current || current.sessionId !== runtime.sessionId || current.handId !== handId || current.sessionResult) return;
         try {
           if (retry) await this.commitSettlement(current);
-          else await this.afterResult(current);
+          else if (await this.canProgress(current)) await this.afterResult(current);
           this.updateListener?.(current.roomId);
         } catch {
           current.paused = true;
@@ -336,9 +434,10 @@ export class GameService implements OnApplicationShutdown {
   }
 
   private async afterResult(runtime: SessionRuntime): Promise<void> {
-    if (!runtime.committedHandResult) return;
-    if (runtime.ending || runtime.stacks.filter((stack) => stack > 0).length < 2) {
-      await this.sessions.completeInQueue(runtime, runtime.ending ? 'HOST_ENDED' : 'ONE_FUNDED', new Date(this.clock.now()));
+    if (!runtime.committedHandResult || runtime.presencePaused) return;
+    const reason = sessionEndReason(runtime);
+    if (reason) {
+      await this.sessions.completeInQueue(runtime, reason, new Date(this.clock.now()));
       runtime.hand = null;
       runtime.nextTransitionAt = null;
       this.resultTimers.delete(runtime.roomId);
@@ -349,6 +448,7 @@ export class GameService implements OnApplicationShutdown {
     const buttonSeat = seats.find((seat) => seat > runtime.buttonSeat) ?? seats[0]!;
     const nextHandId = randomUUID();
     await this.sessions.nextHandInQueue(runtime, nextHandId, buttonSeat, new Date(this.clock.now()));
+    runtime.paused = false;
     runtime.nextTransitionAt = null;
     this.resultTimers.delete(runtime.roomId);
     await this.dealFirstHand(runtime);
