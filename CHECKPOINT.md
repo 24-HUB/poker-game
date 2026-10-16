@@ -1,5 +1,31 @@
 # Checkpoint — Remaining phases through production
 
+## Bot-player CI regression follow-up — 2026-10-16
+
+- Continued `codex/bot-player-plan`, [PR #31](https://github.com/24-HUB/poker-game/pull/31),
+  base `dev`, from `0886609e`. All feature code was already implemented; this
+  follow-up changes browser tests and documentation only.
+- CI run `38742584198` passed `pnpm check` (including all 282 server tests),
+  migration idempotency, encrypted backup/restore and Worker packaging, then
+  failed two Chromium timing assumptions. Both were reproduced locally:
+  wallet labels matched hidden retained content during access recovery, and
+  publication could disconnect a revoked guest before its takeover click.
+- Tests now explicitly cover delayed recovery with scoped visible wallet checks,
+  and a host publication automatically removing the revoked guest. Actions have
+  bounded timeouts; cleanup preserves the original failure. Both cases passed
+  three repetitions each (**6/6**). Fresh `CI=true` full Chromium **35/35 passed**
+  in 4.2 minutes; web typecheck and whitespace checks passed.
+- Logs: ignored `.artifacts/bot-players-2026-10-15/{ci-races-red,ci-races-green,browser-resumed-full}.log`.
+  Latest fetch confirms `origin/dev` `17a43ba5` is included. Restore the generated
+  dev-only `next-env.d.ts` paths before committing; no application edits pending.
+- Publication sequence: commit this follow-up, push the explicit task branch,
+  inspect its new CI run, and mark PR ready only after it passes. The PR's live
+  checks are the source for post-publication status. User merges manually.
+  No deployment or hosted migration was performed.
+- Usage observed 2026-10-16 **20:00 Bangkok**: five-hour **83% remaining**,
+  resets 2026-10-17 **00:10:34**; weekly **68% remaining**, resets 2026-10-22
+  **13:13:35** Bangkok. No usage blocker or billing action.
+
 ## Bot-player verified implementation save point — 2026-10-15
 
 - Feature implementation is complete on `codex/bot-player-plan`, published in

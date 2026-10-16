@@ -3,6 +3,9 @@
 Date: 2026-10-15 (Asia/Bangkok)
 Status: Written specification approved by the user's 2026-10-15 request to implement
 PR #31. Application implemented and locally verified; final CI/publication pending.
+Follow-up 2026-10-16: both CI browser timing failures reproduced and fixed;
+fresh full Chromium 35/35 and web typecheck pass. Required post-publication
+checks must pass before PR readiness; consult PR #31 for live status.
 Baseline: freshly fetched `origin/dev` `17a43ba5`.
 Task branch: `codex/bot-player-plan`; implementation and evidence, targeting `dev`.
 

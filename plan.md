@@ -520,6 +520,28 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Bot-player CI regression follow-up — 2026-10-16
+
+Continued `codex/bot-player-plan` and [PR #31](https://github.com/24-HUB/poker-game/pull/31)
+from `0886609e`; application implementation remains complete. Latest CI
+`38742584198` passed aggregate checks (all 282 server tests), migrations,
+backup/restore and Worker packaging, but exposed two browser timing assumptions.
+Reproduced both locally, then scoped wallet assertions across delayed access
+recovery and explicitly tested publication-driven guest revocation. Bounded
+actions and concurrent cleanup now preserve useful failure diagnostics.
+
+Fresh verification: affected cases **6/6** over three repetitions each; full
+`CI=true` Chromium **35/35 passed** in 4.2 minutes; web typecheck and whitespace
+checks passed. Only browser tests/documentation changed. Logs are ignored under
+`.artifacts/bot-players-2026-10-15/`. Fetch confirms `origin/dev` `17a43ba5` is
+included. Publish the follow-up and inspect its CI before marking ready; consult
+the PR's live checks for subsequent status. User merges manually; no deployment
+or hosted migration. `CHECKPOINT.md` records the precise publication sequence.
+
+Usage observed 2026-10-16 **20:00 Bangkok**: five-hour **83% remaining**, resets
+2026-10-17 **00:10:34**; weekly **68% remaining**, resets 2026-10-22 **13:13:35**
+Bangkok. No usage blocker or billing action.
+
 ### Bot-player verified implementation save point — 2026-10-15
 
 Implementation is complete on `codex/bot-player-plan`, [PR #31](https://github.com/24-HUB/poker-game/pull/31)

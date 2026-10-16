@@ -12,6 +12,24 @@
 
 **Status:** Implemented on `codex/bot-player-plan`, PR #31 targeting `dev`. Full local Chromium 35/35 and production builds pass; Linux aggregate, migration/backup and Worker checks pass. Final CI Chromium/publication is pending. `CHECKPOINT.md` records actual checks, one isolated local setup timeout, implementation deviations and the below-10% usage save point. Do not repeat completed application work or claim pending CI complete. Do not merge or deploy.
 
+**2026-10-16 execution record:** Application work remains complete. The two CI
+browser failures were reproduced and fixed as test synchronization assumptions;
+no application changes were necessary. Actual acceptance evidence supersedes the
+original per-command procedure below, whose proposed commands are not a run log.
+
+- [x] Tasks 1–3: contracts/legacy compatibility, host roster/session admission,
+  durable economy protection and migration 007 implemented and verified.
+- [x] Tasks 4–5: restricted casual strategy, fenced scheduling, presence pause,
+  settlement recovery and session endings implemented and verified.
+- [x] Task 6: room/table controls and practice results/history implemented;
+  solo/mixed browser flows and desktop/mobile layouts verified.
+- [x] Task 7 local follow-up: both CI regressions reproduced; targeted **6/6**,
+  fresh full `CI=true` Chromium **35/35** (4.2 minutes), web typecheck and
+  whitespace checks passed. Latest Linux aggregate passed all 282 server tests.
+- Publication gate: push this follow-up to existing PR #31 and inspect the new
+  required checks before marking ready. Live PR checks record subsequent status;
+  the user merges manually. No deployment or hosted migration.
+
 ## Global constraints
 
 - Six seats total; at least one human and two total players; one casual difficulty.
