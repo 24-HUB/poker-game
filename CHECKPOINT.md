@@ -1,5 +1,40 @@
 # Checkpoint — Remaining phases through production
 
+## Hosted private release plan — 2026-10-17
+
+- User confirmed PR #31 is merged and requested an implementation plan for the
+  remaining backup, hosted playtest and private release work. Fresh fetch confirms
+  merge `0d4ae28a` on `origin/dev`; its [CI run](https://github.com/24-HUB/poker-game/actions/runs/38996688408)
+  completed successfully. This is CI evidence, not hosted acceptance.
+- Clean new branch `codex/hosted-release-plan` starts at that merge. Created and
+  self-reviewed [the execution plan](docs/superpowers/plans/2026-10-17-hosted-private-release.md),
+  covering existing-resource inventory, retained encrypted storage/key recovery,
+  scoped playtest deployment, real account/game/bot/economy checks, natural wake
+  and interruption drills, hosted isolated restore, production approval/cutover
+  and operator handoff. No application/configuration/provider changes.
+- User says hosting resources already exist; names, current versions/data and
+  backup destination/key method remain unrecorded. Inventory before provisioning
+  or changing anything. Plan records actual blueprint admission=true/economy=false,
+  CI-triggered Render deploys and migration 007; older runbook text needs correction
+  during execution, with no silent live-setting change.
+- Documentation validation: source paths/commands and relative links, requirement
+  coverage/self-review, full diff and whitespace checks. Application tests are
+  unnecessary for this documentation-only task and have not been rerun.
+- Published plan commit `88952ed7` in [PR #32](https://github.com/24-HUB/poker-game/pull/32),
+  targeting `dev`. Final fetch and full-task whitespace review passed; branch
+  contains latest `origin/dev` `0d4ae28a`, with only the three intended documentation
+  files. This publication-note follow-up is documentation only; new PR CI is separate
+  from the already verified merged-application run. User reviews and merges manually.
+- Next: review the published plan.
+  After plan review, execute Task 1 inline on its own task branch: inspect existing
+  provider references/configuration and exact candidate CI, then record the release
+  inventory. Live actions require the concrete environment/action approval package.
+- Usage observed 2026-10-17 **10:14 Bangkok**: five-hour **90% remaining**, resets
+  2026-10-17 **12:40:06**; weekly **65% remaining**, resets 2026-10-22 **13:13:35**
+  Bangkok. No usage blocker or billing action. No deployment, email or hosted DB
+  operation performed. Handoff usage recheck at **10:20 Bangkok**: five-hour **85% remaining**, weekly
+  **64% remaining**, with the same reset times; no threshold blocker.
+
 ## Bot-player CI regression follow-up — 2026-10-16
 
 - Continued `codex/bot-player-plan`, [PR #31](https://github.com/24-HUB/poker-game/pull/31),
