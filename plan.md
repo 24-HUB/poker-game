@@ -520,6 +520,32 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Hosted private release plan — 2026-10-17
+
+The user confirmed PR #31 merged and requested the remaining release implementation
+plan. Fresh `origin/dev` is `0d4ae28a`; its [CI run](https://github.com/24-HUB/poker-game/actions/runs/38996688408)
+completed successfully. This does not establish deployed versions or hosted acceptance.
+Clean task branch `codex/hosted-release-plan` contains the
+[new execution plan](docs/superpowers/plans/2026-10-17-hosted-private-release.md):
+inventory existing resources, select retained encrypted backup/key access, authorize
+and verify hosted playtest, rehearse interruption/isolated restore, prepare production
+approval/cutover, then record operating ownership. All execution steps remain unchecked.
+
+The user reports hosting resources already exist; exact resource names/current data
+and backup destination/key method need inventory. Preserve existing progression.
+Repository inspection found Render CI-triggered deploys, blueprint admission enabled
+and purchases disabled, and migrations 001–007. The plan accounts for this drift from
+older runbook text without changing live settings. No application/configuration change,
+deployment, email or hosted database operation occurred in this planning task.
+
+Documentation validation covers source/link/command accuracy, requirement self-review,
+full task diff and whitespace checks; application tests have not been rerun. Publish
+the plan in a PR targeting `dev`; user reviews and merges manually. Next after review:
+Task 1 inline, record actual provider inventory and candidate CI before any live action.
+See `CHECKPOINT.md` for resume/publication details. Usage observed 2026-10-17 10:14
+Bangkok: five-hour 90% remaining (reset 2026-10-17 12:40:06), weekly 65% remaining
+(reset 2026-10-22 13:13:35 Bangkok). No usage blocker or billing action.
+
 ### Bot-player CI regression follow-up — 2026-10-16
 
 Continued `codex/bot-player-plan` and [PR #31](https://github.com/24-HUB/poker-game/pull/31)
