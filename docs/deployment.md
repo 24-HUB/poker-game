@@ -226,10 +226,12 @@ consistent Atlas capture and isolated retained-archive restore passed metadata,
 counts, progression fingerprints and economy checks; migrations 001–007 were
 read back after two successful runs. See the current
 [release record](releases/2026-10-17-private-release.md) for exact evidence.
-Backend is suspended with both controls false and provider auto-updates paused,
-awaiting human-entered paired proxy-secret rotation, closed restart/smoke and
-restoration of original controls. Expanded hosted gameplay/account/email and
-interruption acceptance remain separate gates.
+At 20:25 Bangkok, paired proxy rotation and public smoke passed; the same backend
+candidate is online with original admission true/economy false and all original
+provider auto-updates restored/read back. Saved environment changes require a
+deployment: resume/restart alone can retain the prior running configuration.
+Expanded hosted gameplay/account/email and interruption acceptance remain separate
+gates. See the release record for immutable configuration/deployment IDs.
 
 ```powershell
 docker compose up -d mongodb mongodb-standalone

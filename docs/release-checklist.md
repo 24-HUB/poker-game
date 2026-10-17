@@ -15,9 +15,10 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
   100% traffic before maintenance). During the authorized attended window, a
   consistent encrypted source backup and isolated authenticated restore passed;
   migrations 001–007 are now verified after two successful runs. Durable
-  progression is unchanged. Backend is suspended and automatic updates paused
-  pending human-entered paired proxy-secret rotation, closed restart/smoke and
-  restoration of original controls. Hosted full-flow acceptance remains open. Older
+  progression is unchanged. Paired proxy-secret rotation and public smoke passed
+  at 20:25 Bangkok; backend is online, original admission true/economy false and
+  original provider automatic updates are restored. Hosted full-flow acceptance
+  remains open. Older
   candidate records below are historical evidence, not current release approval.
 - M5.1 CI/build correction merged in [PR #15](https://github.com/24-HUB/poker-game/pull/15).
   M5.2 local recovery implementation merged in [PR #16](https://github.com/24-HUB/poker-game/pull/16).

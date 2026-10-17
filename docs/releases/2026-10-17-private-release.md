@@ -1,8 +1,8 @@
 # Private release execution record — 2026-10-17
 
-Status: verified encrypted recovery copy and schema maintenance complete;
-paired proxy-secret rotation is awaiting private operator entry. Backend suspended;
-hosted acceptance and private launch remain blocked.
+Status: approved maintenance completed; backend online, paired proxy-secret
+rotation and public smoke passed, original provider/release controls restored.
+Full hosted acceptance and private launch remain blocked by the remaining gates.
 This executes the plan in [PR #32](https://github.com/24-HUB/poker-game/pull/32).
 The plan PR was still open at inspection. This new execution task branches from
 fresh `origin/dev`; it neither merges that PR nor copies its planning checkpoint.
@@ -26,7 +26,41 @@ fresh `origin/dev`; it neither merges that PR nor copies its planning checkpoint
 - CI annotations: action runtime deprecation and upcoming `ubuntu-latest` image
   transition. The job passed; no unrelated dependency/workflow upgrades are included.
 
-## Attended maintenance results — 20:12 Bangkok
+## Maintenance exit — 20:25 Bangkok
+
+- Operator privately entered/submitted the matching new proxy credential in both
+  providers. Cloudflare confirms type **Secret**, value encrypted. Replacement
+  Worker configuration version **`e4cfba62-ffca-4f1e-9864-eda43f85f3a0`** is Ready at
+  100% traffic, labelled Updated secret: PROXY_SECRET, with the existing candidate
+  binary. The exposed old value was not read/reused during rotation.
+- Resuming Render alone reused its previous deployment configuration. Initial
+  smoke timed out, then returned 403. Applied the already saved environment with
+  **Save and deploy**, without revealing/re-entering any credential; same SHA
+  `0d4ae28a`, deployment `dep-db9nchks728c73cb28jg`, Live in 40.7 s. An initial
+  post-deploy 503 settled; the public shell/readiness smoke then passed.
+  Render documents that a restart preserves the running configuration; saved
+  environment changes require deployment. See [deployment behavior](https://render.com/docs/deploys)
+  and [environment save modes](https://render.com/docs/configure-environment-variables).
+- Restored **admission true / economy false** with same-SHA deployment
+  **`dep-db9ndnss728c73cb5p40`**, Live in 40.8 s. Saved-value read-back confirms
+  both flags. Final `pnpm smoke:deployment` passes: shell 200, readiness ready.
+- Restored Render Auto-Deploy **After CI Checks Pass**, Blueprint Auto Sync **Yes**
+  and Cloudflare Git builds **enabled**, each read back. Re-enabling Blueprint
+  initiated its normal settings sync for the automatic-deploy trigger; no branch
+  merge, manual Blueprint sync, Worker binary upload or unrelated service change.
+- Final reader audit at **20:25:49 Bangkok**: exactly schema 001–007, six expected
+  validators, three required indexes, unchanged durable progression, economy OK.
+  One authority row is live; active participants/memberships remain zero.
+  Temporary reader/migrator retain their selected six-hour expiry; no further
+  access or network rule was added. Recovery archive/manifests remain unchanged.
+- The approved maintenance package is complete. No full hosted sign-in/email,
+  multiplayer/bot/economy/reconnect/interruption or restored-auth acceptance was
+  performed. No invitations, gameplay fixtures, email sends, production cutover,
+  source restore, purchases, paid upgrade or PR merge. Next: prepare the designated
+  accounts, sender/quota evidence and concrete hosted acceptance scope in the
+  release plan; obtain any separately required live-action authorization.
+
+## Attended maintenance results — state at 20:12 Bangkok
 
 - The operator approved this package with “yes run it now”, created both scoped
   six-hour Atlas accounts and saved their passwords through masked local prompts.
@@ -305,8 +339,8 @@ runtime-role hardening and the final private-release decision remain open.
 - [x] Capture full Worker version ID. Maintenance uses existing dashboard resource
   `poker-game` and its current binary; no manual Wrangler upload or name change.
   Wrangler's differing default name remains a future operator-upload prerequisite.
-- [ ] Execute approved coordinated proxy credential rotation; never restore the
-  previously exposed value as a rollback.
+- [x] Coordinated proxy rotation into a Worker Secret and matching Render value;
+  new configuration UUID recorded, public smoke passes. Never restore old value.
 - [x] User completed Atlas sign-in; cluster/schema metadata and sanitized counts
   inspected read-only without opening connection strings or account documents.
 - [x] Confirm Atlas/runtime hostname pairing privately (12:34 Bangkok).
@@ -328,7 +362,7 @@ runtime-role hardening and the final private-release decision remain open.
   documents, indexes and validators matched, both process exits checked, no
   plaintext disk archive. This is not a hosted or authenticated recovery claim.
 - [x] Approved writer shutdown, suspension and consistent capture; isolated
-  restore and schema application passed. Backend remains suspended for rotation.
+  restore and schema application passed. Rotation and safe reopening completed.
 - [x] Local restore tooling available after Docker startup: engine 28.3.3;
   network-isolated `mongo:8.0.17` containers report dump/restore 100.14.0.
   `pnpm test:backup` passed 1/1 on 2026-10-17 12:35 Bangkok, including server
@@ -340,19 +374,20 @@ runtime-role hardening and the final private-release decision remain open.
   window, rollback and stop conditions in the scoped package above.
 - [x] Operator approves that package and confirms the attended no-active-players
   window before any source dump, provider change, access creation or migration.
-- [ ] Tasks 3–7: scoped deployment, hosted full-flow acceptance, interruption/restore,
-  private cutover and operating handoff. No hosted gate is marked complete here.
+- [ ] Remaining Tasks 3–7: full hosted acceptance, interruption/restored-auth,
+  private cutover and operating handoff. Scoped maintenance is complete; the
+  remaining full-release gates are not marked complete.
 
 Documentation verification: full diff self-reviewed against candidate sources and
-observed dashboards; whitespace and 13 relative file links passed on follow-up.
+observed dashboards; final working/task whitespace and 40 relative file links pass.
 The local backup suite/builds passed as above; aggregate/browser suites were not
 rerun for documentation. This partial inventory
 does not meet Task 1's full completion gate and remains a draft.
 
 The concrete maintenance package above supersedes the earlier placeholder. Runtime
 pairing, full artifact identity, operator-reported handwritten-key recovery, stream
-transport and verified source capture/isolated recovery are now recorded. Paired
-proxy rotation, reopening controls and hosted full-flow acceptance remain gates.
+transport, verified source capture/isolated recovery, paired proxy rotation and
+reopening controls are recorded. Hosted full-flow acceptance remains a gate.
 Preservation is the default;
 no source/sample data deletion is proposed. PR #33 stays draft and the user merges
 manually. A maintenance success will still leave hosted full-flow acceptance and

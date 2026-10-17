@@ -522,6 +522,24 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ### Hosted release execution — 2026-10-17
 
+**20:25 Bangkok: approved maintenance complete, backend online.** This supersedes
+the historical suspended-state notes below. Operator privately submitted the new
+matching proxy credential. Worker Secret is encrypted, configuration version
+`e4cfba62-ffca-4f1e-9864-eda43f85f3a0`, Ready/100%. Resume alone kept old backend
+config (smoke timeout/403); deployment of saved environment on the same candidate
+fixed it. A transient post-deploy 503 settled and smoke passed. Final same-SHA deployment
+`dep-db9ndnss728c73cb5p40` is Live (40.8 s); admission true/economy false,
+Render after-CI deploys, Blueprint sync Yes and Worker builds enabled are restored
+and read back. Final public smoke passes shell 200/readiness ready. Reader audit
+20:25:49 confirms schema 001–007, six validators/three required indexes, unchanged
+durable progression/economy, one live authority and zero active participants.
+Recovery copy/evidence retained unchanged; temporary accounts expire naturally.
+Same task branch/draft PR #33, prior commit `64917e9a`; no merge. Next: prepare
+designated-account/sender/quota and concrete hosted acceptance scope; full email,
+game/economy/interruption/restored-auth release gates still need evidence and any
+separately required authorization. Usage 20:25:32 Bangkok: five-hour 50%, weekly
+46% remaining, resets 2026-10-18 00:49:02 and 2026-10-22 13:13:35 Bangkok.
+
 20:12 Bangkok live save point: approved maintenance is in progress on existing
 task branch/draft PR #33, prior commit `ce4d1494`. Both scoped temporary accounts
 connect. Render Auto-Deploy Off, Blueprint Auto Sync No, Worker builds disabled;

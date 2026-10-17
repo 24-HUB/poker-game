@@ -9,7 +9,7 @@ not a verified Atlas recovery plan.
 ## Operator and approved targets
 
 2026-10-17 attended maintenance evidence is in the
-[release record](releases/2026-10-17-private-release.md#attended-maintenance-results--2012-bangkok).
+[release record](releases/2026-10-17-private-release.md#maintenance-exit--2025-bangkok).
 The approved consistent Atlas dump streamed directly into age on D:, then was
 retrieved/decrypted into an authenticated isolated tmpfs replica with no external
 network or published ports. All 25 collections matched metadata/counts/document
@@ -19,8 +19,12 @@ with a stable code-point order while retaining compound-index key order. Source
 migrations then passed twice and durable progression stayed unchanged. Encrypted
 archive and private manifests remain retained; no plaintext archive was written.
 This proves that scoped recovery copy, not restored-account/full-flow acceptance.
-Backend remains suspended for paired proxy rotation and closed restart/smoke;
-keep automatic updates paused until the approved exit gates pass.
+At 20:25 Bangkok, paired proxy rotation into an encrypted Worker Secret and matching
+Render setting passed public smoke. Backend is online with original admission
+true/economy false and all original automatic-update controls restored/read back.
+Final schema/progression/economy and single-authority audits passed. The scoped
+maintenance is complete; full hosted account/email/game/interruption acceptance
+and production cutover remain open. Temporary access expires naturally.
 
 The user is the backup/incident operator, confirmed 2026-10-07. They approved:
 

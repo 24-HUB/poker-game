@@ -2,6 +2,29 @@
 
 ## Hosted release execution — 2026-10-17
 
+- **20:25 Bangkok maintenance complete**, branch `codex/hosted-release-inventory`,
+  draft [PR #33](https://github.com/24-HUB/poker-game/pull/33), prior commit `64917e9a`.
+  Operator submitted the new shared credential privately. Worker type Secret,
+  encrypted value, version `e4cfba62-ffca-4f1e-9864-eda43f85f3a0`, Ready/100%.
+  Resume alone kept previous Render config: initial smoke timeout/403; deploying
+  saved environment on same SHA fixed it (`dep-db9nchks728c73cb28jg`, 40.7 s).
+  An initial post-deploy 503 settled; public shell/readiness passed. Original settings
+  restored via final same-SHA deploy `dep-db9ndnss728c73cb5p40`, Live/40.8 s:
+  admission true, economy false, Render after-CI deploys, Blueprint sync Yes,
+  Worker Git builds enabled. All persisted controls read back; final public smoke
+  passed shell 200/readiness ready. **Backend online; do not follow the historical
+  20:12 keep-suspended instruction below.** Final reader audit 20:25:49 confirms
+  001–007, six exact validators, three required indexes, unchanged progression,
+  economy OK, one live authority, zero active participants/memberships. Backup and
+  encrypted evidence retained unchanged on D:. Temporary accounts expire naturally.
+  No application source changes or full hosted-flow claim. Next: prepare scoped
+  designated-account/email/game/interruption acceptance and sender/quota evidence;
+  follow required separate authorization before those live actions. PR stays draft
+  for remaining release gates; user merges manually. Usage 20:25:32 Bangkok:
+  five-hour 50%, weekly 46% remaining; resets 2026-10-18 00:49:02 and
+  2026-10-22 13:13:35 Bangkok. Final evidence diff reviewed; working/task whitespace
+  checks and 40 relative file links passed. No app suite rerun for documentation.
+
 - **20:12 Bangkok live maintenance save point** on `codex/hosted-release-inventory`,
   draft [PR #33](https://github.com/24-HUB/poker-game/pull/33); prior commit `ce4d1494`.
   Operator saved both temporary credentials; scoped reader/migrator connectivity
