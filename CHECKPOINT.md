@@ -2,6 +2,21 @@
 
 ## Hosted release execution — 2026-10-17
 
+- Follow-up **12:34 Bangkok**: operator confirms recovery key written on paper;
+  retention is attested, paper-copy decryption is still pending. Original identity
+  through stdin decrypts the harmless sample successfully; PowerShell 7 masked
+  entry can test the paper copy without exposing it in chat/history. Render URI
+  hostname matches Atlas `poker_g/Cluster0` exactly; only sanitized metadata read,
+  URI re-masked. Runtime target pairing is resolved. No live DB mutation/dump.
+  Docker startup initially returned a missing Linux pipe, then became ready:
+  engine 28.3.3, dump/restore 100.14.0 in isolated `mongo:8.0.17` containers.
+  At 12:35 Bangkok `pnpm test:backup` passed 1/1 plus dependency/server builds:
+  metadata, restored auth/receipts/equipment/economy; 797 ms restore, 7,254 ms
+  procedure, zero fixture progress lost. This is local generated data only.
+  BitLocker inspection failed with access denied, so encrypted staging is unverified.
+  Follow-up documentation diff/whitespace/13 relative links reviewed. Prior commit `73927b80`;
+  same draft PR #33. Next: operator runs the masked sample test with handwritten
+  key, then resolve staging/streaming and the scoped maintenance package.
 - Storage follow-up at **11:56 Bangkok**: user declined Google Drive, selected D:
   and explicitly accepted its internal-SSD limitation. Prepared `D:\PokerBackups`
   (`archives/manifests/samples/tools`) with current-user/SYSTEM-only ACLs; about

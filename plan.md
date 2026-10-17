@@ -522,6 +522,20 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ### Hosted release execution — 2026-10-17
 
+Follow-up **12:34 Bangkok**: user reports handwritten offline recovery-key copy;
+retention attested, actual decryption from that copy still pending. Original key
+through stdin successfully decrypts the harmless sample; a masked PowerShell 7
+entry command is verified for the operator's paper test. Runtime URI hostname
+privately matches Atlas `poker_g/Cluster0`; credentials re-masked, none in Git.
+Docker startup subsequently succeeded (engine 28.3.3); isolated containers provide
+dump/restore 100.14.0. `pnpm test:backup` passed 1/1 at 12:35 Bangkok, including
+dependency/server builds and local metadata/auth/receipt/equipment/economy recovery:
+797 ms restore, 7,254 ms procedure, zero fixture progress lost. These are synthetic
+results. Encrypted staging is unverified after BitLocker access denial.
+No hosted backup/migration/restore occurred. Prior saved
+commit `73927b80`, same draft PR #33. Next: masked handwritten-key sample recovery,
+then resolve staging/streaming and finish the concrete maintenance package.
+
 Storage follow-up **11:56 Bangkok**: user selected `D:\PokerBackups` and accepted
 that D: is the internal SSD containing the repository, with about 104 GiB free.
 Private destination/key-directory ACL checks passed. Official age v1.3.2 archive

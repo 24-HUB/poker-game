@@ -43,7 +43,7 @@ credentials, personal addresses, account/session IDs or private-card captures he
 | Render build/start | Frozen pnpm 10.33.0 install and `pnpm build:server`; `pnpm --filter @poker/server start`; health `/health/deploy` | No change required from inventory |
 | Render automatic updates | Auto-Deploy **After CI Checks Pass**; [Blueprint](https://dashboard.render.com/blueprint/exs-db6ddjnlot8c739prvmg/settings) `poker-anime-gacha` Auto Sync **Yes**, `dev`, `render.yaml` | Scoped authority to pause/resume both for coordinated maintenance |
 | Live flags | `ALLOW_NEW_SESSIONS=true`, `ECONOMY_WRITES_ENABLED=false`; matches blueprint | Controlled restart/window approval before changing either |
-| Database target | Render `MONGODB_DATABASE=poker_playtest`; Atlas `poker_g/Cluster0` contains that database; metadata details below | Confirm runtime cluster pairing privately, progression classification, separate isolated restore target |
+| Database target | Render database `poker_playtest` and sanitized URI hostname match Atlas project `poker_g` / `Cluster0`, confirmed 12:34 Bangkok; metadata below | Progression classification and separate isolated restore target |
 | Email | Render has `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`, `BREVO_SENDER_NAME` configured by name | Verified sender status and designated-account delivery; presence is not delivery evidence |
 | Recovery | Operator selected internal `D:\PokerBackups`, about 104 GiB free, no paid storage; retained key separate in private Windows profile folder; synthetic age test passed | Offline key retrieval, encrypted staging and verified full-writer shutdown; hosted restore still pending |
 
@@ -70,7 +70,9 @@ After the user signed in, Atlas project `poker_g`, Free `Cluster0` showed MongoD
 data and 5 / 500 connections. Its `poker_playtest` database has 25 collections and
 44 indexes; `sample_mflix` shares cluster capacity. Confirm this is the runtime
 URI's cluster privately before any mutation; matching database names alone do not
-establish target identity.
+establish target identity. Follow-up at 12:34 Bangkok compared only the Render
+URI hostname with Atlas's driver connection template and confirmed an exact match.
+The URI was re-masked; credentials were not printed, copied to Git or persisted.
 
 Actual `schemaMigrations` documents are `_id` 1 through 5 only, dated 2026-10-12;
 006–007 are absent in this inspected database. Existing email-code collections
@@ -111,8 +113,9 @@ older progression merely to roll back application code.
   coordinated proxy credential rotation; do not redeploy a differently named Worker.
 - [x] User completed Atlas sign-in; cluster/schema metadata and sanitized counts
   inspected read-only without opening connection strings or account documents.
-- [ ] Confirm Atlas/runtime pairing, retained backup and scoped authority to
-  apply missing migrations 006–007. Missing schema blocks hosted acceptance.
+- [x] Confirm Atlas/runtime hostname pairing privately (12:34 Bangkok).
+- [ ] Retained hosted backup and scoped authority to apply missing migrations
+  006–007. Missing schema blocks hosted acceptance.
 - [ ] Operator identifies whether existing progression matters. Preserve everything
   until answered; no data deletion is proposed.
 - [ ] Verify Brevo sender and account/quota headroom without sending test mail.
@@ -121,16 +124,27 @@ older progression merely to roll back application code.
 - [x] age v1.3.2 official download digest verified; retained key generated privately
   outside backup directories; synthetic retrieval/decrypt byte match, wrong-key
   rejection and tampered-file rejection passed at 2026-10-17 11:56 Bangkok.
-- [ ] Operator retains/retrieves an independent offline recovery-key copy; choose
-  encrypted staging and prove an approved full-writer shutdown procedure.
+- [x] Operator reports handwritten offline recovery-key copy (12:34 Bangkok).
+- [ ] Verify decryption using that handwritten copy; encrypted staging/streaming
+  and approved full-writer shutdown remain unverified. The original profile key
+  successfully decrypts via stdin, which verifies the proposed private-entry command
+  but does not verify transcription of the paper copy.
+- [x] Local restore tooling available after Docker startup: engine 28.3.3;
+  network-isolated `mongo:8.0.17` containers report dump/restore 100.14.0.
+  `pnpm test:backup` passed 1/1 on 2026-10-17 12:35 Bangkok, including server
+  dependency builds and disposable authenticated replica-set recovery. Restored
+  metadata/sign-in/receipt/equipment/economy passed; 797 ms restore, 7,254 ms
+  procedure and zero fixture progress lost. These are synthetic timings, not a
+  hosted recovery claim; no Atlas access was used.
 - [ ] Review exact deployment/backup/restore targets, commands, paired artifacts,
   window, rollback and stop conditions before requesting live-action authority.
 - [ ] Tasks 3–7: scoped deployment, hosted full-flow acceptance, interruption/restore,
   private cutover and operating handoff. No hosted gate is marked complete here.
 
 Documentation verification: full diff self-reviewed against candidate sources and
-observed dashboards; whitespace and 14 relative file links passed. Application
-tests were not rerun for this documentation-only change. This partial inventory
+observed dashboards; whitespace and 13 relative file links passed on follow-up.
+The local backup suite/builds passed as above; aggregate/browser suites were not
+rerun for documentation. This partial inventory
 does not meet Task 1's full completion gate and remains a draft.
 
 Proposed next package (not approved/executed): preserve `poker_playtest`; use the

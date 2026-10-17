@@ -29,6 +29,20 @@ in `%USERPROFILE%\.poker-backup-keys\poker-backup.agekey`, with the same private
 Never copy its contents into Git, chat, email or the archive directory. The operator
 must keep an independently accessible offline copy and demonstrate retrieval before
 a hosted backup/release. The current profile copy alone does not satisfy that gate.
+At 2026-10-17 12:34 Bangkok the operator reported a handwritten offline copy.
+This is recorded as operator confirmation of retention; decryption using that
+handwritten copy is still unverified. The harmless sample accepts identity input
+through stdin (`age -d -i - <sample>`), so PowerShell 7 `Read-Host -MaskInput` can
+test the paper copy privately without displaying it or adding it to shell history.
+Never type a real key as a literal command or paste it into chat.
+
+Local tooling follow-up at 12:35 Bangkok: Docker Desktop became ready (engine
+28.3.3); isolated `mongo:8.0.17` containers provide dump/restore 100.14.0.
+`pnpm test:backup` passed 1/1 with dependency/server builds, scoped credentials,
+metadata, restored sign-in, committed receipt replay, equipment and economy checks.
+Synthetic restore 797 ms, total procedure 7,254 ms, zero fixture progress lost.
+This fresh local rehearsal uses its own ephemeral encryption key; it does not
+verify the retained paper key, age-based hosted pipeline, or Atlas recovery.
 
 [Official age v1.3.2](https://github.com/FiloSottile/age/releases/tag/v1.3.2) Windows
 amd64 archive was downloaded and its SHA-256 checked against the official release
@@ -154,7 +168,8 @@ and [Atlas Free tool restrictions](https://www.mongodb.com/docs/atlas/reference/
    The single archive preserves BSON and metadata and avoids case-insensitive
    filesystem collisions. `--gzip` compresses, it does not encrypt. `age` is an
    operator-managed example; verify its official [usage/key guidance](https://github.com/FiloSottile/age)
-   before installing or selecting it. No backup utility is installed by this task.
+   before installing or selecting it. The selected local age installation is
+   recorded above; Database Tools currently run inside disposable local containers.
 6. Keep an encrypted manifest with backup/quiescence timestamp, encrypted checksum,
    tool/runtime versions, SHA, metadata/counts and measured timings, never plaintext
    credentials. Validate authenticated decryption and perform the isolated restore
