@@ -8,6 +8,20 @@ not a verified Atlas recovery plan.
 
 ## Operator and approved targets
 
+2026-10-17 attended maintenance evidence is in the
+[release record](releases/2026-10-17-private-release.md#attended-maintenance-results--2012-bangkok).
+The approved consistent Atlas dump streamed directly into age on D:, then was
+retrieved/decrypted into an authenticated isolated tmpfs replica with no external
+network or published ports. All 25 collections matched metadata/counts/document
+fingerprints; unchanged economy audit passed. Restore verification took 5,453 ms.
+Initial index-list ordering differed between Windows/Linux; compare index lists
+with a stable code-point order while retaining compound-index key order. Source
+migrations then passed twice and durable progression stayed unchanged. Encrypted
+archive and private manifests remain retained; no plaintext archive was written.
+This proves that scoped recovery copy, not restored-account/full-flow acceptance.
+Backend remains suspended for paired proxy rotation and closed restart/smoke;
+keep automatic updates paused until the approved exit gates pass.
+
 The user is the backup/incident operator, confirmed 2026-10-07. They approved:
 
 | Setting | Approved target |

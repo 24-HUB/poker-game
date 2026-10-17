@@ -221,9 +221,15 @@ quiescence, encrypted backup, isolated namespace restore and incident response.
 `pnpm test:economy` verifies valid/corrupt local fixtures; `pnpm test:backup` creates
 an independent authenticated disposable replica set and checks metadata, sign-in
 and committed progression after restore. CI runs both without external credentials.
-The encrypted live storage location remains pending. M5.1 admission/maintenance
-controls are locally verified; expanded visual/gameplay acceptance, hosted restore,
-provider/email acceptance and deployment remain separate gates.
+The operator selected encrypted `D:\PokerBackups`. On 2026-10-17 the approved
+consistent Atlas capture and isolated retained-archive restore passed metadata,
+counts, progression fingerprints and economy checks; migrations 001–007 were
+read back after two successful runs. See the current
+[release record](releases/2026-10-17-private-release.md) for exact evidence.
+Backend is suspended with both controls false and provider auto-updates paused,
+awaiting human-entered paired proxy-secret rotation, closed restart/smoke and
+restoration of original controls. Expanded hosted gameplay/account/email and
+interruption acceptance remain separate gates.
 
 ```powershell
 docker compose up -d mongodb mongodb-standalone

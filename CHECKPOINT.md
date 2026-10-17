@@ -2,6 +2,34 @@
 
 ## Hosted release execution — 2026-10-17
 
+- **20:12 Bangkok live maintenance save point** on `codex/hosted-release-inventory`,
+  draft [PR #33](https://github.com/24-HUB/poker-game/pull/33); prior commit `ce4d1494`.
+  Operator saved both temporary credentials; scoped reader/migrator connectivity
+  and roles pass. All automatic updates paused: Render Off, Blueprint No, Worker
+  Disable builds checked. Admission/economy false; corrected restart
+  `dep-db9n4j3ncjis739v0m60` on `0d4ae28a` then service suspended, HTTP 503 suspension
+  page verified. Initial masked admission edit retained true; caught and corrected.
+  Source had zero active participants/memberships. **Keep service suspended.**
+  Encrypted backup at `D:\PokerBackups\archives\2026-10-17T13-06-06-061Z-poker-playtest-provisional.archive.gz.age`,
+  13,484 bytes, SHA256 `f73726109ade7bbbbb2d9387e7eb20b8b2e7642cb329a81a823e3ddf6fb757aa`.
+  All 25 collections unchanged across capture; economy passed. Isolated tmpfs/
+  network-none restore matched metadata/counts/fingerprints/economy, 5,453 ms.
+  Windows/Linux index-list locale ordering caused initial false mismatch; private
+  comparator fixed to code-point sort, preserving compound-key order. Containers
+  cleaned; encrypted manifests and certification retained; filename remains provisional.
+  Both `pnpm db:migrate` runs exit 0. Reader verifies 001–007, six candidate-exact
+  validators, three required indexes and unchanged durable progression/economy.
+  **Pending operator:** run private `Copy-NewProxySecret-20261017.ps1`, paste new
+  shared secret into Render prepared environment form (Save only), Cloudflare
+  prepared Secret form (Deploy), reply “both saved”. Helper syntax checked, not run.
+  Browser approval review rejected revealing old Render secret as unnecessary;
+  no bypass. Human entry/submission handoff retained both tabs. Then record new
+  Worker config version, resume same SHA closed, verify public smoke/progression,
+  restore admission true/economy false and original automatic updates. Do not
+  roll back schema, restore source or reopen with mismatched secrets.
+  Usage before migrations: five-hour 74%, weekly 50% remaining; reset times below.
+  No hosted full-flow/email/game/interruption acceptance or release approval yet.
+
 - **19:54–19:58 Bangkok credential handoff**: operator reports reader created;
   Atlas confirms `poker_release_reader_20261017`, `read@poker_playtest`, six-hour
   expiry and one-cluster restriction (Cluster0 selected in prepared form).

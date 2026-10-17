@@ -12,10 +12,12 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
   Candidate `0d4ae28a9c404de8d7d9db089543a60e1fe18673` has successful
   [exact merged-candidate CI](https://github.com/24-HUB/poker-game/actions/runs/38996688408/job/117290696108)
   and is the observed live Render and active Worker revision (Worker `483fb438`,
-  100% traffic). Atlas `Cluster0/poker_playtest` has stored progression and only
-  migrations 001–005; runtime pairing is confirmed. Back up before authorizing
-  missing 006–007. Proxy credential remediation,
-  retained hosted backup and hosted acceptance remain unverified. Older
+  100% traffic before maintenance). During the authorized attended window, a
+  consistent encrypted source backup and isolated authenticated restore passed;
+  migrations 001–007 are now verified after two successful runs. Durable
+  progression is unchanged. Backend is suspended and automatic updates paused
+  pending human-entered paired proxy-secret rotation, closed restart/smoke and
+  restoration of original controls. Hosted full-flow acceptance remains open. Older
   candidate records below are historical evidence, not current release approval.
 - M5.1 CI/build correction merged in [PR #15](https://github.com/24-HUB/poker-game/pull/15).
   M5.2 local recovery implementation merged in [PR #16](https://github.com/24-HUB/poker-game/pull/16).
@@ -33,8 +35,10 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
   on the internal SSD on 2026-10-17; private ACLs and synthetic encryption/retrieval,
   wrong-key and tampered-file rejection passed. Operator reports successful
   handwritten-key recovery. Direct encrypted MongoDB stream and network-none
-  authenticated audit preflights pass; full-writer shutdown and hosted dump/restore
-  remain unverified. The concrete maintenance package is in the release record.
+  authenticated audit preflights pass. Approved suspension/consistent source capture
+  and retained-archive isolated restore passed at 20:06–20:10 Bangkok, with matching
+  metadata/counts/fingerprints/economy. The exact results and next step are in the
+  release record; restored-auth/full hosted acceptance remains open.
   The user is the backup
   operator; recovery/retention targets approved 2026-10-07 are in [operations.md](operations.md).
 

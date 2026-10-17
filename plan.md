@@ -522,6 +522,28 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ### Hosted release execution — 2026-10-17
 
+20:12 Bangkok live save point: approved maintenance is in progress on existing
+task branch/draft PR #33, prior commit `ce4d1494`. Both scoped temporary accounts
+connect. Render Auto-Deploy Off, Blueprint Auto Sync No, Worker builds disabled;
+admission/economy false and named backend suspended (HTTP 503 verified). An initial
+masked admission edit did not persist; read-back caught it and corrected restart
+`dep-db9n4j3ncjis739v0m60` on `0d4ae28a` passed. Reader found no active participants.
+Consistent encrypted hosted backup retained on D:, all 25 collection metadata,
+counts and fingerprints unchanged during capture. Isolated authenticated tmpfs/
+network-none restore passed identical metadata/fingerprints and economy, 5,453 ms.
+Initial index-list ordering mismatch was Windows/Linux locale sorting; code-point
+normalization fixed the private verifier without changing compound-key order.
+`pnpm db:migrate` twice exited 0. Read-back confirms 001–007, six exact validators,
+three required indexes and unchanged durable progression/economy. Full paths/hash
+and encrypted manifests are recorded in the release record/checkpoint.
+**Service remains suspended.** Human must run private proxy-generation helper,
+paste matching new value into prepared Render (Save only) and Worker Secret
+(Deploy), then reply “both saved”. Old-secret reveal was rejected by automatic
+approval review as unnecessary; no bypass. After entry, record Worker version,
+resume same SHA closed, verify health/public smoke/progression, restore admission
+true/economy false and original auto-updates. Full hosted acceptance remains open.
+Usage before migrations: five-hour 74%, weekly 50% remaining, reset times below.
+
 19:54–19:58 Bangkok: Atlas confirms operator-created six-hour scoped reader.
 Prepared the matching Cluster0-only temporary migrator form with `readWrite` and
 `dbAdmin` on `poker_playtest`; human password/submission pending. A syntax-checked

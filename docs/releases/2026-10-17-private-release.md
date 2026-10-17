@@ -1,7 +1,9 @@
 # Private release execution record — 2026-10-17
 
-Status: inventory in progress; hosted acceptance and private launch remain blocked.
-This implements Task 1 of the plan in [PR #32](https://github.com/24-HUB/poker-game/pull/32).
+Status: verified encrypted recovery copy and schema maintenance complete;
+paired proxy-secret rotation is awaiting private operator entry. Backend suspended;
+hosted acceptance and private launch remain blocked.
+This executes the plan in [PR #32](https://github.com/24-HUB/poker-game/pull/32).
 The plan PR was still open at inspection. This new execution task branches from
 fresh `origin/dev`; it neither merges that PR nor copies its planning checkpoint.
 
@@ -24,7 +26,59 @@ fresh `origin/dev`; it neither merges that PR nor copies its planning checkpoint
 - CI annotations: action runtime deprecation and upcoming `ubuntu-latest` image
   transition. The job passed; no unrelated dependency/workflow upgrades are included.
 
-## Existing resources
+## Attended maintenance results — 20:12 Bangkok
+
+- The operator approved this package with “yes run it now”, created both scoped
+  six-hour Atlas accounts and saved their passwords through masked local prompts.
+  Reader connection reports only `read@poker_playtest`; migrator reports only
+  `readWrite` and `dbAdmin` on that database. Cluster0 restriction was selected;
+  Atlas shows one cluster for each. Existing accounts/roles were not changed.
+- Fresh fetch and candidate CI recheck succeeded. Both providers retain candidate
+  `0d4ae28a`. Render Auto-Deploy is now **Off**, Blueprint Auto Sync **No**, and
+  Worker **Disable builds** is enabled. Restore original controls only after exit
+  gates pass. No Worker cron, queue consumer or email trigger is configured.
+- Source reader showed zero active participants/memberships. Both admission and
+  economy controls are now false. The first masked admission edit did not persist;
+  saved-value inspection caught it. A visible non-secret edit corrected it and
+  the second restart, `dep-db9n4j3ncjis739v0m60`, became Live on the same SHA.
+  The named service was then suspended; dashboard says Suspended by you and a
+  real health request returns HTTP 503 with the suspension page, preventing wake.
+- At **20:06:06 Bangkok**, a reader-only dump streamed directly into age on D:.
+  Before/after all 25 collections matched in options, indexes, counts and document
+  fingerprints. Economy audit passed. Encrypted archive (13,484 bytes):
+  `D:\PokerBackups\archives\2026-10-17T13-06-06-061Z-poker-playtest-provisional.archive.gz.age`.
+  SHA-256 `f73726109ade7bbbbb2d9387e7eb20b8b2e7642cb329a81a823e3ddf6fb757aa`.
+  Private metadata and verification reports are encrypted beside it in manifests;
+  no plaintext dump or source credentials entered the restore environment.
+- Retained D: archive/key retrieved and restored into the new authenticated local
+  replica on tmpfs, network none, no published ports/default route, with the
+  read-only audit companion. First comparisons rejected index-list ordering:
+  Windows/Linux `localeCompare` placed `_id_` differently. Each index definition
+  matched; fixed the private comparator to sort the index list by code point,
+  preserving compound-key order. Final restore/audit passed in **5,453 ms** with
+  identical metadata, counts, data fingerprints and unchanged economy verifier.
+  This archive is now a verified recovery copy despite its provisional filename;
+  the encrypted restore-verification report records certification. Disposable
+  restore/source containers were removed; archive/manifests remain retained.
+- `pnpm db:migrate` ran **twice**, each exit 0, with the scoped migrator and explicit
+  database. Reader verifies exactly 001–007, six exact expected validators and
+  all three required 006 indexes against candidate migration definitions.
+  Durable user/account/session/hand/economy fingerprints remained unchanged.
+  Economy passed: 3 wallets, 22 ledger rows, 28 reward receipts, 15 hands,
+  3 daily-earning rows, 1 banner; zero pulls/owned cosmetics/progress/equipment.
+- Next: human executes private `Copy-NewProxySecret-20261017.ps1`, pastes the new
+  shared value into Render (Save only) and the prepared Worker **Secret** (Deploy).
+  The helper generates 32 random bytes, saves a DPAPI-protected local credential
+  and copies it privately; it never reads the old value. It has not run yet.
+  Automatic approval review rejected revealing the old Render credential as
+  unnecessary. No bypass attempted; old value stays hidden, new entry/submission
+  belongs to the operator. Both tabs are retained for the handoff.
+- Service remains **suspended** and provider updates paused. After paired rotation,
+  record Worker configuration version, resume same SHA closed, verify health,
+  smoke and progression, then restore admission true/economy false and original
+  update controls. Full hosted account/email/game/interruption acceptance remains.
+
+## Existing resources — pre-maintenance observations
 
 Published draft [PR #33](https://github.com/24-HUB/poker-game/pull/33), base `dev`,
 initial commit `40d9f7a2`; user merges manually.
@@ -103,17 +157,14 @@ schema/data and paired Worker compatibility are proven, use authorized maintenan
 and a forward fix rather than assuming an older binary is safe. Never restore
 older progression merely to roll back application code.
 
-## Scoped maintenance package — operator authorized; credential handoff pending
+## Scoped maintenance package — authorized; execution results above
 
 Prepared 2026-10-17 after the operator reported successful recovery with the
 handwritten key. On resumption at 19:49 Bangkok the operator explicitly approved
-the attended package: “yes run it now”. No live mutation has occurred yet; the
-operator has created the temporary reader, with `read@poker_playtest`, a six-hour
-expiry and the prepared Cluster0 restriction verified. The migrator form is ready
-for human password entry/submission with the specified two database-scoped roles.
-The private-profile `Save-ReleaseCredentials-20261017.ps1` helper uses masked
-secure prompts and DPAPI-protected credential files outside Git. Its syntax and
-current-user/SYSTEM directory ACL were checked; passwords have not yet been loaded.
+the attended package: “yes run it now”. Both temporary credentials were saved
+using masked secure prompts and Windows user encryption outside Git, and both
+connections/roles were checked. Actual completed actions and remaining handoff
+are recorded above; the sequence below is the approved scope, not fresh authority.
 It repairs the already deployed playtest candidate; it does not launch production
 or authorize invitations, email sends, gameplay fixtures, data deletion or paid services.
 
@@ -259,8 +310,8 @@ runtime-role hardening and the final private-release decision remain open.
 - [x] User completed Atlas sign-in; cluster/schema metadata and sanitized counts
   inspected read-only without opening connection strings or account documents.
 - [x] Confirm Atlas/runtime hostname pairing privately (12:34 Bangkok).
-- [ ] Retained hosted backup and scoped authority to apply missing migrations
-  006–007. Missing schema blocks hosted acceptance.
+- [x] Retained encrypted hosted backup, isolated restore, scoped authority and
+  migrations 006–007 with successful replay/read-back, as recorded above.
 - [ ] Operator identifies whether existing progression matters. Preserve everything
   until answered; no data deletion is proposed.
 - [ ] Verify Brevo sender and account/quota headroom without sending test mail.
@@ -276,8 +327,8 @@ runtime-role hardening and the final private-release decision remain open.
   network-disabled disposable two-record MongoDB fixture (13:28 Bangkok):
   documents, indexes and validators matched, both process exits checked, no
   plaintext disk archive. This is not a hosted or authenticated recovery claim.
-- [ ] Prove full-writer shutdown and consistent source capture during the approved
-  window; live backup/restore and schema application remain unexecuted.
+- [x] Approved writer shutdown, suspension and consistent capture; isolated
+  restore and schema application passed. Backend remains suspended for rotation.
 - [x] Local restore tooling available after Docker startup: engine 28.3.3;
   network-isolated `mongo:8.0.17` containers report dump/restore 100.14.0.
   `pnpm test:backup` passed 1/1 on 2026-10-17 12:35 Bangkok, including server
@@ -287,7 +338,7 @@ runtime-role hardening and the final private-release decision remain open.
   hosted recovery claim; no Atlas access was used.
 - [x] Prepare/self-review exact maintenance targets, commands, paired artifacts,
   window, rollback and stop conditions in the scoped package above.
-- [ ] Operator approves that package and confirms the attended no-active-players
+- [x] Operator approves that package and confirms the attended no-active-players
   window before any source dump, provider change, access creation or migration.
 - [ ] Tasks 3–7: scoped deployment, hosted full-flow acceptance, interruption/restore,
   private cutover and operating handoff. No hosted gate is marked complete here.
@@ -300,9 +351,9 @@ does not meet Task 1's full completion gate and remains a draft.
 
 The concrete maintenance package above supersedes the earlier placeholder. Runtime
 pairing, full artifact identity, operator-reported handwritten-key recovery, stream
-transport and isolated local audit readiness are now recorded. Live shutdown proof,
-consistent hosted capture/restore, temporary access/credential handoffs and explicit
-authorization for the attended window remain gates. Preservation is the default;
+transport and verified source capture/isolated recovery are now recorded. Paired
+proxy rotation, reopening controls and hosted full-flow acceptance remain gates.
+Preservation is the default;
 no source/sample data deletion is proposed. PR #33 stays draft and the user merges
 manually. A maintenance success will still leave hosted full-flow acceptance and
 the private-release decision open.
