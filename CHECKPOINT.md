@@ -30,7 +30,9 @@
   Complete documentation diff self-review, `git diff --check` and all 14 relative
   file links passed. Final fetch confirms latest `origin/dev` is included.
   Initial commit `40d9f7a2` is pushed in draft [PR #33](https://github.com/24-HUB/poker-game/pull/33),
-  base `dev`; Atlas follow-up is pending save. No application suites rerun for docs.
+  base `dev`; Atlas findings saved/pushed in `522e0958`. Final whitespace/link
+  checks passed again and working tree was clean; latest `origin/dev` is included.
+  No application suites rerun for docs. This publication note is documentation only.
 - Resume: Atlas sign-in/metadata inspection completed. Confirm runtime/cluster
   pairing privately, retain a backup and prepare scoped authority for missing
   migrations 006–007; confirm whether progress matters and finish inventory gates.
