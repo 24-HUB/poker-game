@@ -108,7 +108,12 @@ older progression merely to roll back application code.
 Prepared 2026-10-17 after the operator reported successful recovery with the
 handwritten key. On resumption at 19:49 Bangkok the operator explicitly approved
 the attended package: “yes run it now”. No live mutation has occurred yet; the
-temporary reader form is prepared for human password entry and submission.
+operator has created the temporary reader, with `read@poker_playtest`, a six-hour
+expiry and the prepared Cluster0 restriction verified. The migrator form is ready
+for human password entry/submission with the specified two database-scoped roles.
+The private-profile `Save-ReleaseCredentials-20261017.ps1` helper uses masked
+secure prompts and DPAPI-protected credential files outside Git. Its syntax and
+current-user/SYSTEM directory ACL were checked; passwords have not yet been loaded.
 It repairs the already deployed playtest candidate; it does not launch production
 or authorize invitations, email sends, gameplay fixtures, data deletion or paid services.
 

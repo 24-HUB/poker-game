@@ -2,6 +2,23 @@
 
 ## Hosted release execution — 2026-10-17
 
+- **19:54–19:58 Bangkok credential handoff**: operator reports reader created;
+  Atlas confirms `poker_release_reader_20261017`, `read@poker_playtest`, six-hour
+  expiry and one-cluster restriction (Cluster0 selected in prepared form).
+  Prepared an unsubmitted migrator form with `readWrite` + `dbAdmin` only on
+  `poker_playtest`, Cluster0 only, six-hour expiry. Operator must enter/submit its
+  password. Prepared syntax-checked `Save-ReleaseCredentials-20261017.ps1` in
+  the private profile key directory: masked secure prompts, DPAPI-protected
+  PSCredential CLIXML files, refuses overwriting saved credentials. Directory ACL
+  remains current user/SYSTEM only; no password captured by agent or committed.
+  Next: operator creates migrator and runs that local script, replying “saved”;
+  verify account scope and credential connectivity before any service outage.
+  Fresh candidate CI run 38996688408 remains completed/success on `0d4ae28a`.
+  Initial CI lookup had a Node module-mode syntax error; corrected read succeeded.
+  Fresh origin fetch succeeded; clean task branch resumed from `b60ab65e`.
+  Usage at this resumption: five-hour 93%, weekly 53% remaining, same reset times
+  as the 19:51 observation below. No source-data changes, downtime or migrations.
+
 - Resumed **19:49–19:55 Bangkok**: operator explicitly approved the concrete
   attended maintenance package (“yes run it now”). Clean existing task branch;
   origin fetch succeeded, current `origin/dev` remains `0d4ae28a`, included in

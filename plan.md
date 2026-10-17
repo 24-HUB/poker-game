@@ -522,6 +522,16 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ### Hosted release execution — 2026-10-17
 
+19:54–19:58 Bangkok: Atlas confirms operator-created six-hour scoped reader.
+Prepared the matching Cluster0-only temporary migrator form with `readWrite` and
+`dbAdmin` on `poker_playtest`; human password/submission pending. A syntax-checked
+private-profile PowerShell helper collects both passwords with secure prompts and
+Windows user encryption outside Git; no credentials collected yet. Next: operator
+creates migrator and runs the helper, then verify permissions/connectivity before
+downtime. Candidate CI recheck remains successful on `0d4ae28a`; fresh fetch passed.
+Usage: five-hour 93%, weekly 53% remaining, reset times unchanged below. No data
+changes, suspension, backup or migrations performed in this follow-up.
+
 Resumed 19:49 Bangkok: operator explicitly approved the concrete attended
 maintenance package (“yes run it now”). Clean existing branch, successful fetch;
 `origin/dev` remains included at `0d4ae28a`, task HEAD `c5c2c399`. Prepared the
