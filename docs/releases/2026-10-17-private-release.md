@@ -45,7 +45,7 @@ credentials, personal addresses, account/session IDs or private-card captures he
 | Live flags | `ALLOW_NEW_SESSIONS=true`, `ECONOMY_WRITES_ENABLED=false`; matches blueprint | Controlled restart/window approval before changing either |
 | Database target | Render `MONGODB_DATABASE=poker_playtest`; Atlas `poker_g/Cluster0` contains that database; metadata details below | Confirm runtime cluster pairing privately, progression classification, separate isolated restore target |
 | Email | Render has `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`, `BREVO_SENDER_NAME` configured by name | Verified sender status and designated-account delivery; presence is not delivery evidence |
-| Recovery | Operator/retention/recovery targets already approved in [operations](../operations.md) | Destination/capacity, independently recoverable key and verified full-writer shutdown |
+| Recovery | Operator selected internal `D:\PokerBackups`, about 104 GiB free, no paid storage; retained key separate in private Windows profile folder; synthetic age test passed | Offline key retrieval, encrypted staging and verified full-writer shutdown; hosted restore still pending |
 
 Render also lists another active service. Its purpose and shared allowance impact
 are unverified; do not modify it or assume the workspace quota is exclusive to poker.
@@ -116,8 +116,13 @@ older progression merely to roll back application code.
 - [ ] Operator identifies whether existing progression matters. Preserve everything
   until answered; no data deletion is proposed.
 - [ ] Verify Brevo sender and account/quota headroom without sending test mail.
-- [ ] Choose retained storage and separately recoverable key, then prepare a
-  synthetic encryption/retrieval drill and approved full-writer shutdown procedure.
+- [x] Operator selected `D:\PokerBackups`, accepting internal-SSD storage; private
+  directory ACLs and about 104 GiB free checked. No cloud storage selected.
+- [x] age v1.3.2 official download digest verified; retained key generated privately
+  outside backup directories; synthetic retrieval/decrypt byte match, wrong-key
+  rejection and tampered-file rejection passed at 2026-10-17 11:56 Bangkok.
+- [ ] Operator retains/retrieves an independent offline recovery-key copy; choose
+  encrypted staging and prove an approved full-writer shutdown procedure.
 - [ ] Review exact deployment/backup/restore targets, commands, paired artifacts,
   window, rollback and stop conditions before requesting live-action authority.
 - [ ] Tasks 3–7: scoped deployment, hosted full-flow acceptance, interruption/restore,
@@ -128,9 +133,9 @@ observed dashboards; whitespace and 14 relative file links passed. Application
 tests were not rerun for this documentation-only change. This partial inventory
 does not meet Task 1's full completion gate and remains a draft.
 
-Proposed next package (not approved/executed): preserve `poker_playtest`; select
-retained encrypted storage and independent key access; prove synthetic retrieval
-and writer shutdown; pause provider Git updates/Blueprint sync for the agreed
+Proposed next package (not approved/executed): preserve `poker_playtest`; use the
+selected D: encrypted storage, prove independent offline-key access and writer
+shutdown; pause provider Git updates/Blueprint sync for the agreed
 window; take/verify a retained backup; apply candidate migrations twice with an
 explicit privately checked target and verify rows 001–007; rotate the shared proxy
 credential into a Worker Secret and matching Render value; verify paired artifacts
@@ -138,7 +143,8 @@ and restore the approved automatic-update settings. Exact staging/restore target
 full artifact IDs, reader/migration roles and window must be filled before approval.
 This preserves existing data and does not authorize deleting sample or app data.
 
-Atlas metadata inspection is now complete. Runtime-target pairing/data classification,
-backup/key choice and live-operation authority are prerequisites, not implied by
+Atlas metadata inspection and synthetic local-storage preparation are complete.
+Runtime-target pairing/data classification, offline-key recovery, staging/shutdown
+and live-operation authority are prerequisites, not implied by
 the request to implement the plan. Continue independent documentation verification
 and publish the inventory as a draft PR targeting `dev`; the user merges manually.

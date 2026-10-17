@@ -17,13 +17,34 @@ The user is the backup/incident operator, confirmed 2026-10-07. They approved:
 | Recovery point | At most progress since the last successful backup |
 | Recovery time | Within one operator-attended day, measured from incident declaration to safe reopening |
 
-These are operating targets, not guarantees. Storage location and its free budget
-remain **pending the operator's selection**. Before hosted release, record the
-encrypted destination outside this repository and Render's filesystem, encryption
-recipient, separately secured recovery key, operator access and an emergency
-access procedure. Use operator-only access with MFA for remote storage and keep
-keys separate from archives. Do not provision paid storage automatically. Confirm
-capacity for retained archives and working space before accepting progress.
+These are operating targets, not guarantees. On 2026-10-17 the operator selected
+`D:\PokerBackups` with no paid storage, explicitly accepting that D: is the internal
+WD_BLACK SN770 NVMe SSD also holding the project. Inspection found about 104 GiB
+free. This is a local encrypted recovery destination, not a physically independent
+backup or protection against loss of that SSD/computer.
+
+Preparation at 11:56 Bangkok created current-user/SYSTEM-only NTFS directories:
+`archives`, `manifests`, `samples` and `tools`. The retained age identity is separate
+in `%USERPROFILE%\.poker-backup-keys\poker-backup.agekey`, with the same private ACL.
+Never copy its contents into Git, chat, email or the archive directory. The operator
+must keep an independently accessible offline copy and demonstrate retrieval before
+a hosted backup/release. The current profile copy alone does not satisfy that gate.
+
+[Official age v1.3.2](https://github.com/FiloSottile/age/releases/tag/v1.3.2) Windows
+amd64 archive was downloaded and its SHA-256 checked against the official release
+asset digest before execution. A harmless sample was encrypted directly from memory,
+then read back from `D:\PokerBackups\samples` and decrypted with the retained key:
+bytes matched, wrong-key decryption failed and a tampered archive was rejected.
+The timestamped result/manifest and encrypted sample remain outside Git. No account
+data or database was accessed. No plaintext sample was written to disk. The local
+README describes tool/key paths and retention; this is an operator preparation,
+not a new production-backup CLI or a hosted restore rehearsal.
+
+Independent offline-key recovery, encrypted plaintext staging, provider writer
+shutdown and hosted dump/isolated restore remain unverified. Before hosted release,
+record restricted references to the recipient/key, operator access and emergency
+recovery procedure. Confirm capacity for retained archives and protected staging
+before accepting progress. Do not provision paid storage automatically.
 
 After a replacement backup has passed checksum, decryption and isolated restore
 checks, the operator removes only backups outside retention, including staging

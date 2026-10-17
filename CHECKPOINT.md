@@ -2,6 +2,23 @@
 
 ## Hosted release execution — 2026-10-17
 
+- Storage follow-up at **11:56 Bangkok**: user declined Google Drive, selected D:
+  and explicitly accepted its internal-SSD limitation. Prepared `D:\PokerBackups`
+  (`archives/manifests/samples/tools`) with current-user/SYSTEM-only ACLs; about
+  104 GiB free. Retained age identity is separate in the private Windows profile
+  `.poker-backup-keys` directory; no key material in Git/chat/backup folder.
+  Official age v1.3.2 download SHA-256 verified. Synthetic retained-file decrypt
+  matched source bytes; wrong key and tampered archive were rejected; ACL checks
+  passed. No plaintext file/database access/hosted backup. Offline key copy and
+  independent retrieval, encrypted staging and writer shutdown remain pending.
+  Next: operator saves a separate offline identity copy, then demonstrate recovery
+  and finish the exact maintenance/backup/migration approval package. PR remains
+  draft #33 on the same branch; last prior saved commit `9795c30f`. Storage follow-up
+  documentation self-review, whitespace and 13 relative file links passed; no
+  application/configuration changes or application-suite rerun.
+  Usage observed **2026-10-17 11:56:18 Bangkok**: five-hour **60% remaining**
+  (reset **12:40:06** today); weekly **60% remaining** (reset **2026-10-22
+  13:13:35** Bangkok). No usage blocker or billing action.
 - User requested implementation of the plan in [PR #32](https://github.com/24-HUB/poker-game/pull/32).
   New clean task branch `codex/hosted-release-inventory` starts from fetched
   `origin/dev` `0d4ae28a9c404de8d7d9db089543a60e1fe18673`. Plan PR remains open;
@@ -21,8 +38,8 @@
   full-writer shutdown. Cloudflare stores the proxy credential as a plaintext
   Variable; prepare coordinated rotation to a Secret plus matching Render value.
   Do not copy the exposed value. No provider mutation, email, deployment or DB operation.
-- Ruling: preserve all hosted data while its value is unknown. Task 2 storage/key
-  decision remains pending; no guessed storage or temporary recovery key. Tasks
+- Ruling: preserve all hosted data while its value is unknown. Task 2 storage was
+  selected as recorded above; independent key recovery remains pending. Tasks
   3–7 depend on concrete target/window approval, hosted acceptance and recovery.
 - Checks: inspected candidate CI verify job
   [success](https://github.com/24-HUB/poker-game/actions/runs/38996688408/job/117290696108),

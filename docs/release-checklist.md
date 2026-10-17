@@ -29,7 +29,11 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
   remains pending; local evidence below does not authorize deployment.
 - Frontend adapter: OpenNext Cloudflare 1.20.6; Next.js 16.3.6.
 - Reward policy: v1; catalogue: immutable `celestial-v1`.
-- Environments and encrypted backup destination: pending. The user is the backup
+- Environment classification remains pending. Operator selected `D:\PokerBackups`
+  on the internal SSD on 2026-10-17; private ACLs and synthetic encryption/retrieval,
+  wrong-key and tampered-file rejection passed. Offline key recovery, protected
+  staging, full-writer shutdown and hosted dump/restore remain unverified.
+  The user is the backup
   operator; recovery/retention targets approved 2026-10-07 are in [operations.md](operations.md).
 
 ## Local and CI gates
@@ -141,7 +145,8 @@ next hosted candidate using [M5.1a](superpowers/plans/2026-09-30-m3-through-prod
   metadata/counts, economy audit, restored sign-in, receipt replay, ownership/equipment
   passed. First drill restored in 777 ms, procedure 8,007 ms, zero fixture loss.
   See [operations.md](operations.md) for timestamp/checksum and measurement limits.
-- [ ] Select encrypted external destination/budget and rehearse retained-key access.
+- [ ] Complete selected local destination/key recovery: internal D: accepted by
+  operator, synthetic tests passed; independently retained offline key not yet verified.
 - [ ] Perform authorized hosted backup/restore and compare actual loss/time to targets.
 - [ ] Record known issues, rollback revision and compatibility, and release decision.
 

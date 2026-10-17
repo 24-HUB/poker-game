@@ -522,6 +522,21 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ### Hosted release execution — 2026-10-17
 
+Storage follow-up **11:56 Bangkok**: user selected `D:\PokerBackups` and accepted
+that D: is the internal SSD containing the repository, with about 104 GiB free.
+Private destination/key-directory ACL checks passed. Official age v1.3.2 archive
+digest was verified; retained key stays separately in the private Windows profile,
+outside Git and archives. A synthetic encrypted sample retrieved from D: decrypted
+to identical bytes; wrong-key and tampered-file rejection passed. No plaintext
+sample file, database access or hosted backup occurred. Operator offline-key copy
+and retrieval, encrypted staging and full-writer shutdown remain gates before
+the concrete backup/migration authority package. Same draft PR #33/task branch;
+prior saved commit `9795c30f`. Follow-up documentation self-review, whitespace and
+13 relative file links passed; no application-suite rerun. Usage observed
+2026-10-17 11:56:18 Bangkok: five-hour
+60% remaining (reset today 12:40:06), weekly 60% remaining (reset 2026-10-22
+13:13:35). No paid service or billing action.
+
 Implementing the hosted-release plan in [PR #32](https://github.com/24-HUB/poker-game/pull/32)
 inline on clean new branch `codex/hosted-release-inventory` from fetched `origin/dev`
 `0d4ae28a9c404de8d7d9db089543a60e1fe18673`. The plan PR is still open; the execution
@@ -540,8 +555,9 @@ project `poker_g`, MongoDB 8.0.34/AWS Singapore contains `poker_playtest` with
 25 collections, 44 indexes and stored account/ticket progression. Its actual schema
 history has only 001–005, missing required 006–007. Confirm runtime/cluster pairing
 privately, retain a backup and obtain scoped migration authority before acceptance.
-Full Worker ID, progression value/classification, Brevo verification, retained
-storage/key and verified writer shutdown remain pending.
+Full Worker ID, progression value/classification, Brevo verification, independent
+offline-key recovery and verified writer shutdown remain pending. Local storage
+selection and synthetic test results are recorded in the follow-up above.
 Preserve all existing data while classification is unknown. No hosted mutation,
 deployment, email, backup or restore occurred. Tasks 2–7 remain dependent on these
 decisions and exact live-action authority; release is not complete.
