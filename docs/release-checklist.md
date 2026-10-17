@@ -13,9 +13,9 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
   [exact merged-candidate CI](https://github.com/24-HUB/poker-game/actions/runs/38996688408/job/117290696108)
   and is the observed live Render and active Worker revision (Worker `483fb438`,
   100% traffic). Atlas `Cluster0/poker_playtest` has stored progression and only
-  migrations 001–005; confirm runtime pairing and back up before authorizing
+  migrations 001–005; runtime pairing is confirmed. Back up before authorizing
   missing 006–007. Proxy credential remediation,
-  retained backup/key recovery and hosted acceptance remain unverified. Older
+  retained hosted backup and hosted acceptance remain unverified. Older
   candidate records below are historical evidence, not current release approval.
 - M5.1 CI/build correction merged in [PR #15](https://github.com/24-HUB/poker-game/pull/15).
   M5.2 local recovery implementation merged in [PR #16](https://github.com/24-HUB/poker-game/pull/16).
@@ -31,8 +31,10 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 - Reward policy: v1; catalogue: immutable `celestial-v1`.
 - Environment classification remains pending. Operator selected `D:\PokerBackups`
   on the internal SSD on 2026-10-17; private ACLs and synthetic encryption/retrieval,
-  wrong-key and tampered-file rejection passed. Offline key recovery, protected
-  staging, full-writer shutdown and hosted dump/restore remain unverified.
+  wrong-key and tampered-file rejection passed. Operator reports successful
+  handwritten-key recovery. Direct encrypted MongoDB stream and network-none
+  authenticated audit preflights pass; full-writer shutdown and hosted dump/restore
+  remain unverified. The concrete maintenance package is in the release record.
   The user is the backup
   operator; recovery/retention targets approved 2026-10-07 are in [operations.md](operations.md).
 
@@ -145,8 +147,9 @@ next hosted candidate using [M5.1a](superpowers/plans/2026-09-30-m3-through-prod
   metadata/counts, economy audit, restored sign-in, receipt replay, ownership/equipment
   passed. First drill restored in 777 ms, procedure 8,007 ms, zero fixture loss.
   See [operations.md](operations.md) for timestamp/checksum and measurement limits.
-- [ ] Complete selected local destination/key recovery: internal D: accepted by
-  operator, synthetic tests passed; independently retained offline key not yet verified.
+- [x] Selected local destination/key recovery: internal D: accepted by operator,
+  synthetic tests passed; operator reports handwritten-key sample recovery success.
+  Direct age stream and isolated authenticated read-only audit preflights passed.
 - [ ] Perform authorized hosted backup/restore and compare actual loss/time to targets.
 - [ ] Record known issues, rollback revision and compatibility, and release decision.
 

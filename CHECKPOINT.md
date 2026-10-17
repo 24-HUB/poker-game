@@ -2,6 +2,32 @@
 
 ## Hosted release execution — 2026-10-17
 
+- Maintenance preparation **13:26–13:39 Bangkok**: user reports the masked
+  handwritten-key recovery worked. Recorded operator-reported success; no key
+  sent through chat. Verified a new native MongoDB→age→D:→age→restore stream with
+  two synthetic records in a network-disabled/tmpfs container: documents/indexes/
+  validators matched, both process exits checked, no plaintext archive on disk.
+  Manifest/sample retained outside Git. Captured full active Worker version
+  `483fb438-be71-4020-81ea-497013ebf36f`; Render remains on candidate `0d4ae28a`.
+  Prepared the scoped maintenance package in the existing release record: exact
+  source/restore targets, six-hour reader/migration roles, provider pauses/drain/
+  suspension proof, consistent encrypted dump/isolated audit, migration replay,
+  human-entered proxy rotation, reopening settings and stop/forward-fix rules.
+  No provider/DB mutation or live dump authorized/executed. Prior commit `c0acb8fe`;
+  same branch/draft PR #33. Next: obtain explicit approval of that concrete package
+  and a no-active-players window; hand off private credential entry to the operator.
+  A host-port/internal-network preflight failed. Replacement network-none MongoDB
+  plus companion Node namespace passed on a synthetic authenticated replica:
+  unchanged verifier succeeded, read-only write denied, zero published ports/default
+  route. Audit bundle v2 copies 13 existing dependencies; type-only manifest resolution
+  fixed initial packaging. No app dependencies/source changed. The package excludes
+  the failed arrangement. Local stream and isolation fixtures were removed after checks.
+  Usage observed **13:26:55 Bangkok**: five-hour **99% remaining**, weekly **57%**;
+  five-hour reset **2026-10-17 18:26:55**, weekly **2026-10-22 13:13:35** Bangkok.
+  Handoff usage at **13:39:26 Bangkok**: five-hour **83% remaining** (reset
+  **2026-10-17 18:26:56**), weekly **55%** (same reset). No usage blocker.
+  Follow-up documentation self-review, whitespace and 13 relative
+  file links passed; no full app/browser-suite rerun. Publish to the same draft PR.
 - Follow-up **12:34 Bangkok**: operator confirms recovery key written on paper;
   retention is attested, paper-copy decryption is still pending. Original identity
   through stdin decrypts the harmless sample successfully; PowerShell 7 masked
@@ -53,8 +79,8 @@
   full-writer shutdown. Cloudflare stores the proxy credential as a plaintext
   Variable; prepare coordinated rotation to a Secret plus matching Render value.
   Do not copy the exposed value. No provider mutation, email, deployment or DB operation.
-- Ruling: preserve all hosted data while its value is unknown. Task 2 storage was
-  selected as recorded above; independent key recovery remains pending. Tasks
+- Ruling: preserve all hosted data. Task 2 storage and the operator-reported
+  handwritten-key sample recovery are recorded above; live shutdown/restore remain pending. Tasks
   3–7 depend on concrete target/window approval, hosted acceptance and recovery.
 - Checks: inspected candidate CI verify job
   [success](https://github.com/24-HUB/poker-game/actions/runs/38996688408/job/117290696108),

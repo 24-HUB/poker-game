@@ -35,6 +35,24 @@ handwritten copy is still unverified. The harmless sample accepts identity input
 through stdin (`age -d -i - <sample>`), so PowerShell 7 `Read-Host -MaskInput` can
 test the paper copy privately without displaying it or adding it to shell history.
 Never type a real key as a literal command or paste it into chat.
+At 13:26 Bangkok the operator reported the masked handwritten-key test worked.
+Record that as operator-reported recovery success, not an agent-observed entry.
+
+At 13:28 Bangkok a separate network-disabled disposable MongoDB fixture on tmpfs
+was dumped directly into age, retained encrypted on D:, then decrypted directly
+into `mongorestore`. Both native process exit statuses were checked. Two fixture
+records, validators and indexes matched after restore; no plaintext disk archive
+was created. The encrypted sample/verification manifest remain under D: outside
+Git. This validates the stream transport; the authenticated replica-set/application
+recovery rehearsal below remains separate evidence.
+
+Restore isolation was also checked with a network-none authenticated MongoDB
+replica and a companion Node 22 container sharing its namespace: unchanged economy
+verifier passed and a reader write was denied, with no published ports/default
+route or production credentials. A host-port/internal-network preflight could not
+connect; do not use that failed arrangement. The prepared v2 audit bundle under
+`D:\PokerBackups\tools` contains only the unchanged verifier/contracts and 13
+existing dependencies; its manifest records the verifier hash. Mount it read-only.
 
 Local tooling follow-up at 12:35 Bangkok: Docker Desktop became ready (engine
 28.3.3); isolated `mongo:8.0.17` containers provide dump/restore 100.14.0.
@@ -54,8 +72,9 @@ data or database was accessed. No plaintext sample was written to disk. The loca
 README describes tool/key paths and retention; this is an operator preparation,
 not a new production-backup CLI or a hosted restore rehearsal.
 
-Independent offline-key recovery, encrypted plaintext staging, provider writer
-shutdown and hosted dump/isolated restore remain unverified. Before hosted release,
+Handwritten-key recovery is operator-reported and direct encrypted streaming is
+locally verified. Provider writer shutdown and hosted dump/isolated restore remain
+unverified; plaintext disk staging is not selected. Before hosted release,
 record restricted references to the recipient/key, operator access and emergency
 recovery procedure. Confirm capacity for retained archives and protected staging
 before accepting progress. Do not provision paid storage automatically.
@@ -151,6 +170,16 @@ and [Atlas Free tool restrictions](https://www.mongodb.com/docs/atlas/reference/
    `BACKUP_AGE_RECIPIENT` to approved operator values. The staging directory must
    be outside the repository and service disk on an encrypted, operator-only volume.
    Run this only after the preceding gates:
+
+   For the selected D: destination, volume encryption is unverified. Prefer the
+   tested native byte-stream alternative: `mongodump --archive --gzip` stdout to
+   age stdin, then age stdout to `mongorestore --archive --gzip` stdin on recovery.
+   A controller must check **both** processes, cancel peers on failure and leave
+   the new archive provisional until checksum, decryption, metadata/count and
+   isolated restore checks pass. A shell pipeline's last exit code is insufficient.
+   Keep tool credentials in private tmpfs or DPAPI-protected storage, never args.
+   Do not write a plaintext dump to D: as a shortcut. The file-staging example
+   below applies only to a separately verified encrypted staging volume.
 
    ```powershell
    $backupDatabase = $env:BACKUP_DATABASE

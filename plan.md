@@ -522,6 +522,27 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ### Hosted release execution — 2026-10-17
 
+Maintenance preparation **13:26–13:39 Bangkok**: operator reports the masked
+handwritten-key sample recovery succeeded. A new synthetic MongoDB→age→retained
+D:→age→restore test passed with records/indexes/validators matched and no plaintext
+disk archive; container networking was disabled, data held in tmpfs. Full active
+Worker ID `483fb438-be71-4020-81ea-497013ebf36f` captured; backend remains candidate
+`0d4ae28a`. The existing [release record](docs/releases/2026-10-17-private-release.md)
+now contains a concrete maintenance package with exact targets, scoped temporary
+roles, writer/consistency gates, encrypted dump/isolated audit, migrations 006–007
+and replay, human-entered proxy rotation, reopening and failure rules. It awaits
+explicit operator approval and a no-active-players window; no live mutation/dump.
+Prior saved commit `c0acb8fe`, same draft PR #33/task branch. Usage at 13:26:55
+Bangkok: five-hour 99% remaining, weekly 57%; resets recorded in `CHECKPOINT.md`.
+Restore-isolation preflight now passes with network-none MongoDB and a companion
+Node audit namespace, no published ports/default route, authenticated read-only
+verification and write denial. The failed host-port/internal-network arrangement
+is excluded. The v2 local audit bundle reuses unchanged code/contracts and 13
+installed dependencies; no application or dependency edits. Fixtures cleaned up.
+Handoff at 13:39:26 Bangkok: five-hour 83% remaining (reset 18:26:56 today),
+weekly 55% (reset 2026-10-22 13:13:35). No usage blocker. Follow-up documentation
+self-review, whitespace and 13 relative file links passed.
+
 Follow-up **12:34 Bangkok**: user reports handwritten offline recovery-key copy;
 retention attested, actual decryption from that copy still pending. Original key
 through stdin successfully decrypts the harmless sample; a masked PowerShell 7

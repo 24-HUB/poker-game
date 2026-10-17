@@ -34,7 +34,7 @@ credentials, personal addresses, account/session IDs or private-card captures he
 
 | Resource | Observed state | Still required |
 | --- | --- | --- |
-| Public Worker | Existing `poker-game`; public origin `https://poker-game.nearyou1474.workers.dev`; active version displayed as `483fb438`, 100% traffic, source candidate `0d4ae28a`; build `4b0e6b51-8e3a-4634-96b9-4aad4329c316` | Capture full immutable version ID before any release/rollback |
+| Public Worker | Existing `poker-game`; public origin `https://poker-game.nearyou1474.workers.dev`; version `483fb438-be71-4020-81ea-497013ebf36f`, 100% traffic, source candidate `0d4ae28a`; build `4b0e6b51-8e3a-4634-96b9-4aad4329c316`; rechecked 13:29 Bangkok | Record replacement configuration-version ID after approved secret rotation |
 | Worker configuration | `BACKEND_ORIGIN` is the Render origin above; `PUBLIC_ORIGIN` matches public Worker origin; `PROXY_SECRET` exists as a plaintext Variable | Coordinated credential rotation into a Cloudflare Secret and matching Render value before acceptance |
 | Worker builds | Git-linked `24-HUB/poker-game`, production branch `dev`, builds enabled, watch paths `*`; existing build/deploy commands use frozen pnpm and Wrangler | Include Worker build trigger in coordinated pause/resume package; repository has no deploy workflow but provider-native builds exist |
 | Repository Worker config | `apps/web/wrangler.jsonc` names `poker-anime-gacha-web`, `keep_vars: true` | Resolve name mismatch with actual `poker-game` before any upload; do not accidentally create another Worker |
@@ -103,14 +103,152 @@ schema/data and paired Worker compatibility are proven, use authorized maintenan
 and a forward fix rather than assuming an older binary is safe. Never restore
 older progression merely to roll back application code.
 
+## Scoped maintenance package — awaiting operator authorization
+
+Prepared 2026-10-17 after the operator reported successful recovery with the
+handwritten key. This package authorizes nothing until the operator approves it.
+It repairs the already deployed playtest candidate; it does not launch production
+or authorize invitations, email sends, gameplay fixtures, data deletion or paid services.
+
+### Targets, artifacts and data policy
+
+- Source: existing Atlas project `poker_g`, `Cluster0`, **`poker_playtest` only**.
+  Runtime/Atlas hostname pairing is verified. Preserve every account, ticket,
+  receipt, cosmetic and completed hand; do not reset or import fixture balances.
+- Backend: existing Render `poker-anime-gacha-server`, service
+  `srv-db6dl0ss728c7384lhq0`, deployment `dep-db9eandg1s2s73acdu7g`, SHA
+  `0d4ae28a9c404de8d7d9db089543a60e1fe18673`.
+- Frontend: existing Cloudflare `poker-game` at
+  `https://poker-game.nearyou1474.workers.dev`, Worker version
+  `483fb438-be71-4020-81ea-497013ebf36f`, same SHA. Keep the binary; a secret
+  configuration change may create a replacement version, which must be recorded.
+  No `wrangler deploy`, Worker rename, branch merge or unrelated service change.
+- Destination: age-encrypted archives and private encrypted manifests under
+  `D:\PokerBackups`; use the tested direct native streams, with no plaintext dump
+  on unverified NTFS staging. The operator accepted internal-SSD storage.
+- Restore: a **new empty local** authenticated replica set/database
+  `poker_restore_20261017`, in a dedicated disposable Docker container
+  `poker-release-restore-20261017`, separate from every existing container/database.
+  Refuse an existing name/nonempty target. Keep restored data on tmpfs with Docker
+  `--network none` and **no published ports**, production credentials or email
+  configuration. A companion `node:22.16.0-bookworm-slim` audit container joins
+  `--network container:poker-release-restore-20261017`; its `127.0.0.1:27020`
+  endpoint is internal to that namespace, not exposed on the host. Mount only the
+  prepared unchanged verifier/contracts bundle read-only from
+  `D:\PokerBackups\tools\restore-audit-c0acb8fe-v2`. Validate no default route or
+  source secrets before passing it live data. Do not start the app or send notifications.
+  Use separate generated local restore-writer/reader credentials and unchanged
+  `scripts/verify-economy.mjs` against the explicit local reader target.
+- Isolation preflight: an internal-network/host-port approach failed its local
+  connection check and is excluded. The network-none MongoDB plus companion Node
+  approach passed against an authenticated disposable replica: original verifier
+  succeeded, read-only writes were denied, zero ports/default route. Initial audit
+  packaging encountered a type-only package with no JavaScript entry; resolving
+  its manifest fixed the copy. The v2 bundle contains 13 existing dependencies,
+  copied contracts and the byte-identical verifier; no `.env` or application source
+  changed. This is local synthetic readiness evidence, not hosted recovery.
+- Operator window: start only after the user approves **now** and confirms nobody
+  is playing or changing this database from another client. This is one attended
+  maintenance window, not permission for later outages. No fixed duration is promised;
+  report failures and leave a recorded safe state rather than bypassing checks.
+
+### Access and credential handoffs
+
+Request narrowly scoped Atlas temporary users (6-hour expiry, `Cluster0` only):
+`poker_release_reader_20261017` with `read` on `poker_playtest`, and
+`poker_release_migrator_20261017` with `readWrite` plus `dbAdmin` on that database.
+The [Atlas procedure](https://www.mongodb.com/docs/atlas/security-add-mongodb-users/)
+supports six-hour temporary users and cluster restrictions. No `readWriteAnyDatabase`,
+new admin, runtime-role expansion or unrestricted network rule is authorized.
+If current network access is insufficient, stop and prepare a separate exact rule.
+
+The human operator enters/submits new database passwords and the replacement
+proxy credential privately when prompted. Keep necessary operator configuration
+DPAPI-protected in a private profile directory; pass tool config through private
+container tmpfs/stdin. No secrets in arguments, shell history, Git, screenshots or
+chat. Reader credentials go only to the source dump/audit; migration credentials
+only to the two approved migration runs; neither goes into the restore environment.
+
+### Approved action sequence if the operator accepts this package
+
+1. Recheck exact targets/SHAs, required green candidate CI and original provider
+   controls. Record them. Pause Render Auto-Deploy and Blueprint Auto Sync plus
+   Cloudflare Git builds. Original states are After CI Checks Pass / Yes / enabled.
+   Do not merge or sync repository changes during this window.
+2. Confirm no active play; let the host end any session and wait for committed
+   settlement. Close both admission/economy controls through a controlled restart,
+   then suspend the **named Render service**. Verify suspension, no running jobs,
+   migrations, catalogue publishers or manual clients, and no traffic-driven wake.
+   Flags alone are not quiescence. If every writer cannot be accounted for, stop
+   before dumping and report the unresolved writer.
+3. With the reader, capture schema rows, catalogue hash, all collection options,
+   validators/indexes/counts and read-only economy results in the private manifest.
+   MongoDB TTL deletion can continue after app shutdown: compare complete metadata
+   and counts before/after capture, and unchanged progression fingerprints. If
+   they differ, do not certify that attempt; preserve the previous known-good
+   backup and resolve/retry only within this approved window. Never disable TTL,
+   drop indexes or repair rows as an unapproved shortcut.
+4. Run Database Tools **100.14.0** in a disposable source tool container. The dump
+   operation is `mongodump --config=/run/poker/reader.yml --db=poker_playtest
+   --archive --gzip --quiet`; the credential file stays in tmpfs. Pipe its native
+   stdout to the installed age v1.3.2 with the retained recipient, writing a fresh
+   timestamped provisional encrypted archive under D:. Check both exits and
+   source consistency, then hash the ciphertext. Encrypt the private manifest too.
+   No `--oplog`, plaintext archive, source restore, overwrite or `--drop`.
+5. Retrieve that D: archive/key and stream age decryption into the isolated local
+   restore with `mongorestore --archive --gzip --stopOnError
+   --nsInclude=poker_playtest.* --nsFrom=poker_playtest.*
+   --nsTo=poker_restore_20261017.*`. Compare metadata/counts and run the existing
+   read-only economy verifier with explicit local target and
+   `ECONOMY_VERIFY_MODE=operator-read-only`. If isolation, checksum, metadata or
+   economy fails, do not label the archive known-good or migrate the source.
+   Restored-auth/full-flow hosted acceptance remains a later separately scoped gate.
+6. Only after those checks pass, privately load the database-scoped migration URI
+   and explicit `MONGODB_DATABASE=poker_playtest`. Run candidate `pnpm db:migrate`
+   **twice**, checking each exit. Verify exact schema rows 001–007, migration 006's
+   validators/unique and TTL indexes and migration 007's room/session/hand validators.
+   Existing records are not deleted/backfilled. A duplicate/index/validation error
+   is a stop condition, not authority to change or discard offending data.
+7. During the same downtime, coordinate a new shared `PROXY_SECRET`: the operator
+   enters it in Render and in Cloudflare as a **Secret**, replacing the plaintext
+   Variable. Keep `PUBLIC_ORIGIN`, fixed `BACKEND_ORIGIN` and auth secret unchanged.
+   Record the replacement Worker configuration version. Never log the value or
+   restore the exposed prior credential during fallback.
+8. Resume the same backend SHA with both controls false. Verify deploy health,
+   single ready authority, schema and unchanged durable progression; through the
+   public origin run the bounded `pnpm smoke:deployment` with the approved origin.
+   Smoke success is not full hosted acceptance. Then restore original admission
+   **true**, economy **false**, and the original provider automatic-update settings
+   through controlled operations; record exact versions/settings and results.
+
+### Failure and rollback limits
+
+Before source migrations, a failed backup can return to the original compatible
+candidate/settings after resolving any uncertain transactions; record that no new
+known-good backup was accepted. After partial schema work or credential mismatch,
+keep admission/economy closed and automatic updates paused while preparing a
+forward fix. Do not down-migrate, switch to pre-006/pre-bot binaries, restore over
+the source, delete data, re-enable purchases, buy capacity or claim release success.
+Data restoration onto Atlas and any accepted loss window need separate incident
+authorization. Leave temporary users to their selected expiry; any further access
+or cleanup action must stay within its explicit approval scope.
+
+Exit: retained verified recovery point, source schema 001–007, paired credentials
+and the original usable private-game settings, with all actual evidence recorded.
+Production cutover, hosted account/email/game/economy and interruption acceptance,
+runtime-role hardening and the final private-release decision remain open.
+
 ## Gates and exact next actions
 
 - [x] Clean branch setup, usage check, fetch, repository/configuration inspection.
 - [x] Exact merged-candidate CI and observed live Render SHA identified.
 - [x] Runbook admission/economy drift and schema manifest corrected.
 - [x] Confirm active Worker version prefix/source and effective public/backend origins.
-- [ ] Capture full Worker version ID, reconcile its name with Wrangler and prepare
-  coordinated proxy credential rotation; do not redeploy a differently named Worker.
+- [x] Capture full Worker version ID. Maintenance uses existing dashboard resource
+  `poker-game` and its current binary; no manual Wrangler upload or name change.
+  Wrangler's differing default name remains a future operator-upload prerequisite.
+- [ ] Execute approved coordinated proxy credential rotation; never restore the
+  previously exposed value as a rollback.
 - [x] User completed Atlas sign-in; cluster/schema metadata and sanitized counts
   inspected read-only without opening connection strings or account documents.
 - [x] Confirm Atlas/runtime hostname pairing privately (12:34 Bangkok).
@@ -125,10 +263,14 @@ older progression merely to roll back application code.
   outside backup directories; synthetic retrieval/decrypt byte match, wrong-key
   rejection and tampered-file rejection passed at 2026-10-17 11:56 Bangkok.
 - [x] Operator reports handwritten offline recovery-key copy (12:34 Bangkok).
-- [ ] Verify decryption using that handwritten copy; encrypted staging/streaming
-  and approved full-writer shutdown remain unverified. The original profile key
-  successfully decrypts via stdin, which verifies the proposed private-entry command
-  but does not verify transcription of the paper copy.
+- [x] Operator reports the masked handwritten-key sample decrypt succeeded
+  (13:26 Bangkok); the key was not sent through chat.
+- [x] Direct dump→age→retained D: archive→age→restore roundtrip passed on a
+  network-disabled disposable two-record MongoDB fixture (13:28 Bangkok):
+  documents, indexes and validators matched, both process exits checked, no
+  plaintext disk archive. This is not a hosted or authenticated recovery claim.
+- [ ] Prove full-writer shutdown and consistent source capture during the approved
+  window; live backup/restore and schema application remain unexecuted.
 - [x] Local restore tooling available after Docker startup: engine 28.3.3;
   network-isolated `mongo:8.0.17` containers report dump/restore 100.14.0.
   `pnpm test:backup` passed 1/1 on 2026-10-17 12:35 Bangkok, including server
@@ -136,8 +278,10 @@ older progression merely to roll back application code.
   metadata/sign-in/receipt/equipment/economy passed; 797 ms restore, 7,254 ms
   procedure and zero fixture progress lost. These are synthetic timings, not a
   hosted recovery claim; no Atlas access was used.
-- [ ] Review exact deployment/backup/restore targets, commands, paired artifacts,
-  window, rollback and stop conditions before requesting live-action authority.
+- [x] Prepare/self-review exact maintenance targets, commands, paired artifacts,
+  window, rollback and stop conditions in the scoped package above.
+- [ ] Operator approves that package and confirms the attended no-active-players
+  window before any source dump, provider change, access creation or migration.
 - [ ] Tasks 3–7: scoped deployment, hosted full-flow acceptance, interruption/restore,
   private cutover and operating handoff. No hosted gate is marked complete here.
 
@@ -147,18 +291,11 @@ The local backup suite/builds passed as above; aggregate/browser suites were not
 rerun for documentation. This partial inventory
 does not meet Task 1's full completion gate and remains a draft.
 
-Proposed next package (not approved/executed): preserve `poker_playtest`; use the
-selected D: encrypted storage, prove independent offline-key access and writer
-shutdown; pause provider Git updates/Blueprint sync for the agreed
-window; take/verify a retained backup; apply candidate migrations twice with an
-explicit privately checked target and verify rows 001–007; rotate the shared proxy
-credential into a Worker Secret and matching Render value; verify paired artifacts
-and restore the approved automatic-update settings. Exact staging/restore targets,
-full artifact IDs, reader/migration roles and window must be filled before approval.
-This preserves existing data and does not authorize deleting sample or app data.
-
-Atlas metadata inspection and synthetic local-storage preparation are complete.
-Runtime-target pairing/data classification, offline-key recovery, staging/shutdown
-and live-operation authority are prerequisites, not implied by
-the request to implement the plan. Continue independent documentation verification
-and publish the inventory as a draft PR targeting `dev`; the user merges manually.
+The concrete maintenance package above supersedes the earlier placeholder. Runtime
+pairing, full artifact identity, operator-reported handwritten-key recovery, stream
+transport and isolated local audit readiness are now recorded. Live shutdown proof,
+consistent hosted capture/restore, temporary access/credential handoffs and explicit
+authorization for the attended window remain gates. Preservation is the default;
+no source/sample data deletion is proposed. PR #33 stays draft and the user merges
+manually. A maintenance success will still leave hosted full-flow acceptance and
+the private-release decision open.
