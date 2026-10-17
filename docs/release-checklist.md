@@ -7,6 +7,14 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 
 ## Candidate record
 
+- Current execution: [2026-10-17 private-release inventory](releases/2026-10-17-private-release.md),
+  implementing the plan in [PR #32](https://github.com/24-HUB/poker-game/pull/32).
+  Candidate `0d4ae28a9c404de8d7d9db089543a60e1fe18673` has successful
+  [exact merged-candidate CI](https://github.com/24-HUB/poker-game/actions/runs/38996688408/job/117290696108)
+  and is the observed live Render and active Worker revision (Worker `483fb438`,
+  100% traffic). Atlas schema/data, proxy credential remediation,
+  retained backup/key recovery and hosted acceptance remain unverified. Older
+  candidate records below are historical evidence, not current release approval.
 - M5.1 CI/build correction merged in [PR #15](https://github.com/24-HUB/poker-game/pull/15).
   M5.2 local recovery implementation merged in [PR #16](https://github.com/24-HUB/poker-game/pull/16).
   [Merged dev CI](https://github.com/24-HUB/poker-game/actions/runs/37771118582)
@@ -58,8 +66,10 @@ captures private and redact cookies, tokens and private cards before sharing evi
 - [x] Committed receipt replay remains available while new purchases are blocked;
   admitted durable work resolves and committed balances remain intact.
   Locally verified 2026-10-08 with real replica-set and authenticated HTTP/Socket.IO
-  tests on `codex/m5-maintenance-controls`. Production defaults and the Render
-  blueprint keep admission/purchases closed until explicitly opened. Review the
+  tests on `codex/m5-maintenance-controls`. Production defaults keep
+  admission/purchases closed when flags are absent. The current
+  blueprint explicitly enables admission and disables purchases; inspected live
+  values matched on 2026-10-17. Review the
   task PR and its final-head CI before integrating; these checks do not authorize deployment.
 - [x] Two- and six-player play, disconnect/expiry/takeover, all-in and side-pot results,
   desktop and 360 px layouts, focus, contrast, touch and reduced motion inspected.

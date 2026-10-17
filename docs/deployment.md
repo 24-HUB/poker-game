@@ -6,6 +6,17 @@ especially M5 hosted acceptance, M6 authorized production cutover, and M7
 operations. The steps below remain the original preparation baseline, not
 evidence of a live deployment. The actual frontend adapter is OpenNext.
 
+The dated [private-release inventory](releases/2026-10-17-private-release.md)
+records observed provider state and candidate CI. Consult it before changing an
+existing resource; repository configuration alone does not establish live settings.
+The existing Worker is named `poker-game`, while the committed Wrangler default is
+`poker-anime-gacha-web`; verify the actual provider build name override before any
+operator upload. Cloudflare has native Git builds for `dev`, despite no repository
+deploy workflow. Include those triggers in coordinated pause/resume planning.
+Inventory also found `PROXY_SECRET` stored as a plaintext Worker Variable. Prepare
+a coordinated rotation into a Cloudflare Secret and matching Render value before
+hosted acceptance; do not copy its current value into evidence.
+
 The user requested automatic Render deployments on 2026-10-12. After this
 configuration is manually merged into `dev` and synced by the existing Render
 Blueprint, Render deploys that branch after its GitHub CI checks pass. PR merges
@@ -40,7 +51,7 @@ Configure these values in provider dashboards; never commit their live values.
 | Render | `MONGODB_DATABASE` | Dedicated playtest database name |
 | Render | `BETTER_AUTH_SECRET` | At least 32 random characters |
 | Render | `REGISTRATION_INVITE_CODE_SHA256` | Lowercase SHA-256 hex digest of the temporary registration code |
-| Render | `ALLOW_NEW_SESSIONS` | Server-only `true`/`false`: permit new poker sessions; blueprint starts closed |
+| Render | `ALLOW_NEW_SESSIONS` | Server-only `true`/`false`: permit new poker sessions; current blueprint explicitly sets `true` |
 | Render | `ECONOMY_WRITES_ENABLED` | Server-only `true`/`false`: permit new pulls/equipment changes; blueprint starts closed |
 | Render secret | `BREVO_API_KEY` | Transactional email API credential |
 | Render | `BREVO_SENDER_EMAIL` | Sender address controlled and verified by the release operator |
@@ -70,8 +81,11 @@ Both controls accept exactly lowercase `true` or `false`. Invalid values stop
 startup without printing the submitted value. Settings are captured once per
 process; changing provider configuration requires a controlled backend restart.
 When absent, they default to closed in production and open outside production.
-The local example explicitly opens both; the Render blueprint explicitly closes
-both until an operator authorizes release. No browser parameter or HTTP/socket
+The local example explicitly opens both. The current Render blueprint sets
+`ALLOW_NEW_SESSIONS=true` and `ECONOMY_WRITES_ENABLED=false`; the inspected live
+service matched these values on 2026-10-17. Missing production flags default closed,
+which differs from these explicit values. Record actual settings and obtain scoped
+authorization before a controlled maintenance restart. No browser parameter or HTTP/socket
 endpoint can change them.
 
 `ALLOW_NEW_SESSIONS=false` returns `MAINTENANCE` for a new start, while an identical

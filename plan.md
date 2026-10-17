@@ -520,6 +520,36 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Hosted release execution — 2026-10-17
+
+Implementing the hosted-release plan in [PR #32](https://github.com/24-HUB/poker-game/pull/32)
+inline on clean new branch `codex/hosted-release-inventory` from fetched `origin/dev`
+`0d4ae28a9c404de8d7d9db089543a60e1fe18673`. The plan PR is still open; the execution
+record is [the dated inventory](docs/releases/2026-10-17-private-release.md).
+Task 1 remains in progress. Exact candidate CI verify job was inspected successful;
+both Render and active Worker use that revision (Worker prefix `483fb438`, 100%
+traffic). Render sessions are enabled, purchases disabled, CI Auto-Deploy and
+Blueprint Auto Sync enabled. Worker also has native Git builds on `dev`.
+
+Runbooks now distinguish those flags from absent production defaults and derive
+schema versions from the candidate registry, currently 001–007. Inventory records
+the Worker name mismatch and the proxy credential stored as a plaintext Variable;
+coordinated rotation to a Secret and matching Render credential is required before
+acceptance. Full Worker ID, Atlas cluster/schema/counts, progression classification,
+Brevo verification, retained storage/key and verified writer shutdown remain pending.
+Preserve all existing data while classification is unknown. No hosted mutation,
+deployment, email, backup or restore occurred. Tasks 2–7 remain dependent on these
+decisions and exact live-action authority; release is not complete.
+
+Complete documentation diff self-review, whitespace and 14 relative file links
+passed; final fetch confirms latest `origin/dev` is included. Publication is next.
+No application tests rerun for documentation.
+Next: finish Atlas browser sign-in, inspect metadata/counts read-only, then complete
+inventory and prepare the scoped storage/shutdown/credential-rotation package.
+See `CHECKPOINT.md` for branch/publication and resume details. Usage observed
+2026-10-17 10:25:38 Bangkok: five-hour 75% remaining (reset 2026-10-17 12:40:06),
+weekly 62% remaining (reset 2026-10-22 13:13:35). No billing action.
+
 ### Bot-player CI regression follow-up — 2026-10-16
 
 Continued `codex/bot-player-plan` and [PR #31](https://github.com/24-HUB/poker-game/pull/31)

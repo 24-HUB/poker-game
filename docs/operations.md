@@ -79,7 +79,9 @@ See [Atlas backup limitations](https://www.mongodb.com/docs/atlas/backup-restore
 and [Atlas Free tool restrictions](https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/).
 
 1. Record authorization, source environment/database, application SHA, server/FCV
-   and matching dump/restore tool versions, schema versions 1–5, catalogue version/hash,
+   and matching dump/restore tool versions, every schema version registered by the
+   selected candidate (`apps/server/src/database/migrate.ts`, currently 001–007),
+   the target's actual applied versions, catalogue version/hash,
    previous successful backup and incident loss window. Check encrypted storage/key
    access and enough space. Use an application-database-scoped reader for the dump.
 2. Close new sessions and purchases. Tell friends about the planned interruption.
@@ -96,6 +98,14 @@ and [Atlas Free tool restrictions](https://www.mongodb.com/docs/atlas/reference/
    Where available, temporarily revoke runtime write access after
    shutdown; retain only an operator-scoped dump reader. If writers cannot be
    stopped, cancel this backup. Reopening waits until dump completion.
+   For the existing Render service, both Auto-Deploy (After CI Checks Pass) and
+   Blueprint Auto Sync (Yes) were enabled at inventory on 2026-10-17. An authorized
+   shutdown must pause both and prevent traffic-driven wake. The Free service's
+   paid Maintenance Mode is unavailable; do not substitute it for writer shutdown
+   or upgrade automatically. Service suspension is exposed in its dashboard, but
+   its full quiescence/wake-prevention procedure remains unverified. Cancel a hosted
+   dump until the approved method demonstrably stops every writer. Record the
+   original controls and restore them only at the approved reopening point.
 4. Verify economy with the reader and record collection counts plus collection
    options/validators/indexes separately in the private backup manifest. Capture
    the quiescence time (the recovery point). Do not back up a known discrepancy

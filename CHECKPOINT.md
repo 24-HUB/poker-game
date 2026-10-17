@@ -1,5 +1,41 @@
 # Checkpoint — Remaining phases through production
 
+## Hosted release execution — 2026-10-17
+
+- User requested implementation of the plan in [PR #32](https://github.com/24-HUB/poker-game/pull/32).
+  New clean task branch `codex/hosted-release-inventory` starts from fetched
+  `origin/dev` `0d4ae28a9c404de8d7d9db089543a60e1fe18673`. Plan PR remains open;
+  read it from its remote branch when needed. Execute inline; no delegation.
+- Task 1 is in progress. Created [release inventory](docs/releases/2026-10-17-private-release.md),
+  inspected signed-in Render and Cloudflare dashboards and exact candidate CI.
+  Both live artifacts use `0d4ae28a`; Worker displays version `483fb438` at 100%
+  traffic. Render is Free/Singapore with sessions enabled, purchases disabled,
+  Auto-Deploy after CI and Blueprint Auto Sync enabled. Target database name is
+  `poker_playtest`; Atlas cluster/schema/counts and progression value are unknown.
+- Corrected runbook flags and backup schema 001–007. Recorded Worker name mismatch,
+  provider-native Git build triggers, missing safe rollback pair and unverified
+  full-writer shutdown. Cloudflare stores the proxy credential as a plaintext
+  Variable; prepare coordinated rotation to a Secret plus matching Render value.
+  Do not copy the exposed value. No provider mutation, email, deployment or DB operation.
+- Ruling: preserve all hosted data while its value is unknown. Task 2 storage/key
+  decision remains pending; no guessed storage or temporary recovery key. Tasks
+  3–7 depend on concrete target/window approval, hosted acceptance and recovery.
+- Checks: inspected candidate CI verify job
+  [success](https://github.com/24-HUB/poker-game/actions/runs/38996688408/job/117290696108),
+  including migration replay, aggregate, backup/restore, Linux Worker and Chromium.
+  Complete documentation diff self-review, `git diff --check` and all 14 relative
+  file links passed. Final fetch confirms latest `origin/dev` is included.
+  Publication is next. No application suites rerun for docs.
+- Resume: ask user to finish Atlas sign-in in the browser tab already opened,
+  inspect cluster/schema metadata and sanitized counts read-only, confirm whether
+  progress matters, then finish missing inventory gates in the release record.
+  Prepare the exact storage/key/shutdown and credential-rotation package before
+  requesting live actions. Never rerun fixture suites against hosted data.
+- Usage observed **2026-10-17 10:25:38 Bangkok**: five-hour **75% remaining**
+  (reset **2026-10-17 12:40:06**), weekly **62% remaining** (reset
+  **2026-10-22 13:13:35**). No usage blocker. GitHub CLI is unavailable on PATH;
+  Git fetch succeeded with sandbox escalation; GitHub browser access works.
+
 ## Bot-player CI regression follow-up — 2026-10-16
 
 - Continued `codex/bot-player-plan`, [PR #31](https://github.com/24-HUB/poker-game/pull/31),
