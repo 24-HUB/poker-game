@@ -103,10 +103,12 @@ schema/data and paired Worker compatibility are proven, use authorized maintenan
 and a forward fix rather than assuming an older binary is safe. Never restore
 older progression merely to roll back application code.
 
-## Scoped maintenance package — awaiting operator authorization
+## Scoped maintenance package — operator authorized; credential handoff pending
 
 Prepared 2026-10-17 after the operator reported successful recovery with the
-handwritten key. This package authorizes nothing until the operator approves it.
+handwritten key. On resumption at 19:49 Bangkok the operator explicitly approved
+the attended package: “yes run it now”. No live mutation has occurred yet; the
+temporary reader form is prepared for human password entry and submission.
 It repairs the already deployed playtest candidate; it does not launch production
 or authorize invitations, email sends, gameplay fixtures, data deletion or paid services.
 

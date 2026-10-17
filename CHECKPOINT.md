@@ -2,6 +2,18 @@
 
 ## Hosted release execution — 2026-10-17
 
+- Resumed **19:49–19:55 Bangkok**: operator explicitly approved the concrete
+  attended maintenance package (“yes run it now”). Clean existing task branch;
+  origin fetch succeeded, current `origin/dev` remains `0d4ae28a`, included in
+  task HEAD `c5c2c399`. Usage 19:51:18: five-hour 97% remaining, weekly 54%;
+  resets 2026-10-18 00:49:02 and 2026-10-22 13:13:35 Bangkok respectively.
+  Prepared an unsubmitted Atlas reader form: `poker_release_reader_20261017`,
+  `read@poker_playtest`, Cluster0 only, six-hour expiry. Human password entry and
+  submission are required by browser credential policy. No provider settings,
+  source data, users or downtime changed. Next: operator enters a new password
+  and clicks Add User; verify scope, privately load credentials, prepare migrator,
+  then freshly recheck providers/CI and begin the approved shutdown/backup gates.
+
 - Maintenance preparation **13:26–13:39 Bangkok**: user reports the masked
   handwritten-key recovery worked. Recorded operator-reported success; no key
   sent through chat. Verified a new native MongoDB→age→D:→age→restore stream with

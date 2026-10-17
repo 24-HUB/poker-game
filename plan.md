@@ -522,6 +522,16 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ### Hosted release execution — 2026-10-17
 
+Resumed 19:49 Bangkok: operator explicitly approved the concrete attended
+maintenance package (“yes run it now”). Clean existing branch, successful fetch;
+`origin/dev` remains included at `0d4ae28a`, task HEAD `c5c2c399`. Prepared the
+unsubmitted six-hour Cluster0-only reader form (`read@poker_playtest`) for human
+password entry/submission. No live mutation or downtime yet. Next: complete that
+credential handoff, prepare the migrator, freshly recheck providers/CI, then run
+the approved shutdown, encrypted backup, isolated restore and migration gates.
+Usage at 19:51:18 Bangkok: five-hour 97%, weekly 54% remaining; resets
+2026-10-18 00:49:02 and 2026-10-22 13:13:35 Bangkok. No usage blocker.
+
 Maintenance preparation **13:26–13:39 Bangkok**: operator reports the masked
 handwritten-key sample recovery succeeded. A new synthetic MongoDB→age→retained
 D:→age→restore test passed with records/indexes/validators matched and no plaintext
