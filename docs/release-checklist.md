@@ -12,7 +12,9 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
   Candidate `0d4ae28a9c404de8d7d9db089543a60e1fe18673` has successful
   [exact merged-candidate CI](https://github.com/24-HUB/poker-game/actions/runs/38996688408/job/117290696108)
   and is the observed live Render and active Worker revision (Worker `483fb438`,
-  100% traffic). Atlas schema/data, proxy credential remediation,
+  100% traffic). Atlas `Cluster0/poker_playtest` has stored progression and only
+  migrations 001–005; confirm runtime pairing and back up before authorizing
+  missing 006–007. Proxy credential remediation,
   retained backup/key recovery and hosted acceptance remain unverified. Older
   candidate records below are historical evidence, not current release approval.
 - M5.1 CI/build correction merged in [PR #15](https://github.com/24-HUB/poker-game/pull/15).

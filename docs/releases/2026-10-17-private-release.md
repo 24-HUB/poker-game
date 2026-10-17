@@ -26,6 +26,9 @@ fresh `origin/dev`; it neither merges that PR nor copies its planning checkpoint
 
 ## Existing resources
 
+Published draft [PR #33](https://github.com/24-HUB/poker-game/pull/33), base `dev`,
+initial commit `40d9f7a2`; user merges manually.
+
 Read-only dashboard inspection on 2026-10-17. Do not copy private manifests,
 credentials, personal addresses, account/session IDs or private-card captures here.
 
@@ -40,7 +43,7 @@ credentials, personal addresses, account/session IDs or private-card captures he
 | Render build/start | Frozen pnpm 10.33.0 install and `pnpm build:server`; `pnpm --filter @poker/server start`; health `/health/deploy` | No change required from inventory |
 | Render automatic updates | Auto-Deploy **After CI Checks Pass**; [Blueprint](https://dashboard.render.com/blueprint/exs-db6ddjnlot8c739prvmg/settings) `poker-anime-gacha` Auto Sync **Yes**, `dev`, `render.yaml` | Scoped authority to pause/resume both for coordinated maintenance |
 | Live flags | `ALLOW_NEW_SESSIONS=true`, `ECONOMY_WRITES_ENABLED=false`; matches blueprint | Controlled restart/window approval before changing either |
-| Database target | Render `MONGODB_DATABASE=poker_playtest`; URI remains masked | Atlas sign-in, cluster identity, actual versions/counts, accounts/progression classification, separate isolated restore target |
+| Database target | Render `MONGODB_DATABASE=poker_playtest`; Atlas `poker_g/Cluster0` contains that database; metadata details below | Confirm runtime cluster pairing privately, progression classification, separate isolated restore target |
 | Email | Render has `BREVO_API_KEY`, `BREVO_SENDER_EMAIL`, `BREVO_SENDER_NAME` configured by name | Verified sender status and designated-account delivery; presence is not delivery evidence |
 | Recovery | Operator/retention/recovery targets already approved in [operations](../operations.md) | Destination/capacity, independently recoverable key and verified full-writer shutdown |
 
@@ -61,6 +64,27 @@ into a secret binding on Worker and the matching Render credential. No rotation
 or provider setting change was performed during inventory.
 
 ## Schema and rollback compatibility
+
+After the user signed in, Atlas project `poker_g`, Free `Cluster0` showed MongoDB
+8.0.34, AWS Singapore, three-node replica set, backups inactive, 143.76 MB / 512 MB
+data and 5 / 500 connections. Its `poker_playtest` database has 25 collections and
+44 indexes; `sample_mflix` shares cluster capacity. Confirm this is the runtime
+URI's cluster privately before any mutation; matching database names alone do not
+establish target identity.
+
+Actual `schemaMigrations` documents are `_id` 1 through 5 only, dated 2026-10-12;
+006–007 are absent in this inspected database. Existing email-code collections
+do not prove migration 006's indexes/validators or migration history. Retained
+backup, explicit target confirmation and scoped migration authority are required
+before applying missing migrations or claiming hosted acceptance.
+
+Aggregate counts show stored progression: 4 users, 3 wallets, 28 reward receipts,
+22 ledger rows, 15 hands, 5 sessions; zero pull receipts/owned cosmetics. These are
+dashboard observations, not an economy audit or a frozen backup manifest. Preserve
+all data while its value is unknown. Account/session/hand documents were not opened.
+Visible game/migration database roles include `readWriteAnyDatabase@admin`;
+no dedicated dump-reader role was observed. Prepare database-scoped runtime,
+migration, backup-reader and isolated restore permissions for explicit approval.
 
 Candidate registry `apps/server/src/database/migrate.ts` contains 001 foundation,
 002 room commands, 003 poker, 004 tickets, 005 collection, 006 email codes and
@@ -85,8 +109,10 @@ older progression merely to roll back application code.
 - [x] Confirm active Worker version prefix/source and effective public/backend origins.
 - [ ] Capture full Worker version ID, reconcile its name with Wrangler and prepare
   coordinated proxy credential rotation; do not redeploy a differently named Worker.
-- [ ] Sign in to Atlas in the browser; inspect only cluster/schema metadata and
-  sanitized counts under read-only scope. Do not expose connection strings.
+- [x] User completed Atlas sign-in; cluster/schema metadata and sanitized counts
+  inspected read-only without opening connection strings or account documents.
+- [ ] Confirm Atlas/runtime pairing, retained backup and scoped authority to
+  apply missing migrations 006–007. Missing schema blocks hosted acceptance.
 - [ ] Operator identifies whether existing progression matters. Preserve everything
   until answered; no data deletion is proposed.
 - [ ] Verify Brevo sender and account/quota headroom without sending test mail.
@@ -102,7 +128,17 @@ observed dashboards; whitespace and 14 relative file links passed. Application
 tests were not rerun for this documentation-only change. This partial inventory
 does not meet Task 1's full completion gate and remains a draft.
 
-Atlas currently opens its login page. Resource identities/data classification,
+Proposed next package (not approved/executed): preserve `poker_playtest`; select
+retained encrypted storage and independent key access; prove synthetic retrieval
+and writer shutdown; pause provider Git updates/Blueprint sync for the agreed
+window; take/verify a retained backup; apply candidate migrations twice with an
+explicit privately checked target and verify rows 001–007; rotate the shared proxy
+credential into a Worker Secret and matching Render value; verify paired artifacts
+and restore the approved automatic-update settings. Exact staging/restore targets,
+full artifact IDs, reader/migration roles and window must be filled before approval.
+This preserves existing data and does not authorize deleting sample or app data.
+
+Atlas metadata inspection is now complete. Runtime-target pairing/data classification,
 backup/key choice and live-operation authority are prerequisites, not implied by
 the request to implement the plan. Continue independent documentation verification
 and publish the inventory as a draft PR targeting `dev`; the user merges manually.

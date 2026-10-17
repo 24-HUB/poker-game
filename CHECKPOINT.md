@@ -11,7 +11,11 @@
   Both live artifacts use `0d4ae28a`; Worker displays version `483fb438` at 100%
   traffic. Render is Free/Singapore with sessions enabled, purchases disabled,
   Auto-Deploy after CI and Blueprint Auto Sync enabled. Target database name is
-  `poker_playtest`; Atlas cluster/schema/counts and progression value are unknown.
+  `poker_playtest`. After user sign-in, Atlas project `poker_g`, Free `Cluster0`
+  (MongoDB 8.0.34, AWS Singapore, three-node replica set) contains that database
+  with 25 collections, 44 indexes and schema rows 1–5 only. Required 006–007 are
+  absent here. Stored progression exists: 4 users, 3 wallets, 28 reward receipts.
+  Preserve it; confirm this cluster matches the Render URI privately before mutation.
 - Corrected runbook flags and backup schema 001–007. Recorded Worker name mismatch,
   provider-native Git build triggers, missing safe rollback pair and unverified
   full-writer shutdown. Cloudflare stores the proxy credential as a plaintext
@@ -25,10 +29,11 @@
   including migration replay, aggregate, backup/restore, Linux Worker and Chromium.
   Complete documentation diff self-review, `git diff --check` and all 14 relative
   file links passed. Final fetch confirms latest `origin/dev` is included.
-  Publication is next. No application suites rerun for docs.
-- Resume: ask user to finish Atlas sign-in in the browser tab already opened,
-  inspect cluster/schema metadata and sanitized counts read-only, confirm whether
-  progress matters, then finish missing inventory gates in the release record.
+  Initial commit `40d9f7a2` is pushed in draft [PR #33](https://github.com/24-HUB/poker-game/pull/33),
+  base `dev`; Atlas follow-up is pending save. No application suites rerun for docs.
+- Resume: Atlas sign-in/metadata inspection completed. Confirm runtime/cluster
+  pairing privately, retain a backup and prepare scoped authority for missing
+  migrations 006–007; confirm whether progress matters and finish inventory gates.
   Prepare the exact storage/key/shutdown and credential-rotation package before
   requesting live actions. Never rerun fixture suites against hosted data.
 - Usage observed **2026-10-17 10:25:38 Bangkok**: five-hour **75% remaining**

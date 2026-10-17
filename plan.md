@@ -535,17 +535,24 @@ Runbooks now distinguish those flags from absent production defaults and derive
 schema versions from the candidate registry, currently 001–007. Inventory records
 the Worker name mismatch and the proxy credential stored as a plaintext Variable;
 coordinated rotation to a Secret and matching Render credential is required before
-acceptance. Full Worker ID, Atlas cluster/schema/counts, progression classification,
-Brevo verification, retained storage/key and verified writer shutdown remain pending.
+acceptance. Atlas sign-in/metadata inspection is complete: Free `Cluster0` in
+project `poker_g`, MongoDB 8.0.34/AWS Singapore contains `poker_playtest` with
+25 collections, 44 indexes and stored account/ticket progression. Its actual schema
+history has only 001–005, missing required 006–007. Confirm runtime/cluster pairing
+privately, retain a backup and obtain scoped migration authority before acceptance.
+Full Worker ID, progression value/classification, Brevo verification, retained
+storage/key and verified writer shutdown remain pending.
 Preserve all existing data while classification is unknown. No hosted mutation,
 deployment, email, backup or restore occurred. Tasks 2–7 remain dependent on these
 decisions and exact live-action authority; release is not complete.
 
 Complete documentation diff self-review, whitespace and 14 relative file links
-passed; final fetch confirms latest `origin/dev` is included. Publication is next.
+passed; final fetch confirms latest `origin/dev` is included. Initial inventory
+commit `40d9f7a2` is pushed in draft [PR #33](https://github.com/24-HUB/poker-game/pull/33),
+base `dev`; Atlas follow-up is pending save.
 No application tests rerun for documentation.
-Next: finish Atlas browser sign-in, inspect metadata/counts read-only, then complete
-inventory and prepare the scoped storage/shutdown/credential-rotation package.
+Next: confirm runtime/cluster pairing privately, then prepare the scoped
+backup/shutdown/migration/credential-rotation package and finish inventory gates.
 See `CHECKPOINT.md` for branch/publication and resume details. Usage observed
 2026-10-17 10:25:38 Bangkok: five-hour 75% remaining (reset 2026-10-17 12:40:06),
 weekly 62% remaining (reset 2026-10-22 13:13:35). No billing action.
