@@ -10,6 +10,7 @@ export function HandCompletionBar({ game, accountId, status, pending, canStart, 
   const seconds = useTurnClock(game, game.nextTransitionAt);
   const text = game.sessionPhase === 'aborted' ? 'Session interrupted'
     : status !== 'connected' ? 'Reconnecting · Waiting for table synchronization'
+      : game.presencePaused ? 'Practice paused · Waiting for a human to reconnect'
       : game.handPhase === 'paused' ? 'Result confirmation paused'
         : game.handPhase === 'settling' ? 'Confirming hand result…'
           : game.sessionPhase === 'ended' ? 'Session complete'
@@ -19,7 +20,7 @@ export function HandCompletionBar({ game, accountId, status, pending, canStart, 
   const currentResult = game.sessionPhase !== 'aborted' && game.handResult &&
     (game.handResult.handId === game.handId || game.sessionPhase === 'ended' && game.handResult.handNumber === game.handNumber) ? game.handResult : null;
   return <div className="hand-completion">
-    <div><strong aria-live="off">{text}</strong>{currentResult ? <HandReward announce={false} receipt={currentResult.rewardReceipts?.find((receipt) => receipt.accountId === accountId)} /> : null}</div>
+    <div><strong aria-live="off">{text}</strong>{currentResult ? <HandReward mode={currentResult.mode ?? game.mode} announce={false} receipt={currentResult.rewardReceipts?.find((receipt) => receipt.accountId === accountId)} /> : null}</div>
     <div className="hand-completion__actions"><a className="text-button" href="#hand-history" onClick={onOpenHistory}>View hand history</a>
       {game.sessionPhase === 'ended' ? canStart ? <button type="button" className="primary-button" disabled={pending || status !== 'connected'} onClick={onStart}>Start new session</button> : <span>Waiting for host</span> : null}</div>
   </div>;

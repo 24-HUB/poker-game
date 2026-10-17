@@ -8,6 +8,7 @@ import request from 'supertest';
 import { applyMigrations } from '../src/database/migrate';
 import { createApplication } from '../src/main';
 import { RoomPublisher } from '../src/realtime/roomPublisher';
+import { RoomRegistry } from '../src/modules/rooms/roomRegistry';
 import { createTestDatabase, type TestDatabase } from './support/testDatabase';
 
 const mongoUri = process.env.TEST_MONGODB_URI ?? 'mongodb://127.0.0.1:27018/?replicaSet=rs0&directConnection=true';
@@ -134,6 +135,55 @@ describe('private poker gateway', () => {
       host.close(); guest.close(); outsider.close(); observer.close();
     }
   }, 20_000);
+
+  it('keeps observers as practice presence, pauses on revoked final session, and resumes on authorized reconnect', async () => {
+    const cookie = await signUp('bot-gateway@example.com');
+    const host = socket(cookie), observer = socket(cookie);
+    let reconnect: Socket | undefined;
+    try {
+      const bootId = await ready(host); await ready(observer);
+      const meta = () => ({ commandId: randomUUID(), authorityBootId: bootId, issuedAt: new Date().toISOString() });
+      const created = await emit(host, 'room:create', { type: 'room:create', title: 'Bot gateway', ...meta() });
+      const roomId = created.data.room.roomId;
+      const add = { type: 'room:addBot', roomId, seat: 1, controlEpoch: 1, ...meta() };
+      const added = await emit(host, 'room:addBot', add);
+      expect(added.error).toBeNull();
+      expect((await emit(host, 'room:addBot', add)).data.room.bots).toEqual(added.data.room.bots);
+      await emit(observer, 'room:sync', { type: 'room:sync', roomId });
+      expect((await emit(observer, 'room:addBot', { ...add, seat: 2, ...meta() })).error?.code).toBe('NOT_CONTROLLER');
+      const started = await emit(host, 'session:start', { type: 'session:start', roomId, controlEpoch: 1, ...meta() });
+      expect(started.data.game.mode).toBe('practice');
+      expect(started.data.game.participants.filter((player: { kind: string }) => player.kind === 'bot')).toHaveLength(1);
+      expect(started.data.game.holeCards).toHaveLength(2);
+      expect(started.data.game.revealedCards).toEqual([]);
+      const registry = app.get(RoomRegistry);
+      host.disconnect();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+      expect(registry.peek(roomId)?.session?.presencePaused).toBe(false);
+      const control = await emit(observer, 'room:claimControl', { type: 'room:claimControl', roomId, ...meta() });
+      const game = (await emit(observer, 'game:sync', { type: 'game:sync', roomId })).data.game;
+      const called = await emit(observer, 'game:action', { type: 'game:action', roomId, sessionId: game.sessionId, handId: game.handId,
+        expectedGameVersion: game.gameVersion, controlEpoch: control.data.room.control.epoch, action: { type: 'call' }, ...meta() });
+      expect(called.error).toBeNull();
+      const version = called.data.game.gameVersion;
+      await db.db.collection('session').deleteMany({});
+      for (let attempt = 0; attempt < 100 && !registry.peek(roomId)?.session?.presencePaused; attempt += 1) await new Promise((resolve) => setTimeout(resolve, 40));
+      expect(registry.peek(roomId)?.session?.presencePaused).toBe(true);
+      expect(registry.peek(roomId)?.session?.gameVersion).toBe(version);
+      const signedIn = await request(app.getHttpServer()).post('/api/auth/sign-in/email').set('origin', origin).set('x-poker-proxy-secret', proxySecret)
+        .send({ email: 'bot-gateway@example.com', password: 'correct-horse-battery-staple' });
+      expect(signedIn.status).toBe(200);
+      const restoredCookie = signedIn.headers['set-cookie']?.[0]?.split(';', 1)[0] ?? '';
+      expect(restoredCookie).not.toBe('');
+      reconnect = socket(restoredCookie);
+      await ready(reconnect);
+      expect((await emit(reconnect, 'room:sync', { type: 'room:sync', roomId })).error).toBeNull();
+      expect(registry.peek(roomId)?.session?.presencePaused).toBe(false);
+      expect((await emit(reconnect, 'game:sync', { type: 'game:sync', roomId })).data.game.holeCards).toEqual(game.holeCards);
+      expect(await db.db.collection('user').countDocuments()).toBe(1);
+      expect(await db.db.collection('ticketWallets').countDocuments()).toBe(0);
+    } finally { host.close(); observer.close(); reconnect?.close(); }
+  }, 20000);
 
   it('keeps an active-session leave pending when room publication runs', async () => {
     const host = socket(await signUp('leave-host@example.com'));

@@ -8,6 +8,7 @@ import { TransactionRunner } from '../../database/transactionRunner';
 import type { SettlementCandidate } from './settlement.service';
 import { SettlementError } from './settlement.error';
 import { TicketsRepository } from '../tickets/tickets.repository';
+import { validateSettlementSession } from './settlementSession';
 
 type HandDocument = {
   _id: string; sessionId: string; roomId: string; handNumber: number;
@@ -36,7 +37,8 @@ export class SettlementRepository {
 
   public async commit(candidate: SettlementCandidate, hash: string,
     result: CommittedHandResult): Promise<CommittedHandResult> {
-    if (candidate.rewardPolicyVersion !== undefined) {
+    const mode = await validateSettlementSession(this.db, candidate);
+    if (mode === 'standard' && candidate.rewardPolicyVersion !== undefined) {
       for (const participant of [...candidate.participants].sort((a, b) => a.accountId.localeCompare(b.accountId))) {
         await this.tickets.ensureWallet(participant.accountId);
       }
@@ -46,6 +48,7 @@ export class SettlementRepository {
 
   private async commitTransaction(candidate: SettlementCandidate, hash: string,
     result: CommittedHandResult, session: ClientSession): Promise<CommittedHandResult> {
+    await validateSettlementSession(this.db, candidate, session);
     const existing = await this.db.collection<HandDocument>('hands').findOne({ _id: candidate.handId }, { session });
     if (!existing) throw new SettlementError('HAND_NOT_FOUND', 'The hand no longer exists.');
     if (existing.status === 'COMPLETED') {

@@ -1,3 +1,5 @@
+import type { RoomBot } from '@poker/contracts' with { 'resolution-mode': 'import' };
+
 export type InternalRoomMember = {
   accountId: string;
   displayName: string;
@@ -8,6 +10,7 @@ export type InternalRoomMember = {
 };
 
 export type InternalRoom = {
+  bots?: RoomBot[];
   roomId: string;
   title: string;
   revision: number;

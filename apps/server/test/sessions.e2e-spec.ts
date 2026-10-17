@@ -73,12 +73,78 @@ describe('durable poker sessions', () => {
       .toMatchObject({ phase: 'playing', sessionId: first.sessionId });
   });
 
+  it('starts solo practice with stable retried bot seats and human-only account locks', async () => {
+    const { roomId } = await create();
+    const add = { type: 'room:addBot' as const, roomId, seat: 1, controlEpoch: 1, ...metadata() };
+    const first = await rooms.execute(context('host'), add);
+    expect(first.error).toBeNull();
+    expect(first.data?.room?.bots).toHaveLength(1);
+    const bot = first.data!.room!.bots![0]!;
+    expect(bot).toMatchObject({ displayName: 'Bot 1', seat: 1 });
+    expect((await rooms.execute(context('host'), add)).data?.room?.bots).toEqual([bot]);
+    expect((await rooms.execute(context('host'), { ...add, seat: 2 })).error?.code).toBe('COMMAND_CONFLICT');
+    expect((await rooms.execute(context('host', 'observer'), { ...add, ...metadata(), seat: 2 })).error?.code).toBe('NOT_CONTROLLER');
+    expect((await rooms.execute(context('host'), { type: 'room:takeSeat', roomId, seat: 1, controlEpoch: 1, ...metadata() })).error?.code).toBe('SEAT_TAKEN');
+    const runtime = await registry.enqueue(roomId, () => sessions.startInQueue(context('host'), startCommand(roomId)));
+    expect(runtime.mode).toBe('practice');
+    expect(runtime.participants).toEqual([{ accountId: 'host', displayName: 'host', seat: 0, kind: 'human' },
+      { accountId: bot.botId, displayName: 'Bot 1', seat: 1, kind: 'bot' }]);
+    expect(runtime.rewardPolicyVersion).toBeUndefined();
+    expect(await database.db.collection('activeParticipants').find({}).toArray()).toEqual([
+      expect.objectContaining({ accountId: 'host' }),
+    ]);
+    expect(Object.keys(runtime.equipmentByAccount ?? {})).not.toContain(bot.botId);
+    expect((await rooms.execute(context('host'), { type: 'room:removeBot', roomId, botId: bot.botId, controlEpoch: 1, ...metadata() })).error?.code).toBe('SESSION_IN_PROGRESS');
+  });
+
+  it('serializes bot additions against human joins and enforces host permissions', async () => {
+    const { roomId, token } = await create();
+    await join(token, 'guest');
+    expect((await rooms.execute(context('guest'), { type: 'room:addBot', roomId, seat: 2, controlEpoch: 1, ...metadata() })).error?.code).toBe('FORBIDDEN');
+    const [added, joined] = await Promise.all([
+      rooms.execute(context('host'), { type: 'room:addBot', roomId, seat: 2, controlEpoch: 1, ...metadata() }), join(token, 'late'),
+    ]);
+    const view = (await rooms.execute(context('host'), { type: 'room:sync', roomId })).data!.room!;
+    expect(joined.error).toBeNull();
+    const seats = [...view.members.map((member) => member.seat), ...(view.bots ?? []).map((bot) => bot.seat)];
+    expect(new Set(seats).size).toBe(seats.length);
+    if (added.error) expect(added.error.code).toBe('SEAT_TAKEN');
+  });
+
+  it('reserves six total seats, removes bots idempotently, and never transfers host to a bot', async () => {
+    const { roomId, token } = await create();
+    for (let seat = 1; seat < 6; seat += 1) {
+      expect((await rooms.execute(context('host'), { type: 'room:addBot', roomId, seat, controlEpoch: 1, ...metadata() })).error).toBeNull();
+    }
+    expect((await join(token, 'guest')).error?.code).toBe('ROOM_FULL');
+    const view = (await rooms.execute(context('host'), { type: 'room:sync', roomId })).data!.room!;
+    const remove = { type: 'room:removeBot' as const, roomId, botId: view.bots![0]!.botId, controlEpoch: 1, ...metadata() };
+    expect((await rooms.execute(context('host'), remove)).data?.room?.bots).toHaveLength(4);
+    expect((await rooms.execute(context('host'), remove)).data?.room?.bots).toHaveLength(4);
+    await rooms.disconnect('host-tab');
+    const restored = (await rooms.execute(context('host'), { type: 'room:sync', roomId })).data!.room!;
+    expect(restored.hostAccountId).toBe('host');
+  });
+
   it('nonHostCannotStart', async () => {
     const { roomId, token } = await create();
     await join(token, 'guest');
     await expect(registry.enqueue(roomId, () => sessions.startInQueue(context('guest'), startCommand(roomId))))
       .rejects.toMatchObject({ code: 'FORBIDDEN' });
     expect(await database.db.collection('gameSessions').countDocuments()).toBe(0);
+  });
+
+  it('normalizes persisted legacy sessions as standard human-only sessions', async () => {
+    const { roomId, token } = await create(); await join(token, 'guest');
+    const command = startCommand(roomId);
+    const started = await registry.enqueue(roomId, () => sessions.startInQueue(context('host'), command));
+    await database.db.collection<{ _id: string }>('gameSessions').updateOne({ _id: started.sessionId }, {
+      $unset: { mode: '' }, $set: { participants: started.participants.map((player) => ({ accountId: player.accountId, displayName: player.displayName, seat: player.seat })) },
+    });
+    const restored = new SessionService(new SessionRepository(database.db, new TransactionRunner(database.client), authority), new RoomRegistry(), authority);
+    const legacy = await restored.startInQueue(context('host'), command);
+    expect(legacy.mode).toBe('standard');
+    expect(legacy.participants.map((player) => player.kind)).toEqual(['human', 'human']);
   });
 
   it('startRequiresTwoToSixSeats', async () => {

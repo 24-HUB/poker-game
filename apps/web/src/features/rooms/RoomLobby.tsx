@@ -21,6 +21,8 @@ export type RoomLobbyProps = {
   onLeave: () => void;
   onRetryPending: () => void;
   onStart: () => void;
+  onAddBot?: (seat: number) => void;
+  onRemoveBot?: (botId: string) => void;
 };
 
 export function RoomLobby({
@@ -37,8 +39,13 @@ export function RoomLobby({
   onLeave,
   onRetryPending,
   onStart,
+  onAddBot,
+  onRemoveBot,
 }: RoomLobbyProps) {
   const isHost = room.hostAccountId === accountId;
+  const bots = room.bots ?? [];
+  const seated = room.members.filter((member) => member.seat !== null).length + bots.length;
+  const canChangeBots = !pending && status === 'connected' && room.control.isController && room.phase === 'waiting';
   const [copyMessage, setCopyMessage] = useState<string | null>(null);
 
   async function copyInvitation() {
@@ -52,11 +59,12 @@ export function RoomLobby({
       <header className="page-heading room-lobby__heading">
         <div>
           <h1 id="room-title">{room.title}</h1>
-          <p>{room.members.length} of 6 members</p>
+          <p>{bots.length ? `${room.members.length} humans · ${bots.length} bots · ${seated} of 6 seats` : `${room.members.length} of 6 members`}</p>
         </div>
         <span className={`connection-state connection-state--${status}`}>{connectionLabel(status)}</span>
       </header>
 
+      {bots.length ? <p className="practice-notice"><strong>Practice · No tickets</strong><span>Remove all bots before starting to earn tickets.</span></p> : null}
       <div className="room-lobby__grid">
         <aside className="room-controls" aria-label="Room controls">
           <div>
@@ -71,14 +79,14 @@ export function RoomLobby({
           ) : null}
           {copyMessage ? <p role="status">{copyMessage}</p> : null}
           {isHost ? (
-            <button className="primary-button" type="button" disabled={pending || status !== 'connected' || !room.control.isController || room.members.filter((member) => member.seat !== null).length < 2} onClick={onStart}>
+            <button className="primary-button" type="button" disabled={pending || status !== 'connected' || !room.control.isController || seated < 2} onClick={onStart}>
               Start poker session
             </button>
           ) : null}
           <p className="room-control-guidance">{pending ? 'Waiting for the room command to be confirmed.'
             : status !== 'connected' ? 'Reconnect before changing seats or starting.'
               : !room.control.isController ? 'You are watching from this tab. Use this tab to play to change seats, start or leave.'
-                : room.members.filter((member) => member.seat !== null).length < 2 ? 'Waiting for another player. At least two seated players are needed to start.'
+                : seated < 2 ? 'Invite a friend or add a bot. At least two seated players are needed to start.'
                   : !isHost ? 'Waiting for the host to start the session.' : 'Your table is ready to start.'}</p>
           {isHost ? (
             <button className="secondary-button" type="button" disabled={pending || !room.control.isController} onClick={onRotateInvitation}>
@@ -102,8 +110,9 @@ export function RoomLobby({
           <ul className="room-seats" aria-label="Table seats">
             {Array.from({ length: 6 }, (_, seat) => {
               const member = room.members.find((candidate) => candidate.seat === seat);
+              const bot = bots.find((candidate) => candidate.seat === seat);
               return (
-                <li className={member ? 'room-seat room-seat--occupied' : 'room-seat'} key={seat}>
+                <li className={member || bot ? 'room-seat room-seat--occupied' : 'room-seat'} key={seat}>
                   <span className="room-seat__number">Seat {seat + 1}</span>
                   {member ? (
                     <>
@@ -111,11 +120,18 @@ export function RoomLobby({
                       <strong>{member.displayName}{member.accountId === accountId ? ' (you)' : ''}</strong>
                       <small>{member.connected ? 'Connected' : 'Reconnecting'}{member.accountId === room.hostAccountId ? ' · Host' : ''}</small>
                     </>
+                  ) : bot ? (
+                    <>
+                      <img className="room-seat__avatar" src="/art/hostess.png" alt="" width="48" height="48" />
+                      <strong>{bot.displayName}</strong><small>Bot · Casual opponent</small>
+                      {isHost && onRemoveBot ? <button type="button" disabled={!canChangeBots} onClick={() => onRemoveBot(bot.botId)}>Remove {bot.displayName}</button> : null}
+                    </>
                   ) : (
                     <>
                       <span className="room-seat__avatar room-seat__avatar--empty">{seat + 1}</span>
                       <strong>Open seat</strong>
                       <button type="button" disabled={pending || status !== 'connected' || !room.control.isController} onClick={() => onTakeSeat(seat)}>Take seat {seat + 1}</button>
+                      {isHost && onAddBot ? <button type="button" disabled={!canChangeBots} onClick={() => onAddBot(seat)}>Add bot to seat {seat + 1}</button> : null}
                     </>
                   )}
                 </li>

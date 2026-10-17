@@ -4,8 +4,15 @@ import { createAccount, prepareFixtureClient, readAccountEmail, registrationCode
 test('verified account resets with a code on mobile, retains wallet, rejects reuse and old password', async ({ page }) => {
   await page.setViewportSize({ width: 360, height: 800 });
   const account = { displayName: 'Recoverable friend', email: `recovery-${Date.now()}@example.com` };
+  let release!: () => void;
+  const accessCheck = new Promise<void>((resolve) => { release = resolve; });
+  await page.route('**/api/rooms/current', async (route) => { await accessCheck; await route.continue(); });
   await page.goto('/'); await createAccount(page, account);
-  await expect(page.getByLabel('0 tickets, 20 can be earned today')).toBeVisible();
+  try {
+    await expect(page.getByText('Recovering your current room…')).toBeVisible();
+    await expect(page.getByRole('status').getByLabel('0 tickets, 20 can be earned today')).toBeVisible();
+  } finally { release(); await page.unrouteAll({ behavior: 'wait' }); }
+  await expect(page.getByRole('banner').getByLabel('0 tickets, 20 can be earned today')).toBeVisible();
   await page.getByRole('button', { name: 'Sign out' }).click(); await page.getByRole('button', { name: 'Sign in', exact: true }).click();
   const dialog = page.getByRole('dialog'); await dialog.getByRole('button', { name: 'Forgot password?' }).click();
   await dialog.getByLabel('Email', { exact: true }).fill(account.email);
@@ -29,7 +36,7 @@ test('verified account resets with a code on mobile, retains wallet, rejects reu
   await dialog.getByLabel('Password').fill('private-test-password'); await dialog.getByRole('button', { name: 'Sign in to your club' }).click();
   await expect(dialog.getByRole('alert')).toContainText('did not match');
   await dialog.getByLabel('Password').fill('changed-private-password'); await dialog.getByRole('button', { name: 'Sign in to your club' }).click();
-  await expect(page.getByRole('button', { name: 'Sign out' })).toBeVisible(); await expect(page.getByLabel('0 tickets, 20 can be earned today')).toBeVisible();
+  await expect(page.getByRole('banner').getByLabel('0 tickets, 20 can be earned today')).toBeVisible();
   await expect.poll(() => page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
   // Layout screenshots only after secrets have been removed from the DOM.
   await page.screenshot({ path: 'test-results/email-codes-mobile-signed-in.png', fullPage: true });

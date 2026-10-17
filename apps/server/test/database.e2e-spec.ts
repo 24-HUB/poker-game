@@ -6,6 +6,18 @@ import { TransactionRunner } from '../src/database/transactionRunner';
 import { createTestDatabase } from './support/testDatabase';
 
 describe('database persistence', () => {
+  it('validates bot rosters while accepting legacy missing bot fields', async () => {
+    const database = await createTestDatabase();
+    try {
+      await applyMigrations(database.db);
+      const room = { hostAccountId: 'host', title: 'Room', status: 'OPEN', revision: 0, createdAt: new Date(), expiresAt: new Date() };
+      await database.db.collection('rooms').insertOne({ ...room });
+      const bot = { botId: 'bot:22222222-2222-4222-8222-222222222222', displayName: 'Bot 1', seat: 1 };
+      await database.db.collection('rooms').insertOne({ ...room, bots: [bot] });
+      await expect(database.db.collection('rooms').insertOne({ ...room, bots: [{ ...bot, seat: 6 }] })).rejects.toMatchObject({ code: 121 });
+      await expect(database.db.collection('rooms').insertOne({ ...room, bots: [bot, bot] })).rejects.toMatchObject({ code: 121 });
+    } finally { await database.dispose(); }
+  });
   it('rollsBackBothWrites', async () => {
     const testDatabase = await createTestDatabase();
     const runner = new TransactionRunner(testDatabase.client);
@@ -48,7 +60,7 @@ describe('database persistence', () => {
     try {
       await applyMigrations(testDatabase.db);
       await applyMigrations(testDatabase.db);
-      await expect(testDatabase.db.collection('schemaMigrations').countDocuments()).resolves.toBe(6);
+      await expect(testDatabase.db.collection('schemaMigrations').countDocuments()).resolves.toBe(7);
       await expect(testDatabase.db.listCollections({ name: 'roomCommands' }).hasNext()).resolves.toBe(true);
       await expect(testDatabase.db.listCollections({ name: 'activeRoomMemberships' }).hasNext()).resolves.toBe(true);
       await expect(testDatabase.db.listCollections({ name: 'gameSessions' }).hasNext()).resolves.toBe(true);
@@ -67,7 +79,7 @@ describe('database persistence', () => {
 
       await applyMigrations(testDatabase.db);
 
-      await expect(testDatabase.db.collection('schemaMigrations').countDocuments()).resolves.toBe(6);
+      await expect(testDatabase.db.collection('schemaMigrations').countDocuments()).resolves.toBe(7);
       await expect(testDatabase.db.listCollections({ name: 'roomCommands' }).hasNext()).resolves.toBe(true);
       await expect(testDatabase.db.listCollections({ name: 'gameSessions' }).hasNext()).resolves.toBe(true);
     } finally {

@@ -34,7 +34,7 @@ export function HandHistory({ accountId, roomId, sessionId, latestHandId, openRe
       {!query.isPending && !query.isError && hands.length === 0 ? <p>No completed hands yet.</p> : null}
       <ol>{hands.map((hand) => <li key={hand.handId}>
         <HandResultPanel result={hand} names={names} history />
-        <HandReward announce={false} receipt={hand.rewardReceipts?.find((receipt) => receipt.accountId === accountId)} />
+        <HandReward mode={hand.mode} announce={false} receipt={hand.rewardReceipts?.find((receipt) => receipt.accountId === accountId)} />
       </li>)}</ol>
       {query.hasNextPage ? <button type="button" className="secondary-button" disabled={query.isFetching} onClick={() => void query.fetchNextPage()}>Load earlier hands</button> : null}
     </div> : null}

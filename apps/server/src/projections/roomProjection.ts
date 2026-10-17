@@ -9,6 +9,7 @@ export function projectRoom(
 ): RoomView {
   const membership = room.members.find((member) => member.accountId === accountId);
   return {
+    bots: (room.bots ?? []).map((bot) => ({ ...bot })),
     roomId: room.roomId,
     title: room.title,
     revision: room.revision,

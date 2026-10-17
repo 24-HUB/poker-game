@@ -138,7 +138,7 @@ export function startHand(input: {
 }
 
 export function applyAction(
-  state: HandState, accountId: string, action: PokerAction, source: 'manual' | 'timeout',
+  state: HandState, accountId: string, action: PokerAction, source: 'manual' | 'timeout' | 'bot',
 ): EngineTransition {
   const legal = legalActions(state, accountId);
   if (!legal.canFold) throw new RangeError('Not an actionable turn');

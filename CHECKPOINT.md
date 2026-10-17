@@ -1,5 +1,147 @@
 # Checkpoint — Remaining phases through production
 
+## Bot-player CI regression follow-up — 2026-10-16
+
+- Continued `codex/bot-player-plan`, [PR #31](https://github.com/24-HUB/poker-game/pull/31),
+  base `dev`, from `0886609e`. All feature code was already implemented; this
+  follow-up changes browser tests and documentation only.
+- CI run `38742584198` passed `pnpm check` (including all 282 server tests),
+  migration idempotency, encrypted backup/restore and Worker packaging, then
+  failed two Chromium timing assumptions. Both were reproduced locally:
+  wallet labels matched hidden retained content during access recovery, and
+  publication could disconnect a revoked guest before its takeover click.
+- Tests now explicitly cover delayed recovery with scoped visible wallet checks,
+  and a host publication automatically removing the revoked guest. Actions have
+  bounded timeouts; cleanup preserves the original failure. Both cases passed
+  three repetitions each (**6/6**). Fresh `CI=true` full Chromium **35/35 passed**
+  in 4.2 minutes; web typecheck and whitespace checks passed.
+- Logs: ignored `.artifacts/bot-players-2026-10-15/{ci-races-red,ci-races-green,browser-resumed-full}.log`.
+  Latest fetch confirms `origin/dev` `17a43ba5` is included. Restore the generated
+  dev-only `next-env.d.ts` paths before committing; no application edits pending.
+- Publication sequence: commit this follow-up, push the explicit task branch,
+  inspect its new CI run, and mark PR ready only after it passes. The PR's live
+  checks are the source for post-publication status. User merges manually.
+  No deployment or hosted migration was performed.
+- Usage observed 2026-10-16 **20:00 Bangkok**: five-hour **83% remaining**,
+  resets 2026-10-17 **00:10:34**; weekly **68% remaining**, resets 2026-10-22
+  **13:13:35** Bangkok. No usage blocker or billing action.
+
+## Bot-player verified implementation save point — 2026-10-15
+
+- Feature implementation is complete on `codex/bot-player-plan`, published in
+  [PR #31](https://github.com/24-HUB/poker-game/pull/31), base `dev`.
+  Last code/test commit: `004760ea`; this save-point commit changes documentation
+  only. No pending application changes. User merges manually; no deployment or
+  hosted migration was performed.
+- Fresh local full Chromium **35/35 passed** in 4.4 minutes, including solo bots,
+  mixed play, takeover/reload, practice history and later standard ticket rewards.
+  Desktop/mobile screenshots inspected. Contracts **19/19**, engine **21/21**,
+  frontend **177/177**, economy audit **29/29**, affected server **56/56** and
+  production builds passed. Independent review fixes were verified; no remaining
+  Important findings. Generated `next-env.d.ts` dev imports were restored.
+- Local aggregate ran 282 server tests: 281 passed and one catalogue setup hook
+  timed out at five seconds; isolated catalogue rerun **2/2 passed**. The
+  [Linux implementation run](https://github.com/24-HUB/poker-game/actions/runs/38741106896)
+  has already passed `pnpm check`, migration idempotency, backup/restore rehearsal
+  and Worker packaging. Its final Chromium step was still running at this save
+  point, so PR remains draft pending CI completion. Logs are ignored under
+  `.artifacts/bot-players-2026-10-15/`.
+- Next: inspect the latest PR CI (including the documentation-triggered rerun),
+  fix any actual failure, then mark PR ready after required checks succeed.
+  Resume with `git status --short --branch`, usage, `git fetch origin --prune`
+  and this save point; do not reimplement completed tasks. Prior final fetch
+  confirmed `origin/dev` `17a43ba5` is included; fetch again before final handoff.
+- Usage observed 2026-10-15 **20:24 Bangkok**: five-hour **5% remaining**,
+  resets 2026-10-16 **00:03:39**; weekly **72% remaining**, resets 2026-10-22
+  **13:13:35** Bangkok. Save-point threshold reached; finish only bounded
+  verification/publication work. No billing or reset-credit action.
+
+## Bot-player implementation — verification in progress, 2026-10-15
+
+- The user approved the implementation plan. Feature code is on
+  `codex/bot-player-plan`, updating [draft PR #31](https://github.com/24-HUB/poker-game/pull/31)
+  targeting `dev`. Implementation commits through `0fce9719` cover contracts,
+  host-owned bot seats, immutable practice mode, economy protection, restricted
+  casual strategy, fenced turn/retry timers, presence pause/cleanup and room/table UI.
+- Independent review found two timer-recovery bugs; both were reproduced and
+  fixed, and focused follow-up found no remaining Important findings. A final
+  lease recheck after asynchronous reads was also reproduced and fixed.
+- Passed: frozen pnpm 10.33.0 install, contracts 19/19, engine 21/21, frontend
+  177/177, economy audit 29/29, real Socket.IO observer/revocation/reconnect,
+  and latest affected server suites 56/56. Lifecycle acceptance includes one
+  human against 1–5 bots, strategy fallback, stale callbacks, retained countdowns,
+  pending settlement after retention and authority/shutdown cancellation.
+- Solo Chromium acceptance passed, including five-seat bot roster, private cards,
+  bot thinking, practice history/no rewards, post-reload tab takeover, bot removal
+  and subsequent human-only rewards. Inspected 360px/1440px room/table screenshots.
+  A mixed human/bot takeover/reload browser case is prepared but not yet run.
+- Aggregate rerun is in progress. Previous run passed 280 server tests and failed
+  one catalogue assertion expecting six migrations; updated it to seven. An
+  earlier audit fixture lacked durable session data and now uses a valid isolated
+  two-human session (one qualifying account); the audit passes. A browser-discovered
+  BSON undefined-to-null equipment issue is fixed with explicit default equipment.
+- Next: inspect `.artifacts/bot-players-2026-10-15/check.log`, complete full fresh
+  Chromium acceptance, inspect current PR CI/Worker packaging, then record final
+  evidence and publish. `next-env.d.ts` has a generated dev-path change; production
+  build restores it. No deployment or hosted migration. User merges manually.
+- Fetch confirms latest `origin/dev` `17a43ba5` is included. Usage observed
+  2026-10-15 20:14 Bangkok: five-hour **16% remaining**, reset 2026-10-16
+  **00:03:39**; weekly **74% remaining**, reset 2026-10-22 **13:13:35** Bangkok.
+
+## Bot-player implementation plan — 2026-10-15
+
+- The user requested implementation of [PR #31](https://github.com/24-HUB/poker-game/pull/31),
+  approving its written specification. Continued clean existing task branch
+  `codex/bot-player-plan`; authenticated PR read confirmed open/draft, targeting `dev`,
+  with no inline review comments. Last published commit before this plan: `bf78510d`.
+- Prepared and self-reviewed the [implementation plan](docs/superpowers/plans/2026-10-15-bot-player-implementation.md):
+  contracts/compatibility, roster/session admission, durable economy guards and
+  migration 007, fair-information strategy, fenced timers/presence lifecycle,
+  UI/browser acceptance and verification/publication. All execution steps remain
+  unchecked; no application code or configuration has changed.
+- Review checked actual source boundaries, manifests, test paths and migration
+  registration. The Superpowers writing-plans workflow requires user plan review
+  before execution. Next: review the plan, then execute Task 1 inline on this same
+  branch/PR after approval; first run status/branch, usage and fetch. Preserve
+  completed planning work and do not repeat the product-design interview.
+- Documentation validation: source/link accuracy, spec coverage and self-review,
+  placeholder scan and whitespace/full-diff checks. Application checks have not
+  run for this documentation-only step; the plan's commands are future checks.
+- Successful fetch confirms this branch contains latest `origin/dev` `17a43ba5`.
+  Publish this plan/checkpoint to existing draft PR #31. The user merges manually;
+  no deployment or hosted migration is authorized.
+- Usage observed 2026-10-15 19:34 Bangkok: five-hour **85% remaining**, reset
+  2026-10-16 **00:03:39**; weekly **85% remaining**, reset 2026-10-22 **13:13:35**
+  Bangkok. No usage threshold blocker or billing action.
+
+## Bot-player specification — 2026-10-15
+
+- New task branch: `codex/bot-player-plan`, created from freshly fetched
+  `origin/dev` `17a43ba5`. The user approved host-added bots for solo/friends,
+  practice sessions without tickets, a pre-session-only roster, one casual
+  difficulty, 1–3 second turns, ending when all humans bust, and two-minute
+  disconnect pause/reconnect. Bots never become host or see hidden opponent cards.
+- [Written specification](docs/superpowers/specs/2026-10-15-bot-player-design.md)
+  records those choices and proposed contracts, identity compatibility, immutable
+  practice mode, settlement/economy guards, deterministic strategy, fenced timers,
+  pause/cleanup rules, UI changes, migration preparation and acceptance coverage.
+  No application code/configuration changed; implementation has not begun.
+- Published specification commit: `fbb711f1`, in
+  [draft PR #31](https://github.com/24-HUB/poker-game/pull/31), explicitly targeting
+  `dev` and attached to this chat. Only the spec and existing checkpoint files
+  changed. This publication-record correction follows that commit.
+- Passed: source-path/placeholder checks, repository accuracy/self-review,
+  `git diff --check`, staged/full-task whitespace checks and full documentation
+  diff review. Final fetch confirms this branch contains latest `origin/dev`
+  `17a43ba5`. Application tests were not run for documentation-only changes.
+- Next: the user reviews the written specification. After approval, use
+  writing-plans to create the implementation plan on this same branch/PR.
+  No application changes are pending. The user merges manually; do not merge
+  or deploy. Resume with status/branch, usage, fetch and this checkpoint.
+- Usage observed 2026-10-15 at 19:21 Bangkok: five-hour **90% remaining**
+  (resets 2026-10-16 **00:03:39** Bangkok), weekly **86% remaining** (resets
+  2026-10-22 **13:13:35** Bangkok). No usage threshold blocker or billing action.
+
 ## Automatic server recovery implementation — locally verified, 2026-10-14
 
 - The user requested implementation of [PR #30](https://github.com/24-HUB/poker-game/pull/30).

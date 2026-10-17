@@ -4,6 +4,10 @@ import type { Result } from './common.js';
 import type { GameAck, GameCommand, GameView, SessionResult } from './poker.js';
 
 const identifierSchema = z.string().min(1).max(128);
+export const botIdSchema = z.string().regex(/^bot:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i);
+export const roomBotSchema = z.object({ botId: botIdSchema, displayName: z.string().min(1).max(128),
+  seat: z.number().int().min(0).max(5) }).strict();
+export type RoomBot = z.infer<typeof roomBotSchema>;
 export const roomTitleSchema = z.string().trim().min(1).max(24);
 const mutationMetadata = {
   commandId: z.uuid(),
@@ -57,6 +61,10 @@ const claimControlCommandSchema = z.object({
 }).strict();
 
 export const roomCommandSchema = z.discriminatedUnion('type', [
+  z.object({ type: z.literal('room:addBot'), roomId: identifierSchema, seat: z.number().int().min(0).max(5),
+    controlEpoch: z.number().int().nonnegative(), ...mutationMetadata }).strict(),
+  z.object({ type: z.literal('room:removeBot'), roomId: identifierSchema, botId: botIdSchema,
+    controlEpoch: z.number().int().nonnegative(), ...mutationMetadata }).strict(),
   createRoomCommandSchema,
   joinRoomCommandSchema,
   syncRoomCommandSchema,
@@ -85,6 +93,7 @@ export const roomViewSchema = z.object({
   phase: z.enum(['waiting', 'playing']),
   sessionId: identifierSchema.nullable(),
   members: z.array(roomMemberSchema).max(6),
+  bots: z.array(roomBotSchema).max(5).optional(),
   control: z.object({
     isController: z.boolean(),
     epoch: z.number().int().nonnegative(),
@@ -113,6 +122,8 @@ export const roomReplySchema = z.object({
 export type RoomReply = z.infer<typeof roomReplySchema>;
 
 export interface ClientToServerEvents {
+  'room:addBot': (command: Extract<RoomCommand, { type: 'room:addBot' }>, ack: RoomAck) => void;
+  'room:removeBot': (command: Extract<RoomCommand, { type: 'room:removeBot' }>, ack: RoomAck) => void;
   'session:start': (command: Extract<GameCommand, { type: 'session:start' }>, ack: GameAck) => void;
   'session:end': (command: Extract<GameCommand, { type: 'session:end' }>, ack: GameAck) => void;
   'game:action': (command: Extract<GameCommand, { type: 'game:action' }>, ack: GameAck) => void;

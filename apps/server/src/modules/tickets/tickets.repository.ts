@@ -5,6 +5,7 @@ import type { ClientSession, Db } from 'mongodb';
 import { MONGO_DB } from '../../database/database.tokens';
 import type { SettlementCandidate } from '../settlement/settlement.service';
 import { calculateReward, M3_REWARD_POLICY } from './rewardPolicy';
+import { validateSettlementSession } from '../settlement/settlementSession';
 
 export type WalletDocument = { _id: string; balance: number; revision: number; createdAt: Date; updatedAt: Date };
 type DailyDocument = { accountId: string; utcDate: string; earned: number };
@@ -37,6 +38,7 @@ export class TicketsRepository {
   }
 
   public async awardHand(candidate: SettlementCandidate, session: ClientSession): Promise<RewardReceipt[]> {
+    if (await validateSettlementSession(this.db, candidate, session) === 'practice') return [];
     if (candidate.rewardPolicyVersion !== M3_REWARD_POLICY.version) return [];
     const receipts: RewardReceipt[] = [];
     const accounts = [...candidate.participants].sort((a, b) => a.accountId.localeCompare(b.accountId));

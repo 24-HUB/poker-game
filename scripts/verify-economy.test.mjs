@@ -25,7 +25,7 @@ test('valid reward → pull → equipment fixture passes without database mutati
     const before = await db.collection('ticketWallets').findOne({ _id: seed.accountId });
     const report = await verify(db);
     assert.equal(report.ok, true, JSON.stringify(report));
-    assert.equal(report.counts.rewardReceipts, 5);
+    assert.equal(report.counts.rewardReceipts, 10);
     assert.equal(report.counts.pullReceipts, 1);
     assert.deepEqual(await db.collection('ticketWallets').findOne({ _id: seed.accountId }), before);
     const output = JSON.stringify(report);

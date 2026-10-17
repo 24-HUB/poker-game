@@ -1,4 +1,4 @@
-import { createHash, randomBytes } from 'node:crypto';
+import { createHash, randomBytes, randomUUID } from 'node:crypto';
 
 import { Inject, Injectable, Optional, ServiceUnavailableException, type OnApplicationShutdown } from '@nestjs/common';
 import type { CurrentRoom, Result, RoomCommand, RoomReply } from '@poker/contracts' with { 'resolution-mode': 'import' };
@@ -28,6 +28,7 @@ export type RoomServiceOptions = { emptyRetentionMs?: number };
 @Injectable()
 export class RoomService implements OnApplicationShutdown {
   private readonly emptyTimers = new Map<string, NodeJS.Timeout>();
+  private readonly emptyDeadlines = new Map<string, number>();
   private readonly emptyRetentionMs: number;
   private disposed = false;
 
@@ -186,6 +187,7 @@ export class RoomService implements OnApplicationShutdown {
         await this.repository.touchConnection(roomId, authority);
       }
       this.bumpGameSnapshot(roomId);
+      await this.registry.presenceChangedInQueue(roomId);
       if (disconnected.roomEmpty) this.scheduleEmptyClosure(roomId);
     })));
     return roomIds;
@@ -211,6 +213,7 @@ export class RoomService implements OnApplicationShutdown {
     this.disposed = true;
     for (const timer of this.emptyTimers.values()) clearTimeout(timer);
     this.emptyTimers.clear();
+    this.emptyDeadlines.clear();
   }
 
   public onApplicationShutdown(): void {
@@ -290,6 +293,7 @@ export class RoomService implements OnApplicationShutdown {
       }
     }
     this.cancelEmptyClosure(roomId);
+    await this.registry.presenceChangedInQueue(roomId);
     return this.projectForMember(roomId, context, false);
   }
 
@@ -301,7 +305,13 @@ export class RoomService implements OnApplicationShutdown {
   ): Promise<Result<RoomReply>> {
     let outcome: StoredCommandOutcome;
     let invitation: { token: string; expiresAt: string } | undefined;
-    if (command.type === 'room:claimControl') {
+    if (command.type === 'room:addBot' || command.type === 'room:removeBot') {
+      outcome = await this.repository.mutateBot({ accountId: context.identity.accountId,
+        commandId: command.commandId, payloadHash, type: command.type, issuedAt: new Date(command.issuedAt),
+        roomId: command.roomId, connectionId: context.connectionId, controlEpoch: command.controlEpoch, authority,
+        ...(command.type === 'room:addBot' ? { add: { botId: `bot:${randomUUID()}`, seat: command.seat } } : { removeId: command.botId }),
+      });
+    } else if (command.type === 'room:claimControl') {
       outcome = await this.repository.claimControl({
         accountId: context.identity.accountId,
         commandId: command.commandId,
@@ -365,6 +375,7 @@ export class RoomService implements OnApplicationShutdown {
     if (command.type === 'room:leave') {
       this.bumpGameSnapshot(command.roomId);
       this.registry.removeAccount(command.roomId, context.identity.accountId);
+      await this.registry.presenceChangedInQueue(command.roomId);
       if (this.registry.controller(command.roomId).isEmpty()) this.scheduleEmptyClosure(command.roomId);
       return success({ room: null });
     }
@@ -376,6 +387,7 @@ export class RoomService implements OnApplicationShutdown {
         outcome.controllerEpoch ?? 1,
       );
       this.bumpGameSnapshot(command.roomId);
+      await this.registry.presenceChangedInQueue(command.roomId);
     }
     const projected = await this.projectForMember(command.roomId, context, false);
     if (projected.error || !invitation) return projected;
@@ -386,7 +398,7 @@ export class RoomService implements OnApplicationShutdown {
     if (!this.authority.currentToken()) {
       return failure('SERVICE_UNAVAILABLE', 'Room authority is temporarily unavailable.');
     }
-    return this.projectForMember(roomId, context, true);
+    return this.registry.enqueue(roomId, () => this.projectForMember(roomId, context, true));
   }
 
   private async projectForMember(
@@ -423,6 +435,7 @@ export class RoomService implements OnApplicationShutdown {
         if (!room) return failure('ROOM_CLOSED', 'The room is no longer available.');
         this.bumpGameSnapshot(roomId);
       }
+      await this.registry.presenceChangedInQueue(roomId);
     }
     const controller = this.registry.controller(roomId);
     const roomForRecipient = {
@@ -455,7 +468,7 @@ export class RoomService implements OnApplicationShutdown {
     reply: Result<RoomReply>,
   ): Promise<Result<RoomReply>> {
     if (reply.error || !reply.data.room) return reply;
-    const projected = await this.projectForMember(reply.data.room.roomId, context, true);
+    const projected = await this.registry.enqueue(reply.data.room.roomId, () => this.projectForMember(reply.data!.room!.roomId, context, true));
     if (projected.error) return projected;
     return success({
       room: projected.data.room,
@@ -470,10 +483,12 @@ export class RoomService implements OnApplicationShutdown {
 
   private scheduleEmptyClosure(roomId: string): void {
     if (this.disposed || this.emptyTimers.has(roomId)) return;
+    const deadline = this.emptyDeadlines.get(roomId) ?? Date.now() + this.emptyRetentionMs;
+    this.emptyDeadlines.set(roomId, deadline);
     const timer = setTimeout(() => {
       this.emptyTimers.delete(roomId);
       void this.closeIfStillEmpty(roomId).catch(() => this.scheduleEmptyClosure(roomId));
-    }, this.emptyRetentionMs);
+    }, deadline > Date.now() ? Math.max(1, deadline - Date.now()) : 1_000);
     timer.unref();
     this.emptyTimers.set(roomId, timer);
   }
@@ -482,12 +497,13 @@ export class RoomService implements OnApplicationShutdown {
     const timer = this.emptyTimers.get(roomId);
     if (timer) clearTimeout(timer);
     this.emptyTimers.delete(roomId);
+    this.emptyDeadlines.delete(roomId);
   }
 
   private async closeIfStillEmpty(roomId: string): Promise<void> {
     if (!this.registry.controller(roomId).isEmpty()) return;
     const runtime = this.registry.controller(roomId).session;
-    if (runtime?.hand?.street === 'complete' && !runtime.committedHandResult) {
+    if (runtime?.hand?.street === 'complete' && runtime.committedHandResult?.handId !== runtime.handId) {
       this.scheduleEmptyClosure(roomId);
       return;
     }
@@ -499,12 +515,13 @@ export class RoomService implements OnApplicationShutdown {
     await this.registry.enqueue(roomId, async () => {
       if (!this.registry.controller(roomId).isEmpty()) return;
       const active = this.registry.controller(roomId).session;
-      if (active?.hand?.street === 'complete' && !active.committedHandResult) {
+      if (active?.hand?.street === 'complete' && active.committedHandResult?.handId !== active.handId) {
         this.scheduleEmptyClosure(roomId);
         return;
       }
       await this.repository.closeEmpty(roomId, authority, new Date());
       this.registry.remove(roomId);
+      this.emptyDeadlines.delete(roomId);
     });
   }
 }

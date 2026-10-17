@@ -5,12 +5,14 @@ import { AuthorityLease, type AuthorityToken } from '../../authority/authorityLe
 import { ReleaseControls } from '../../config/release-controls';
 import { MONGO_DB, TRANSACTION_RUNNER } from '../../database/database.tokens';
 import { TransactionRunner } from '../../database/transactionRunner';
-import type { CommittedHandResult, HandEquipment, HandHistoryPage, SessionResult } from '@poker/contracts' with { 'resolution-mode': 'import' };
+import type { CommittedHandResult, HandEquipment, HandHistoryPage, SessionResult, RoomBot } from '@poker/contracts' with { 'resolution-mode': 'import' };
 import { M3_REWARD_POLICY } from '../tickets/rewardPolicy';
 import { snapshotEquipment } from '../collection/collection.repository';
+import { normalizeHandResult } from './botCompatibility';
 
-export type SessionParticipant = { accountId: string; displayName: string; seat: number };
+export type SessionParticipant = { accountId: string; displayName: string; seat: number; kind?: 'human' | 'bot' };
 export type StoredGameSession = {
+  mode?: 'standard' | 'practice';
   _id: string;
   roomId: string;
   status: 'ACTIVE' | 'COMPLETED' | 'ABORTED';
@@ -36,6 +38,7 @@ export class SessionError extends Error {
 }
 
 type RoomDocument = {
+  bots?: RoomBot[];
   _id: string; status: 'OPEN' | 'CLOSED'; phase?: 'waiting' | 'playing'; sessionId?: string | null;
   revision: number; hostAccountId: string; authorityBootId: string; authorityEpoch: number;
 };
@@ -77,7 +80,7 @@ export class SessionRepository {
       .find({ sessionId, status: 'COMPLETED', ...(beforeHandNumber === undefined ? {} : { handNumber: { $lt: beforeHandNumber } }) },
         { projection: { _id: 0, result: 1 }, readConcern: { level: 'majority' } })
       .sort({ handNumber: -1 }).limit(21).toArray();
-    const hands = records.slice(0, 20).map((record) => record.result);
+    const hands = records.slice(0, 20).map((record) => normalizeHandResult(record.result));
     return { hands, nextBeforeHandNumber: records.length > 20 ? hands.at(-1)!.handNumber : null };
   }
 
@@ -117,19 +120,22 @@ export class SessionRepository {
     const members = await this.db.collection<MembershipDocument>('roomMemberships')
       .find({ roomId: input.roomId, leftAt: null, seat: { $ne: null } }, { session })
       .sort({ seat: 1 }).toArray();
-    if (members.length < 2 || members.length > 6) throw new SessionError('NOT_ENOUGH_PLAYERS', 'Seat two to six players.');
+    if (members.length < 1 || members.length + (room.bots?.length ?? 0) < 2 || members.length + (room.bots?.length ?? 0) > 6) throw new SessionError('NOT_ENOUGH_PLAYERS', 'Seat two to six players including a human.');
     const host = members.find((member) => member.accountId === input.accountId);
     if (!host || host.controllerConnectionId !== input.connectionId || host.controllerEpoch !== input.controlEpoch) {
       throw new SessionError('NOT_CONTROLLER', 'This tab does not control the host account.');
     }
-    const participants = members.map((member) => ({
-      accountId: member.accountId, displayName: member.displayName, seat: member.seat!,
-    }));
+    const humans = members.map((member) => ({ accountId: member.accountId, displayName: member.displayName, seat: member.seat!, kind: 'human' as const }));
+    const participants: SessionParticipant[] = [...humans, ...(room.bots ?? []).map((bot) => ({
+      accountId: bot.botId, displayName: bot.displayName, seat: bot.seat, kind: 'bot' as const,
+    }))].sort((a, b) => a.seat - b.seat);
+    if (new Set(participants.map((player) => player.seat)).size !== participants.length) throw new SessionError('SEAT_TAKEN', 'The room roster has overlapping seats.');
+    const mode = (room.bots?.length ?? 0) > 0 ? 'practice' : 'standard';
     if (!this.controls.settings.allowNewSessions) {
       throw new SessionError('MAINTENANCE', 'New poker sessions are paused for maintenance.');
     }
     const participating = await this.db.collection<{ _id: string }>('activeParticipants').findOne(
-      { _id: { $in: participants.map((participant) => participant.accountId) } }, { session },
+      { _id: { $in: humans.map((participant) => participant.accountId) } }, { session },
     );
     if (participating) throw new SessionError('ALREADY_IN_SESSION', 'A participant is already in an active session.');
     // Every start, completion and abort writes the same authority fence in its transaction.
@@ -137,16 +143,16 @@ export class SessionRepository {
     const active = await this.db.collection<StoredGameSession>('gameSessions').findOne({ status: 'ACTIVE' }, { session });
     if (active) throw new SessionError('SESSION_LIMIT_REACHED', 'Another room is playing. Wait for its session to end.');
     const document: StoredGameSession = {
-      _id: input.sessionId, roomId: input.roomId, status: 'ACTIVE',
+      _id: input.sessionId, roomId: input.roomId, status: 'ACTIVE', mode,
       startedByAccountId: input.accountId, startCommandId: input.commandId,
       startPayloadHash: input.payloadHash, authorityBootId: input.authority.bootId,
       authorityEpoch: input.authority.epoch, participants, stacks: participants.map(() => 1_000),
       firstHandId: input.firstHandId, handNumber: 1, buttonSeat: participants[0]!.seat,
       startedAt: input.startedAt, endingRequested: false,
-      rewardPolicyVersion: M3_REWARD_POLICY.version,
-      equipmentByAccount: await snapshotEquipment(this.db, participants.map((participant) => participant.accountId), session),
+      ...(mode === 'standard' ? { rewardPolicyVersion: M3_REWARD_POLICY.version } : {}),
+      equipmentByAccount: await snapshotEquipment(this.db, humans.map((participant) => participant.accountId), session),
     };
-    for (const participant of participants) {
+    for (const participant of humans) {
       await this.db.collection<{ _id: string; accountId: string; roomId: string; sessionId: string; joinedAt: Date }>('activeParticipants').insertOne({
         _id: participant.accountId, accountId: participant.accountId, roomId: input.roomId,
         sessionId: input.sessionId, joinedAt: input.startedAt,
@@ -211,7 +217,7 @@ export class SessionRepository {
         sessionId: input.sessionId, handNumber: input.previousHandNumber, status: 'COMPLETED',
       }, { session });
       if (!previous) throw new SessionError('HAND_SETTLING', 'The previous hand has not committed.');
-      const equipmentByAccount = await snapshotEquipment(this.db, current.participants.map((participant) => participant.accountId), session);
+      const equipmentByAccount = await snapshotEquipment(this.db, current.participants.filter((player) => player.kind !== 'bot').map((participant) => participant.accountId), session);
       await this.db.collection<{ _id: string; sessionId: string; roomId: string; handNumber: number; status: string; revision: number; createdAt: Date; equipmentByAccount: Record<string, HandEquipment> }>('hands').insertOne({
         _id: input.handId, sessionId: input.sessionId, roomId: input.roomId,
         handNumber: input.previousHandNumber + 1, status: 'PENDING', revision: 0, createdAt: input.createdAt,

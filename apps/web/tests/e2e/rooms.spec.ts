@@ -7,6 +7,8 @@ test('two accounts join one room and explicit takeover disables the old tab', as
   const suffix = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
   const hostContext = await browser.newContext({ permissions: ['clipboard-read', 'clipboard-write'] });
   const guestContext = await browser.newContext();
+  hostContext.setDefaultTimeout(15_000);
+  guestContext.setDefaultTimeout(15_000);
 
   try {
     const host = await hostContext.newPage();
@@ -68,12 +70,14 @@ test('two accounts join one room and explicit takeover disables the old tab', as
       headers: { origin: 'http://127.0.0.1:3100' },
     });
     expect(revocation.ok(), await revocation.text()).toBe(true);
-    await guest.getByRole('button', { name: 'Use this tab to play' }).click();
+    // A subsequent publication must revalidate every connected recipient.
+    await newerHostTab.getByRole('button', { name: 'Take seat 4' }).click();
+    await expect(newerHostTab.getByRole('listitem').filter({ hasText: 'Seat 4' })).toContainText('Alice Host');
     await expect(guest.getByRole('button', { name: 'Sign in', exact: true }).first()).toBeVisible();
+    await expect(guest.getByRole('button', { name: 'Use this tab to play' })).toHaveCount(0);
     await expect(guest.getByRole('heading', { name: 'Friday table' })).toHaveCount(0);
   } finally {
-    await hostContext.close();
-    await guestContext.close();
+    await Promise.allSettled([hostContext.close(), guestContext.close()]);
   }
 });
 

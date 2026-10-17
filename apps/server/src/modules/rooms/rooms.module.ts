@@ -16,6 +16,7 @@ import { SessionRepository } from './session.repository';
 import { SessionService } from './session.service';
 import { CurrentRoomController } from './current-room.controller';
 import { HandHistoryController } from './hand-history.controller';
+import { BOT_RANDOM, CryptoBotRandom } from './bots/botRandom';
 
 @Module({
   imports: [AuthorityModule, IdentityModule, SettlementModule, ReleaseControlsModule],
@@ -26,6 +27,7 @@ import { HandHistoryController } from './hand-history.controller';
     SessionService,
     GameCommandCache,
     GameService,
+    { provide: BOT_RANDOM, useClass: CryptoBotRandom },
     { provide: GAME_CLOCK, useClass: SystemGameClock },
     { provide: DECK_FACTORY, useClass: CryptoDeckFactory },
     RoomRegistry,
