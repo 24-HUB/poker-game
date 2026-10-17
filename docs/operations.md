@@ -8,6 +8,24 @@ not a verified Atlas recovery plan.
 
 ## Operator and approved targets
 
+2026-10-17 attended maintenance evidence is in the
+[release record](releases/2026-10-17-private-release.md#maintenance-exit--2025-bangkok).
+The approved consistent Atlas dump streamed directly into age on D:, then was
+retrieved/decrypted into an authenticated isolated tmpfs replica with no external
+network or published ports. All 25 collections matched metadata/counts/document
+fingerprints; unchanged economy audit passed. Restore verification took 5,453 ms.
+Initial index-list ordering differed between Windows/Linux; compare index lists
+with a stable code-point order while retaining compound-index key order. Source
+migrations then passed twice and durable progression stayed unchanged. Encrypted
+archive and private manifests remain retained; no plaintext archive was written.
+This proves that scoped recovery copy, not restored-account/full-flow acceptance.
+At 20:25 Bangkok, paired proxy rotation into an encrypted Worker Secret and matching
+Render setting passed public smoke. Backend is online with original admission
+true/economy false and all original automatic-update controls restored/read back.
+Final schema/progression/economy and single-authority audits passed. The scoped
+maintenance is complete; full hosted account/email/game/interruption acceptance
+and production cutover remain open. Temporary access expires naturally.
+
 The user is the backup/incident operator, confirmed 2026-10-07. They approved:
 
 | Setting | Approved target |
@@ -17,13 +35,67 @@ The user is the backup/incident operator, confirmed 2026-10-07. They approved:
 | Recovery point | At most progress since the last successful backup |
 | Recovery time | Within one operator-attended day, measured from incident declaration to safe reopening |
 
-These are operating targets, not guarantees. Storage location and its free budget
-remain **pending the operator's selection**. Before hosted release, record the
-encrypted destination outside this repository and Render's filesystem, encryption
-recipient, separately secured recovery key, operator access and an emergency
-access procedure. Use operator-only access with MFA for remote storage and keep
-keys separate from archives. Do not provision paid storage automatically. Confirm
-capacity for retained archives and working space before accepting progress.
+These are operating targets, not guarantees. On 2026-10-17 the operator selected
+`D:\PokerBackups` with no paid storage, explicitly accepting that D: is the internal
+WD_BLACK SN770 NVMe SSD also holding the project. Inspection found about 104 GiB
+free. This is a local encrypted recovery destination, not a physically independent
+backup or protection against loss of that SSD/computer.
+
+Preparation at 11:56 Bangkok created current-user/SYSTEM-only NTFS directories:
+`archives`, `manifests`, `samples` and `tools`. The retained age identity is separate
+in `%USERPROFILE%\.poker-backup-keys\poker-backup.agekey`, with the same private ACL.
+Never copy its contents into Git, chat, email or the archive directory. The operator
+must keep an independently accessible offline copy and demonstrate retrieval before
+a hosted backup/release. The current profile copy alone does not satisfy that gate.
+At 2026-10-17 12:34 Bangkok the operator reported a handwritten offline copy.
+This is recorded as operator confirmation of retention; decryption using that
+handwritten copy is still unverified. The harmless sample accepts identity input
+through stdin (`age -d -i - <sample>`), so PowerShell 7 `Read-Host -MaskInput` can
+test the paper copy privately without displaying it or adding it to shell history.
+Never type a real key as a literal command or paste it into chat.
+At 13:26 Bangkok the operator reported the masked handwritten-key test worked.
+Record that as operator-reported recovery success, not an agent-observed entry.
+
+At 13:28 Bangkok a separate network-disabled disposable MongoDB fixture on tmpfs
+was dumped directly into age, retained encrypted on D:, then decrypted directly
+into `mongorestore`. Both native process exit statuses were checked. Two fixture
+records, validators and indexes matched after restore; no plaintext disk archive
+was created. The encrypted sample/verification manifest remain under D: outside
+Git. This validates the stream transport; the authenticated replica-set/application
+recovery rehearsal below remains separate evidence.
+
+Restore isolation was also checked with a network-none authenticated MongoDB
+replica and a companion Node 22 container sharing its namespace: unchanged economy
+verifier passed and a reader write was denied, with no published ports/default
+route or production credentials. A host-port/internal-network preflight could not
+connect; do not use that failed arrangement. The prepared v2 audit bundle under
+`D:\PokerBackups\tools` contains only the unchanged verifier/contracts and 13
+existing dependencies; its manifest records the verifier hash. Mount it read-only.
+
+Local tooling follow-up at 12:35 Bangkok: Docker Desktop became ready (engine
+28.3.3); isolated `mongo:8.0.17` containers provide dump/restore 100.14.0.
+`pnpm test:backup` passed 1/1 with dependency/server builds, scoped credentials,
+metadata, restored sign-in, committed receipt replay, equipment and economy checks.
+Synthetic restore 797 ms, total procedure 7,254 ms, zero fixture progress lost.
+This fresh local rehearsal uses its own ephemeral encryption key; it does not
+verify the retained paper key, age-based hosted pipeline, or Atlas recovery.
+
+[Official age v1.3.2](https://github.com/FiloSottile/age/releases/tag/v1.3.2) Windows
+amd64 archive was downloaded and its SHA-256 checked against the official release
+asset digest before execution. A harmless sample was encrypted directly from memory,
+then read back from `D:\PokerBackups\samples` and decrypted with the retained key:
+bytes matched, wrong-key decryption failed and a tampered archive was rejected.
+The timestamped result/manifest and encrypted sample remain outside Git. No account
+data or database was accessed. No plaintext sample was written to disk. The local
+README describes tool/key paths and retention; this is an operator preparation,
+not a new production-backup CLI or a hosted restore rehearsal.
+
+Handwritten-key recovery is operator-reported and direct encrypted streaming is
+locally verified. Provider writer shutdown and hosted dump/isolated restore remain
+unverified; plaintext disk staging is not selected. Before hosted release,
+record restricted references to the recipient/key, operator access and emergency
+recovery procedure. Confirm capacity for retained archives and protected staging
+before accepting progress. Do not provision paid storage automatically.
 
 After a replacement backup has passed checksum, decryption and isolated restore
 checks, the operator removes only backups outside retention, including staging
@@ -79,7 +151,9 @@ See [Atlas backup limitations](https://www.mongodb.com/docs/atlas/backup-restore
 and [Atlas Free tool restrictions](https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/).
 
 1. Record authorization, source environment/database, application SHA, server/FCV
-   and matching dump/restore tool versions, schema versions 1–5, catalogue version/hash,
+   and matching dump/restore tool versions, every schema version registered by the
+   selected candidate (`apps/server/src/database/migrate.ts`, currently 001–007),
+   the target's actual applied versions, catalogue version/hash,
    previous successful backup and incident loss window. Check encrypted storage/key
    access and enough space. Use an application-database-scoped reader for the dump.
 2. Close new sessions and purchases. Tell friends about the planned interruption.
@@ -96,6 +170,14 @@ and [Atlas Free tool restrictions](https://www.mongodb.com/docs/atlas/reference/
    Where available, temporarily revoke runtime write access after
    shutdown; retain only an operator-scoped dump reader. If writers cannot be
    stopped, cancel this backup. Reopening waits until dump completion.
+   For the existing Render service, both Auto-Deploy (After CI Checks Pass) and
+   Blueprint Auto Sync (Yes) were enabled at inventory on 2026-10-17. An authorized
+   shutdown must pause both and prevent traffic-driven wake. The Free service's
+   paid Maintenance Mode is unavailable; do not substitute it for writer shutdown
+   or upgrade automatically. Service suspension is exposed in its dashboard, but
+   its full quiescence/wake-prevention procedure remains unverified. Cancel a hosted
+   dump until the approved method demonstrably stops every writer. Record the
+   original controls and restore them only at the approved reopening point.
 4. Verify economy with the reader and record collection counts plus collection
    options/validators/indexes separately in the private backup manifest. Capture
    the quiescence time (the recovery point). Do not back up a known discrepancy
@@ -106,6 +188,16 @@ and [Atlas Free tool restrictions](https://www.mongodb.com/docs/atlas/reference/
    `BACKUP_AGE_RECIPIENT` to approved operator values. The staging directory must
    be outside the repository and service disk on an encrypted, operator-only volume.
    Run this only after the preceding gates:
+
+   For the selected D: destination, volume encryption is unverified. Prefer the
+   tested native byte-stream alternative: `mongodump --archive --gzip` stdout to
+   age stdin, then age stdout to `mongorestore --archive --gzip` stdin on recovery.
+   A controller must check **both** processes, cancel peers on failure and leave
+   the new archive provisional until checksum, decryption, metadata/count and
+   isolated restore checks pass. A shell pipeline's last exit code is insufficient.
+   Keep tool credentials in private tmpfs or DPAPI-protected storage, never args.
+   Do not write a plaintext dump to D: as a shortcut. The file-staging example
+   below applies only to a separately verified encrypted staging volume.
 
    ```powershell
    $backupDatabase = $env:BACKUP_DATABASE
@@ -123,7 +215,8 @@ and [Atlas Free tool restrictions](https://www.mongodb.com/docs/atlas/reference/
    The single archive preserves BSON and metadata and avoids case-insensitive
    filesystem collisions. `--gzip` compresses, it does not encrypt. `age` is an
    operator-managed example; verify its official [usage/key guidance](https://github.com/FiloSottile/age)
-   before installing or selecting it. No backup utility is installed by this task.
+   before installing or selecting it. The selected local age installation is
+   recorded above; Database Tools currently run inside disposable local containers.
 6. Keep an encrypted manifest with backup/quiescence timestamp, encrypted checksum,
    tool/runtime versions, SHA, metadata/counts and measured timings, never plaintext
    credentials. Validate authenticated decryption and perform the isolated restore

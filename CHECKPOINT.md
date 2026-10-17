@@ -1,5 +1,186 @@
 # Checkpoint — Remaining phases through production
 
+## Hosted release execution — 2026-10-17
+
+- **20:25 Bangkok maintenance complete**, branch `codex/hosted-release-inventory`,
+  draft [PR #33](https://github.com/24-HUB/poker-game/pull/33), prior commit `64917e9a`.
+  Operator submitted the new shared credential privately. Worker type Secret,
+  encrypted value, version `e4cfba62-ffca-4f1e-9864-eda43f85f3a0`, Ready/100%.
+  Resume alone kept previous Render config: initial smoke timeout/403; deploying
+  saved environment on same SHA fixed it (`dep-db9nchks728c73cb28jg`, 40.7 s).
+  An initial post-deploy 503 settled; public shell/readiness passed. Original settings
+  restored via final same-SHA deploy `dep-db9ndnss728c73cb5p40`, Live/40.8 s:
+  admission true, economy false, Render after-CI deploys, Blueprint sync Yes,
+  Worker Git builds enabled. All persisted controls read back; final public smoke
+  passed shell 200/readiness ready. **Backend online; do not follow the historical
+  20:12 keep-suspended instruction below.** Final reader audit 20:25:49 confirms
+  001–007, six exact validators, three required indexes, unchanged progression,
+  economy OK, one live authority, zero active participants/memberships. Backup and
+  encrypted evidence retained unchanged on D:. Temporary accounts expire naturally.
+  No application source changes or full hosted-flow claim. Next: prepare scoped
+  designated-account/email/game/interruption acceptance and sender/quota evidence;
+  follow required separate authorization before those live actions. PR stays draft
+  for remaining release gates; user merges manually. Usage 20:25:32 Bangkok:
+  five-hour 50%, weekly 46% remaining; resets 2026-10-18 00:49:02 and
+  2026-10-22 13:13:35 Bangkok. Final evidence diff reviewed; working/task whitespace
+  checks and 40 relative file links passed. No app suite rerun for documentation.
+
+- **20:12 Bangkok live maintenance save point** on `codex/hosted-release-inventory`,
+  draft [PR #33](https://github.com/24-HUB/poker-game/pull/33); prior commit `ce4d1494`.
+  Operator saved both temporary credentials; scoped reader/migrator connectivity
+  and roles pass. All automatic updates paused: Render Off, Blueprint No, Worker
+  Disable builds checked. Admission/economy false; corrected restart
+  `dep-db9n4j3ncjis739v0m60` on `0d4ae28a` then service suspended, HTTP 503 suspension
+  page verified. Initial masked admission edit retained true; caught and corrected.
+  Source had zero active participants/memberships. **Keep service suspended.**
+  Encrypted backup at `D:\PokerBackups\archives\2026-10-17T13-06-06-061Z-poker-playtest-provisional.archive.gz.age`,
+  13,484 bytes, SHA256 `f73726109ade7bbbbb2d9387e7eb20b8b2e7642cb329a81a823e3ddf6fb757aa`.
+  All 25 collections unchanged across capture; economy passed. Isolated tmpfs/
+  network-none restore matched metadata/counts/fingerprints/economy, 5,453 ms.
+  Windows/Linux index-list locale ordering caused initial false mismatch; private
+  comparator fixed to code-point sort, preserving compound-key order. Containers
+  cleaned; encrypted manifests and certification retained; filename remains provisional.
+  Both `pnpm db:migrate` runs exit 0. Reader verifies 001–007, six candidate-exact
+  validators, three required indexes and unchanged durable progression/economy.
+  **Pending operator:** run private `Copy-NewProxySecret-20261017.ps1`, paste new
+  shared secret into Render prepared environment form (Save only), Cloudflare
+  prepared Secret form (Deploy), reply “both saved”. Helper syntax checked, not run.
+  Browser approval review rejected revealing old Render secret as unnecessary;
+  no bypass. Human entry/submission handoff retained both tabs. Then record new
+  Worker config version, resume same SHA closed, verify public smoke/progression,
+  restore admission true/economy false and original automatic updates. Do not
+  roll back schema, restore source or reopen with mismatched secrets.
+  Usage before migrations: five-hour 74%, weekly 50% remaining; reset times below.
+  No hosted full-flow/email/game/interruption acceptance or release approval yet.
+
+- **19:54–19:58 Bangkok credential handoff**: operator reports reader created;
+  Atlas confirms `poker_release_reader_20261017`, `read@poker_playtest`, six-hour
+  expiry and one-cluster restriction (Cluster0 selected in prepared form).
+  Prepared an unsubmitted migrator form with `readWrite` + `dbAdmin` only on
+  `poker_playtest`, Cluster0 only, six-hour expiry. Operator must enter/submit its
+  password. Prepared syntax-checked `Save-ReleaseCredentials-20261017.ps1` in
+  the private profile key directory: masked secure prompts, DPAPI-protected
+  PSCredential CLIXML files, refuses overwriting saved credentials. Directory ACL
+  remains current user/SYSTEM only; no password captured by agent or committed.
+  Next: operator creates migrator and runs that local script, replying “saved”;
+  verify account scope and credential connectivity before any service outage.
+  Fresh candidate CI run 38996688408 remains completed/success on `0d4ae28a`.
+  Initial CI lookup had a Node module-mode syntax error; corrected read succeeded.
+  Fresh origin fetch succeeded; clean task branch resumed from `b60ab65e`.
+  Usage at this resumption: five-hour 93%, weekly 53% remaining, same reset times
+  as the 19:51 observation below. No source-data changes, downtime or migrations.
+
+- Resumed **19:49–19:55 Bangkok**: operator explicitly approved the concrete
+  attended maintenance package (“yes run it now”). Clean existing task branch;
+  origin fetch succeeded, current `origin/dev` remains `0d4ae28a`, included in
+  task HEAD `c5c2c399`. Usage 19:51:18: five-hour 97% remaining, weekly 54%;
+  resets 2026-10-18 00:49:02 and 2026-10-22 13:13:35 Bangkok respectively.
+  Prepared an unsubmitted Atlas reader form: `poker_release_reader_20261017`,
+  `read@poker_playtest`, Cluster0 only, six-hour expiry. Human password entry and
+  submission are required by browser credential policy. No provider settings,
+  source data, users or downtime changed. Next: operator enters a new password
+  and clicks Add User; verify scope, privately load credentials, prepare migrator,
+  then freshly recheck providers/CI and begin the approved shutdown/backup gates.
+
+- Maintenance preparation **13:26–13:39 Bangkok**: user reports the masked
+  handwritten-key recovery worked. Recorded operator-reported success; no key
+  sent through chat. Verified a new native MongoDB→age→D:→age→restore stream with
+  two synthetic records in a network-disabled/tmpfs container: documents/indexes/
+  validators matched, both process exits checked, no plaintext archive on disk.
+  Manifest/sample retained outside Git. Captured full active Worker version
+  `483fb438-be71-4020-81ea-497013ebf36f`; Render remains on candidate `0d4ae28a`.
+  Prepared the scoped maintenance package in the existing release record: exact
+  source/restore targets, six-hour reader/migration roles, provider pauses/drain/
+  suspension proof, consistent encrypted dump/isolated audit, migration replay,
+  human-entered proxy rotation, reopening settings and stop/forward-fix rules.
+  No provider/DB mutation or live dump authorized/executed. Prior commit `c0acb8fe`;
+  same branch/draft PR #33. Next: obtain explicit approval of that concrete package
+  and a no-active-players window; hand off private credential entry to the operator.
+  A host-port/internal-network preflight failed. Replacement network-none MongoDB
+  plus companion Node namespace passed on a synthetic authenticated replica:
+  unchanged verifier succeeded, read-only write denied, zero published ports/default
+  route. Audit bundle v2 copies 13 existing dependencies; type-only manifest resolution
+  fixed initial packaging. No app dependencies/source changed. The package excludes
+  the failed arrangement. Local stream and isolation fixtures were removed after checks.
+  Usage observed **13:26:55 Bangkok**: five-hour **99% remaining**, weekly **57%**;
+  five-hour reset **2026-10-17 18:26:55**, weekly **2026-10-22 13:13:35** Bangkok.
+  Handoff usage at **13:39:26 Bangkok**: five-hour **83% remaining** (reset
+  **2026-10-17 18:26:56**), weekly **55%** (same reset). No usage blocker.
+  Follow-up documentation self-review, whitespace and 13 relative
+  file links passed; no full app/browser-suite rerun. Publish to the same draft PR.
+- Follow-up **12:34 Bangkok**: operator confirms recovery key written on paper;
+  retention is attested, paper-copy decryption is still pending. Original identity
+  through stdin decrypts the harmless sample successfully; PowerShell 7 masked
+  entry can test the paper copy without exposing it in chat/history. Render URI
+  hostname matches Atlas `poker_g/Cluster0` exactly; only sanitized metadata read,
+  URI re-masked. Runtime target pairing is resolved. No live DB mutation/dump.
+  Docker startup initially returned a missing Linux pipe, then became ready:
+  engine 28.3.3, dump/restore 100.14.0 in isolated `mongo:8.0.17` containers.
+  At 12:35 Bangkok `pnpm test:backup` passed 1/1 plus dependency/server builds:
+  metadata, restored auth/receipts/equipment/economy; 797 ms restore, 7,254 ms
+  procedure, zero fixture progress lost. This is local generated data only.
+  BitLocker inspection failed with access denied, so encrypted staging is unverified.
+  Follow-up documentation diff/whitespace/13 relative links reviewed. Prior commit `73927b80`;
+  same draft PR #33. Next: operator runs the masked sample test with handwritten
+  key, then resolve staging/streaming and the scoped maintenance package.
+- Storage follow-up at **11:56 Bangkok**: user declined Google Drive, selected D:
+  and explicitly accepted its internal-SSD limitation. Prepared `D:\PokerBackups`
+  (`archives/manifests/samples/tools`) with current-user/SYSTEM-only ACLs; about
+  104 GiB free. Retained age identity is separate in the private Windows profile
+  `.poker-backup-keys` directory; no key material in Git/chat/backup folder.
+  Official age v1.3.2 download SHA-256 verified. Synthetic retained-file decrypt
+  matched source bytes; wrong key and tampered archive were rejected; ACL checks
+  passed. No plaintext file/database access/hosted backup. Offline key copy and
+  independent retrieval, encrypted staging and writer shutdown remain pending.
+  Next: operator saves a separate offline identity copy, then demonstrate recovery
+  and finish the exact maintenance/backup/migration approval package. PR remains
+  draft #33 on the same branch; last prior saved commit `9795c30f`. Storage follow-up
+  documentation self-review, whitespace and 13 relative file links passed; no
+  application/configuration changes or application-suite rerun.
+  Usage observed **2026-10-17 11:56:18 Bangkok**: five-hour **60% remaining**
+  (reset **12:40:06** today); weekly **60% remaining** (reset **2026-10-22
+  13:13:35** Bangkok). No usage blocker or billing action.
+- User requested implementation of the plan in [PR #32](https://github.com/24-HUB/poker-game/pull/32).
+  New clean task branch `codex/hosted-release-inventory` starts from fetched
+  `origin/dev` `0d4ae28a9c404de8d7d9db089543a60e1fe18673`. Plan PR remains open;
+  read it from its remote branch when needed. Execute inline; no delegation.
+- Task 1 is in progress. Created [release inventory](docs/releases/2026-10-17-private-release.md),
+  inspected signed-in Render and Cloudflare dashboards and exact candidate CI.
+  Both live artifacts use `0d4ae28a`; Worker displays version `483fb438` at 100%
+  traffic. Render is Free/Singapore with sessions enabled, purchases disabled,
+  Auto-Deploy after CI and Blueprint Auto Sync enabled. Target database name is
+  `poker_playtest`. After user sign-in, Atlas project `poker_g`, Free `Cluster0`
+  (MongoDB 8.0.34, AWS Singapore, three-node replica set) contains that database
+  with 25 collections, 44 indexes and schema rows 1–5 only. Required 006–007 are
+  absent here. Stored progression exists: 4 users, 3 wallets, 28 reward receipts.
+  Preserve it; confirm this cluster matches the Render URI privately before mutation.
+- Corrected runbook flags and backup schema 001–007. Recorded Worker name mismatch,
+  provider-native Git build triggers, missing safe rollback pair and unverified
+  full-writer shutdown. Cloudflare stores the proxy credential as a plaintext
+  Variable; prepare coordinated rotation to a Secret plus matching Render value.
+  Do not copy the exposed value. No provider mutation, email, deployment or DB operation.
+- Ruling: preserve all hosted data. Task 2 storage and the operator-reported
+  handwritten-key sample recovery are recorded above; live shutdown/restore remain pending. Tasks
+  3–7 depend on concrete target/window approval, hosted acceptance and recovery.
+- Checks: inspected candidate CI verify job
+  [success](https://github.com/24-HUB/poker-game/actions/runs/38996688408/job/117290696108),
+  including migration replay, aggregate, backup/restore, Linux Worker and Chromium.
+  Complete documentation diff self-review, `git diff --check` and all 14 relative
+  file links passed. Final fetch confirms latest `origin/dev` is included.
+  Initial commit `40d9f7a2` is pushed in draft [PR #33](https://github.com/24-HUB/poker-game/pull/33),
+  base `dev`; Atlas findings saved/pushed in `522e0958`. Final whitespace/link
+  checks passed again and working tree was clean; latest `origin/dev` is included.
+  No application suites rerun for docs. This publication note is documentation only.
+- Resume: Atlas sign-in/metadata inspection completed. Confirm runtime/cluster
+  pairing privately, retain a backup and prepare scoped authority for missing
+  migrations 006–007; confirm whether progress matters and finish inventory gates.
+  Prepare the exact storage/key/shutdown and credential-rotation package before
+  requesting live actions. Never rerun fixture suites against hosted data.
+- Usage observed **2026-10-17 10:25:38 Bangkok**: five-hour **75% remaining**
+  (reset **2026-10-17 12:40:06**), weekly **62% remaining** (reset
+  **2026-10-22 13:13:35**). No usage blocker. GitHub CLI is unavailable on PATH;
+  Git fetch succeeded with sandbox escalation; GitHub browser access works.
+
 ## Bot-player CI regression follow-up — 2026-10-16
 
 - Continued `codex/bot-player-plan`, [PR #31](https://github.com/24-HUB/poker-game/pull/31),

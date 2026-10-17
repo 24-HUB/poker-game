@@ -7,6 +7,19 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 
 ## Candidate record
 
+- Current execution: [2026-10-17 private-release inventory](releases/2026-10-17-private-release.md),
+  implementing the plan in [PR #32](https://github.com/24-HUB/poker-game/pull/32).
+  Candidate `0d4ae28a9c404de8d7d9db089543a60e1fe18673` has successful
+  [exact merged-candidate CI](https://github.com/24-HUB/poker-game/actions/runs/38996688408/job/117290696108)
+  and is the observed live Render and active Worker revision (Worker `483fb438`,
+  100% traffic before maintenance). During the authorized attended window, a
+  consistent encrypted source backup and isolated authenticated restore passed;
+  migrations 001–007 are now verified after two successful runs. Durable
+  progression is unchanged. Paired proxy-secret rotation and public smoke passed
+  at 20:25 Bangkok; backend is online, original admission true/economy false and
+  original provider automatic updates are restored. Hosted full-flow acceptance
+  remains open. Older
+  candidate records below are historical evidence, not current release approval.
 - M5.1 CI/build correction merged in [PR #15](https://github.com/24-HUB/poker-game/pull/15).
   M5.2 local recovery implementation merged in [PR #16](https://github.com/24-HUB/poker-game/pull/16).
   [Merged dev CI](https://github.com/24-HUB/poker-game/actions/runs/37771118582)
@@ -19,7 +32,15 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
   remains pending; local evidence below does not authorize deployment.
 - Frontend adapter: OpenNext Cloudflare 1.20.6; Next.js 16.3.6.
 - Reward policy: v1; catalogue: immutable `celestial-v1`.
-- Environments and encrypted backup destination: pending. The user is the backup
+- Environment classification remains pending. Operator selected `D:\PokerBackups`
+  on the internal SSD on 2026-10-17; private ACLs and synthetic encryption/retrieval,
+  wrong-key and tampered-file rejection passed. Operator reports successful
+  handwritten-key recovery. Direct encrypted MongoDB stream and network-none
+  authenticated audit preflights pass. Approved suspension/consistent source capture
+  and retained-archive isolated restore passed at 20:06–20:10 Bangkok, with matching
+  metadata/counts/fingerprints/economy. The exact results and next step are in the
+  release record; restored-auth/full hosted acceptance remains open.
+  The user is the backup
   operator; recovery/retention targets approved 2026-10-07 are in [operations.md](operations.md).
 
 ## Local and CI gates
@@ -58,8 +79,10 @@ captures private and redact cookies, tokens and private cards before sharing evi
 - [x] Committed receipt replay remains available while new purchases are blocked;
   admitted durable work resolves and committed balances remain intact.
   Locally verified 2026-10-08 with real replica-set and authenticated HTTP/Socket.IO
-  tests on `codex/m5-maintenance-controls`. Production defaults and the Render
-  blueprint keep admission/purchases closed until explicitly opened. Review the
+  tests on `codex/m5-maintenance-controls`. Production defaults keep
+  admission/purchases closed when flags are absent. The current
+  blueprint explicitly enables admission and disables purchases; inspected live
+  values matched on 2026-10-17. Review the
   task PR and its final-head CI before integrating; these checks do not authorize deployment.
 - [x] Two- and six-player play, disconnect/expiry/takeover, all-in and side-pot results,
   desktop and 360 px layouts, focus, contrast, touch and reduced motion inspected.
@@ -129,7 +152,9 @@ next hosted candidate using [M5.1a](superpowers/plans/2026-09-30-m3-through-prod
   metadata/counts, economy audit, restored sign-in, receipt replay, ownership/equipment
   passed. First drill restored in 777 ms, procedure 8,007 ms, zero fixture loss.
   See [operations.md](operations.md) for timestamp/checksum and measurement limits.
-- [ ] Select encrypted external destination/budget and rehearse retained-key access.
+- [x] Selected local destination/key recovery: internal D: accepted by operator,
+  synthetic tests passed; operator reports handwritten-key sample recovery success.
+  Direct age stream and isolated authenticated read-only audit preflights passed.
 - [ ] Perform authorized hosted backup/restore and compare actual loss/time to targets.
 - [ ] Record known issues, rollback revision and compatibility, and release decision.
 
