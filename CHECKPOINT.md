@@ -20,14 +20,20 @@
 - Documentation validation: source paths/commands and relative links, requirement
   coverage/self-review, full diff and whitespace checks. Application tests are
   unnecessary for this documentation-only task and have not been rerun.
-- Next: publish this plan PR targeting `dev`; user reviews and merges manually.
+- Published plan commit `88952ed7` in [PR #32](https://github.com/24-HUB/poker-game/pull/32),
+  targeting `dev`. Final fetch and full-task whitespace review passed; branch
+  contains latest `origin/dev` `0d4ae28a`, with only the three intended documentation
+  files. This publication-note follow-up is documentation only; new PR CI is separate
+  from the already verified merged-application run. User reviews and merges manually.
+- Next: review the published plan.
   After plan review, execute Task 1 inline on its own task branch: inspect existing
   provider references/configuration and exact candidate CI, then record the release
   inventory. Live actions require the concrete environment/action approval package.
 - Usage observed 2026-10-17 **10:14 Bangkok**: five-hour **90% remaining**, resets
   2026-10-17 **12:40:06**; weekly **65% remaining**, resets 2026-10-22 **13:13:35**
   Bangkok. No usage blocker or billing action. No deployment, email or hosted DB
-  operation performed. Publication details follow after the plan commit.
+  operation performed. Handoff usage recheck at **10:20 Bangkok**: five-hour **85% remaining**, weekly
+  **64% remaining**, with the same reset times; no threshold blocker.
 
 ## Bot-player CI regression follow-up — 2026-10-16
 

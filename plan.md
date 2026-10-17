@@ -539,12 +539,16 @@ older runbook text without changing live settings. No application/configuration 
 deployment, email or hosted database operation occurred in this planning task.
 
 Documentation validation covers source/link/command accuracy, requirement self-review,
-full task diff and whitespace checks; application tests have not been rerun. Publish
-the plan in a PR targeting `dev`; user reviews and merges manually. Next after review:
+full task diff and whitespace checks; application tests have not been rerun. Published
+plan commit `88952ed7` in [PR #32](https://github.com/24-HUB/poker-game/pull/32), targeting
+`dev`; user reviews and merges manually. Final fetch confirms latest `origin/dev`
+`0d4ae28a` is included. This publication-note follow-up changes documentation only.
+New PR CI is separate from the merged-application result. Next after plan review:
 Task 1 inline, record actual provider inventory and candidate CI before any live action.
 See `CHECKPOINT.md` for resume/publication details. Usage observed 2026-10-17 10:14
 Bangkok: five-hour 90% remaining (reset 2026-10-17 12:40:06), weekly 65% remaining
-(reset 2026-10-22 13:13:35 Bangkok). No usage blocker or billing action.
+(reset 2026-10-22 13:13:35 Bangkok). Handoff recheck at 10:20 Bangkok: five-hour 85% remaining,
+weekly 64% remaining, same resets. No usage blocker or billing action.
 
 ### Bot-player CI regression follow-up — 2026-10-16
 
