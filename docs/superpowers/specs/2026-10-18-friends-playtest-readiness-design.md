@@ -3,7 +3,9 @@
 Date: 2026-10-18 (Asia/Bangkok)
 Status: written specification approved by the user's 2026-10-18 request to
 implement PR #34; [implementation plan](../plans/2026-10-18-friends-playtest-readiness.md)
-approved for sequential inline execution. Draft PR #34 targets `dev`; named live actions remain unapproved.
+approved for sequential inline execution. Package A account/read/mail actions approved;
+new alias-account direct database provisioning requested by the user. Draft PR #34 targets `dev`;
+later deployment/disruption packages remain unapproved.
 Branch: `codex/friends-playtest-spec`; baseline: fetched `origin/dev` `fe654481`.
 
 ## Purpose and completion boundary
@@ -23,6 +25,13 @@ flows; preserve the current architecture and approved economy rules.
    existing environment; do not delete, reseed or reset progression.
 2. Use two dedicated test accounts with inboxes controlled by the operator.
    Earn tickets through real human play; all test progression remains saved.
+   On 2026-10-18 the operator explicitly requested new A/B accounts using two
+   `+` inbox aliases instead of using existing personal accounts. Preserve the
+   personal accounts; this supersedes the earlier reuse preference for this pair.
+   The operator then requested direct database creation without email verification.
+   Prepare two preverified zero-ticket accounts through the scoped operator helper;
+   this exception applies only to the new pair and does not verify mailbox ownership
+   or satisfy A1's hosted signup/recovery evidence. No deployed auth policy changes.
 3. Require both two-account hosted checks and an operator-coordinated real
    six-person friends session, including phone and desktop use.
 4. Plan deliberate interruptions only in an agreed maintenance window after

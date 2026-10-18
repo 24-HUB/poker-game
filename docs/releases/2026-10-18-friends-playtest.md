@@ -1,8 +1,98 @@
 # Friends playtest execution — 2026-10-18
 
-Status: plan approved; Task 1 preparation in progress. New hosted acceptance gates
-have not passed. No hosted email, progression mutation, provider configuration change,
-deployment or deliberate interruption has been performed in this execution.
+Status: plan and Package A approved; user switched new A/B to direct database
+provisioning without verification mail. Scoped access/credential entry is pending;
+no hosted accounts created yet. New hosted acceptance gates have not passed. No provider
+configuration change, deployment or deliberate interruption has been performed.
+
+## Direct provisioning request — after the registration handoff
+
+- User asked “is it still use email ? could you create in database ?”. This
+  supersedes the prepared browser-registration handoff: leave those forms
+  unsubmitted. Create new A/B through a one-time operator operation, not a new
+  public endpoint or a change to deployed verification requirements. The two
+  users are explicitly preverified; mailbox ownership remains unproven.
+- Prepared [operator helper](../../scripts/operations/README.md), accepting the
+  two new aliases and passwords privately. Default dry run; apply requires the
+  exact typed phrase. Pins source SRV hostname from the freshly inspected Atlas
+  driver template to `cluster0.lxb4kqs.mongodb.net` and database `poker_playtest`.
+  Minimum access: `find` and `insert` on `user` and `account` only. Transaction
+  inserts two users and two credential records; no existing-user changes, wallet
+  seed, ticket/economy writes, sessions, mail, schema or deployments.
+- Existing source direct access is unavailable: Atlas says current IP is not
+  allowlisted, and no write-capable credential has been loaded. No new roles,
+  credentials or IP entries were created. Provisioning remains **not executed**.
+  The operator must supply an existing permitted connection through masked
+  prompts, or separately approve narrowly scoped, short-lived access first.
+- Local failing-first rehearsal was observed, then passed against a generated
+  loopback replica database and the actual pinned auth handler. Exact two-account
+  creation, sign-in, zero wallet after normal initialization, duplicate refusal,
+  full rollback on credential-insert validation failure and unchanged unrelated
+  progression passed. No fixture URI/environment can redirect this test to Atlas.
+- Independent code review found one Important issue: permissive email validation
+  could create unusable logins. Regression failed before the fix; the helper now
+  uses pinned server `z.email()`, matching sign-in. Focused helper suite passes
+  2/2 after the fix. Full `pnpm check` passed 533 tests, typechecks and all configured
+  production builds; final guard checks are rerun separately. PowerShell wrapper
+  syntax passed; interactive private prompts have not been exercised live.
+- Deferred review minors: wrapper needs PowerShell 7 but lacks `#Requires`;
+  test URL-path conversion does not handle checkout paths with spaces. Invoke
+  `pwsh` from the current space-free checkout. No further app/Worker change.
+- Review rulings: live permissions and actual hosted creation remain unverified
+  (cost if wrong: operation cannot connect or targets incorrectly); pinned host
+  and operator target confirmation are prerequisites. Prompt execution remains
+  pending (cost if wrong: helper may fail before submission). Provisioned accounts
+  cannot satisfy hosted email verification/recovery (cost if mislabeled: false
+  readiness), so A1 stays pending. Full-suite output was inspected as success.
+- This helper is the user's explicitly requested operational scope addition,
+  rather than a speculative product-defect fix. It is included in PR #34 for
+  review. All personal accounts/progression remain preserved.
+- Proposed access package, **not applied**: custom role
+  `playtestAccountProvisioner20261018`, only `find` and `insert` on
+  `poker_playtest.user` and `poker_playtest.account`; no wildcard namespaces or
+  inherited roles. Form is prepared and unsubmitted. Then a temporary user
+  `poker_provisioner_20261018`, six-hour expiry, that role only, Cluster0 only,
+  with password entered/submitted by the operator. Add only this computer's
+  current public IP as a temporary six-hour /32 entry, leaving existing entries
+  unchanged. These security-access changes need action-time approval; do not
+  choose the UI's broader readWrite role or an unrestricted IP range.
+- This replaces the original read-only-only access boundary solely for creating
+  the requested new pair. No provider release flags, runtime credentials,
+  deployments or other database privileges are included. After the operation,
+  confirm expiry/cleanup and leave the unassigned custom role for operator cleanup
+  if it cannot be safely removed in the attended window. Atlas supports scoped
+  [custom actions](https://www.mongodb.com/docs/atlas/security-add-mongodb-roles/)
+  and [temporary cluster-restricted users](https://www.mongodb.com/docs/atlas/security-add-mongodb-users/).
+
+## Package A approval and registration handoff — 11:30–11:33 Bangkok
+
+- User explicitly approved Package A, then requested **new** A/B accounts instead
+  of using personal accounts, and chose two `+` aliases of their own inbox. This
+  later instruction supersedes the earlier existing-A/B preference; do not reuse,
+  delete or reset personal accounts. Registration/verification remain inside the
+  approved six-message-per-account ceiling; no ticket seeding or provider change.
+- Clean task branch/usage/fetch rechecked; saved commit `7c512002`; current
+  `origin/dev` remains `fe654481`, included. Usage at resumption: five-hour 63%,
+  weekly 94% remaining, with the same reset times recorded in the checkpoint.
+- Chrome and in-app browser had distinct existing personal sessions, displaying
+  19 and 7 tickets respectively. These are **not** test-account baselines. Signed
+  out both through the ordinary app UI; both displayed Sign in afterward. No
+  personal progression was changed. The operator's other tabs in those browser
+  cookie jars may also require sign-in again.
+- Prepared distinct registration forms: Chrome `Playtest A`, in-app browser
+  `Playtest B`. Names filled only; email aliases, password and registration code
+  left to the operator. New password entry/confirmation/submission belongs to
+  the operator; do not capture filled forms or ask for credentials in chat.
+- Compared the individually revealed Render sender address with Brevo's verified
+  entry privately: exact match. Re-masked it afterward; no secret/API key read.
+- At handoff, neither registration had been submitted by the agent and no mail
+  send was observed. Operator was instructed to submit each once, stop at the
+  verification-code screen and reply “Both submitted.” Count actual sends after
+  observation; do not treat the old personal sessions as A/B verification evidence.
+- Next: inspect the two resulting forms without exposing credentials, corroborate
+  creation/zero-balance/ownership baselines and mail delivery within the approved
+  scope, then perform bounded verification/recovery. No further Package A approval
+  is needed; only missing credential entry is handed to the operator.
 
 ## Authority and execution ledger
 
@@ -83,13 +173,14 @@ response check remains blocked until an operator-reviewed equivalent is availabl
 ## Concrete execution package — proposed, not approved
 
 Targets are only the public Worker above, Render service/Blueprint above, existing
-`poker_g / Cluster0 / poker_playtest`, existing Brevo sender and operator-owned A/B.
+`poker_g / Cluster0 / poker_playtest`, existing Brevo sender and new operator-owned
+A/B using two inbox aliases, per the later user instruction above.
 Operator is the user; attended window requested now on 2026-10-18. Reconfirm the
 window and no unrelated play immediately before any disruptive action.
 
 ### Package A: account baseline and lifecycle; no deployment
 
-1. Privately identify existing A/B and inbox ownership; record alias mapping
+1. Privately identify new A/B and inbox ownership; record alias mapping
    outside Git. Use isolated browser sessions (Chrome A and a separate in-app
    browser B, subject to operator confirmation); never use two ordinary tabs in
    the same cookie jar as evidence of account isolation. The operator enters
@@ -106,7 +197,8 @@ window and no unrelated play immediately before any disruptive action.
 3. Record per-account starting balance, allowance and UTC date; no seed/reset.
    Verify the configured Brevo sender matches the observed verified sender
    privately before sending. Stop on mismatched inbox, sender, target or quota.
-4. Account actions: sign-in/out/reload, A/B browser switch, bounded recovery and
+4. Account actions: the explicitly requested new A/B registration/verification,
+   sign-in/out/reload, A/B browser switch, bounded recovery and
    old-password/HTTP/socket revocation checks. Expected mutations are ordinary
    sessions, code/rate records, verification only if needed and one intended
    password reset per account. Account identity/progression must remain intact.
@@ -124,10 +216,11 @@ window and no unrelated play immediately before any disruptive action.
    provider flags/automatic settings unchanged. Failure preserves evidence and
    stops the affected flow; never repair or recreate an account.
 
-**Requested approval:** Package A's named read-only baseline and ordinary A/B
-account/mail actions, with operator credential entry. No provider changes,
+**Approved:** Package A's named read-only baseline and ordinary A/B account/mail
+actions; later explicit user request adds new alias-account creation, with operator
+credential entry. No provider changes,
 deployment, game/economy action or new database/network access is included.
-Identity mapping/access and explicit action approval remain prerequisites.
+Identity mapping/access and credential entry remain prerequisites; approval is recorded.
 
 ### Package B: gameplay/economy and controlled restarts — prepare next
 
@@ -172,8 +265,8 @@ finish Package A prerequisites and those method reviews first.
 
 | Gate | State | Current blocker / exact next action | Owner |
 | --- | --- | --- | --- |
-| P1 | blocked | Finish private A/B mapping/baseline and approve the named live package; resolve or explicitly retain downstream method blockers. Inventory above is partial evidence only. | User + agent |
-| A1 | not run | Approve Package A and complete operator credential entry; verify each existing account's verification evidence. | User + agent |
+| P1 | blocked | Package A approved; finish private new-A/B mapping/baseline and retain downstream method blockers. Inventory above is partial evidence only. | User + agent |
+| A1 | blocked | User switched to direct preverified provisioning; source access pending. Mail ownership/verification cannot pass from this method; retain separate acceptance. | User + agent |
 | G1 | not run | Complete A1 and approve Package B; two-human/privacy/transport observations pending. | User + agent |
 | G2 | not run | Legitimate reward/cap/practice play, allowance baseline and scoped receipt audit pending. | User + agent |
 | G3 | blocked | Hosted response-loss method, audit access and earned A/B pull/equip loops pending. Local 1/1 is supporting evidence only. | User + agent |

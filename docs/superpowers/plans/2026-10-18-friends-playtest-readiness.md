@@ -10,7 +10,7 @@
 
 **Spec:** [Friends playtest readiness](../specs/2026-10-18-friends-playtest-readiness-design.md).
 
-Status: written spec and plan approved by the user's 2026-10-18 requests. Task 1 is in progress; see the [execution record](../../releases/2026-10-18-friends-playtest.md). Inline execution is retained. Named live actions await approval; no new hosted acceptance gate has passed.
+Status: spec, plan and Package A approved. User subsequently requested new alias-based A/B accounts created directly in the database without verification mail. The operator helper is locally verified; scoped source access is pending. This override does not pass mailbox-ownership acceptance. See the [execution record](../../releases/2026-10-18-friends-playtest.md); no new hosted acceptance gate has passed.
 
 ## Global constraints
 
@@ -37,6 +37,9 @@ Status: written spec and plan approved by the user's 2026-10-18 requests. Task 1
 - Update `docs/release-checklist.md`: link the current record and reconcile only gates supported by observations.
 - Update existing `CHECKPOINT.md` and `plan.md` section 18 at each save point.
 - Product/test files change only for a reproduced blocker; Task 6 specifies how to select them.
+  User-authorized operational addition on 2026-10-18: `scripts/operations/` provides
+  one-time preverified pair creation, with a focused regression integrated into
+  `package.json`/`pnpm check`. It does not change deployed auth policy or game code.
 
 Each evidence row has `id`, `gate`, `candidate`, `environment`, Bangkok timestamp, operator alias, preconditions, action, expected invariant, actual observation, `pass|fail|blocked|not run`, sanitized private evidence reference and next action. Gate IDs are P1, A1, G1, G2, G3, R1, R2, R3, R4, F1 and X1. Initialize every gate as **not run**. Historical CI/maintenance evidence keeps its original scope and date.
 
@@ -129,4 +132,4 @@ Each evidence row has `id`, `gate`, `candidate`, `environment`, Bangkok timestam
 
 Self-review: all five spec stages and eleven gates have owning tasks; the five review-focus cases have explicit checks. Existing test paths and commands were inspected; local suites are regression references, not evidence of new passes. No speculative executable change is required before an observed defect.
 
-Next: review Package A in the execution record and confirm its named read-only/account/mail actions; finish private A/B baseline/access before sending. Later disruption packages retain their unresolved method gates. Preserve sequential inline execution.
+Next: obtain action-time approval for the exact temporary source-access package in the execution record; operator enters credentials privately. Run the helper dry-run/apply only within that scope, verify both real logins and zero balances, and leave mailbox verification pending. Do not submit the superseded registration forms. Later disruption packages retain unresolved method/approval gates.

@@ -2,38 +2,43 @@
 
 ## Friends playtest readiness specification — 2026-10-18
 
-- Written spec and inline implementation plan approved on 2026-10-18. Task 1 is
-  in progress on `codex/friends-playtest-spec`, draft PR #34 (base `dev`), prior
-  saved commit `5af38bf6`. Origin fetched; `origin/dev` `fe654481` is included.
-- Execution ledger/package: `docs/releases/2026-10-18-friends-playtest.md`.
-  Fresh exact-candidate CI passed all required steps. Render Live deployment
-  `dep-db9o2roae00c7391eh10` on `fe654481`; unchanged app inputs versus `0d4ae28a`
-  make the retained Worker binary compatible. Worker configuration `e4cfba62`
-  Ready/100%; encrypted proxy secret retained. Saved admission true/economy false.
-  Render updates After CI Checks Pass / Blueprint Yes; Worker Disable builds is
-  ON, unlike the historical maintenance exit. No provider settings changed.
-- Atlas operator sign-in resolved the blocked Google authentication handoff.
-  Collection metadata: migrations 1–7, 25 collections/47 indexes, zero active
-  participants/memberships; durable counts match historical observations. This
-  is not a snapshot economy audit. Brevo sender Verified, 300/300 sends remaining.
-  Existing encrypted archive matches its retained checksum; no new dump/decrypt.
-- Passed locally: pinned pnpm 10.33.0 frozen install, disposable MongoDB startup
-  and initialization, collection Chromium test 1/1 (56.7 s) including committed
-  response-loss recovery. One public smoke passed shell 200/readiness ready.
-  Restored the generated next-env.d.ts change; no app/source change retained.
-- Pending: named Package A approval, private A/B mapping/baseline and read-only
-  audit access. User selected existing A/B and attended window now; recheck the
-  window before live action. Password reset entry/submission belongs to operator.
-  Hosted response routing, scoped DB-outage/authority-overlap and isolated app
-  restore methods remain blocked; no new hosted acceptance gate has passed.
-- Next: approve Package A in the execution record (read-only baseline plus up to
-  six verification/recovery messages per A/B, twelve total), then identify A/B
-  privately and run Task 2 within those limits. No deployment/game/economy/new
-  network access is in that package. Later packages require concrete method review.
-- Usage observed 2026-10-18 11:22:22 Bangkok: five-hour 66%, weekly 95% remaining;
-  resets 2026-10-18 12:52:38 and 2026-10-25 07:52:38 Bangkok. Resume with status,
-  current branch, usage, fresh origin fetch and this save point. User merges
-  manually; `gh` absent, Git credential helper + GitHub API available.
+- Spec/plan and Package A approved. User then requested NEW A/B accounts using
+  two + inbox aliases, followed by direct database creation without verification
+  email. Earlier existing-account and browser-registration handoffs are superseded.
+- Branch `codex/friends-playtest-spec`, draft PR #34 (base `dev`); prior saved
+  commit `7c512002`. Fresh `origin/dev` `fe654481` included. No hosted accounts,
+  provider settings, database permissions or network entries changed/created.
+- Existing personal sessions in Chrome/in-app browser were signed out via normal
+  UI; progression untouched. Prepared registration forms were not submitted by
+  agent; user switched method. Addresses/passwords/code remain privately entered.
+- Added reviewed one-time helper `scripts/operations/`: masked PowerShell 7
+  prompts, stdin-only secrets, default dry run, exact apply phrase, pinned Atlas
+  host `cluster0.lxb4kqs.mongodb.net` / database `poker_playtest`, pinned Better
+  Auth hashing, one transaction for two new preverified user/credential pairs.
+  Refuses existing aliases; no ticket/cosmetic/session grants or deployed auth
+  change. Normal login initializes zero wallets. A1 mailbox evidence stays pending.
+- Actual checks: frozen install; `pnpm check` passed 533 tests, typechecks and
+  configured production builds. Final `pnpm test:provision` passed 2/2 after
+  reviewer-found email-validator defect was reproduced RED and fixed with pinned
+  Zod. Node/PowerShell syntax passed; interactive source prompts not executed.
+  Independent review: no Critical; Important fixed. Deferred portability minors:
+  PowerShell 7 lacks #Requires; helper test path conversion cannot handle spaces.
+- Fresh Atlas driver template confirms helper target. Direct access is blocked:
+  current IP absent, no scoped write credential loaded. Prepared UNSUBMITTED
+  custom role `playtestAccountProvisioner20261018`: find+insert only on
+  `poker_playtest.user` and `.account`, no wildcard/inherited actions. No save.
+- Next: action-time approval for this role, a six-hour temporary
+  `poker_provisioner_20261018` restricted to Cluster0 with that role only, and a
+  six-hour single-current-IP access rule. Then operator enters/submits the new
+  DB credential privately, runs helper dry-run/apply with masked game passwords,
+  and agent verifies both real sign-ins/zero balances. No other access/deployment.
+- Execution record: `docs/releases/2026-10-18-friends-playtest.md`; helper usage:
+  `scripts/operations/README.md`. Task 1/source provisioning remains incomplete;
+  later gameplay/outage/restore/friends gates stay pending or blocked.
+- Usage observed 2026-10-18 about 11:47 Bangkok: five-hour 20%, weekly 88%
+  remaining; resets 2026-10-18 12:52:38 and 2026-10-25 07:52:38 Bangkok. Resume
+  with status/current branch, usage, fresh origin fetch and this entry. User
+  merges manually. No hosted creation or signup/recovery pass may be inferred.
 
 ## Hosted release execution — 2026-10-17
 
