@@ -7,6 +7,31 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 
 ## Candidate record
 
+- Friends acceptance planning: [PR #34](https://github.com/24-HUB/poker-game/pull/34),
+  [approved spec](superpowers/specs/2026-10-18-friends-playtest-readiness-design.md)
+  and [approved implementation plan](superpowers/plans/2026-10-18-friends-playtest-readiness.md).
+  [Current friends execution record](releases/2026-10-18-friends-playtest.md):
+  preparation in progress, exact `fe654481` CI success and public smoke rechecked,
+  loopback collection 1/1 passed. Render is now on `fe654481`; Worker retains
+  `e4cfba62`/the compatible `0d4ae28a` binary. Worker builds are currently disabled,
+  unlike the historical exit below. Existing progression is preserved. No new
+  hosted acceptance gate passed. Package A is approved; the user requested new
+  A/B accounts with inbox aliases, then requested direct database provisioning
+  without verification mail. Scoped helper is locally verified; hosted A/B creation
+  is explicitly reported as helper status `created` after `-Apply`; the earlier
+  report was clarified as dry-run `planned`. Ordinary A/B sign-in and reload are
+  independently verified in separate contexts: Playtest A/B, 0 tickets, 20 daily
+  allowance, Alice/Club default equipped, all nondefault cosmetics Not owned.
+  Projected source baseline confirms zero A/B receipts/progression/memberships,
+  wallet revisions 0, migration IDs 1–7, catalogue celestial-v1, zero global active
+  memberships/participants and one live authority. Full email lifecycle remains pending.
+  Fresh public smoke passes shell
+  200/readiness ready. Temporary-access continuation is approved;
+  scoped role and six-hour
+  current-IP rule are applied. Operator created the six-hour Cluster0-only database
+  user; exact custom role and expiry read back. New-account setup is verified;
+  mailbox verification acceptance remains blocked. The following
+  maintenance observations retain their original date.
 - Current execution: [2026-10-17 private-release inventory](releases/2026-10-17-private-release.md),
   implementing the plan in [PR #32](https://github.com/24-HUB/poker-game/pull/32).
   Candidate `0d4ae28a9c404de8d7d9db089543a60e1fe18673` has successful
