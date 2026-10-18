@@ -2,30 +2,26 @@
 
 ## Friends playtest readiness specification — 2026-10-18
 
-- Rechecked the existing clean branch `codex/friends-playtest-spec` for draft
-  [PR #34](https://github.com/24-HUB/poker-game/pull/34), base `dev`; prior saved
-  commit `44d0b5fa`; this entry's commit saves the review. Fetched `origin/dev`
-  `fe654481` is included. Scope remains
-  preserved progression, two dedicated accounts, six real phone/desktop players,
-  attended interruptions and approved economy testing; production launch excluded.
-- Written spec: [friends playtest readiness](docs/superpowers/specs/2026-10-18-friends-playtest-readiness-design.md).
-  Revised against source and maintenance evidence: actual flag boundaries and
-  deployment interruption, account/reward/pull invariants, backup content/schema
-  sufficiency, five stage exit criteria and 11 evidence gates. Active-room lock
-  and six-human entry/exit are explicit. Written approval/plan remain pending.
-- Passed: source/runbook consistency review, all 36 relative links, matching
-  checkpoint entries, complete task diff review and working/task `git diff --check`.
-  Application tests were not rerun for these documentation-only changes.
-- This revision changes only the spec and these two existing checkpoint sections.
-  No application/provider/database changes, email sends or hosted gate passes.
-  Retain completed maintenance evidence and recheck live state at execution.
-- Next: written-spec review/approval, then prepare its implementation plan on the
-  same branch/draft PR. User merges manually. Resume with
-  `git status --short --branch`, usage, `git fetch origin --prune` and this entry.
-  `gh` is absent from PATH; existing Git credential helper + GitHub API works.
-- Usage observed 2026-10-18 10:58–10:59 Bangkok: five-hour 86%, weekly 98%
-  remaining. Resets: 2026-10-18 12:52:38 and 2026-10-25 07:52:38 Bangkok.
-
+- User requested implementation of PR #34 on 2026-10-18, approving the written
+  spec. Prepared `docs/superpowers/plans/2026-10-18-friends-playtest-readiness.md`:
+  sequential inline preparation, accounts, gameplay/progression, interruptions,
+  restored accounts and six-human acceptance, plus conditional blocker fixes.
+- Continuing the same clean task branch `codex/friends-playtest-spec`, draft
+  [PR #34](https://github.com/24-HUB/poker-game/pull/34), base `dev`; last saved
+  commit `392ab601`. Fresh `origin/dev` `fe654481` is included. This commit adds
+  the plan and updates spec/checklist/checkpoints only; no live actions or new
+  hosted gate passes. Plan review is the next required step, followed by Task 1's
+  exact resource/window/mail/drill package and its separate execution approval.
+- Verification: plan/spec/source/CI consistency and relative-link review;
+  working/staged/task whitespace and complete diff review before publication.
+  Application suites are unnecessary for this documentation-only change and
+  were not rerun. Preserve existing maintenance evidence; no repeat migrations.
+- Usage observed 2026-10-18 11:04:53 Bangkok: five-hour 80%, weekly 97%
+  remaining; resets 2026-10-18 12:52:38 and 2026-10-25 07:52:38 Bangkok.
+- Resume: `git status --short --branch`, usage, `git fetch origin --prune`, read
+  this entry and the plan. After plan review, prepare Task 1 inline; no email,
+  configuration deployment or disruption until its named package is approved.
+  User merges manually. `gh` is absent; Git credential helper + GitHub API works.
 
 ## Hosted release execution — 2026-10-17
 

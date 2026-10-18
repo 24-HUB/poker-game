@@ -1,8 +1,9 @@
 # Friends Playtest Readiness Specification
 
 Date: 2026-10-18 (Asia/Bangkok)
-Status: conversational scope approved; specification rechecked and revised;
-written-spec approval and implementation plan remain pending. Draft PR #34 targets `dev`.
+Status: written specification approved by the user's 2026-10-18 request to
+implement PR #34; [implementation plan](../plans/2026-10-18-friends-playtest-readiness.md)
+prepared for review. Draft PR #34 targets `dev`; named live actions remain unapproved.
 Branch: `codex/friends-playtest-spec`; baseline: fetched `origin/dev` `fe654481`.
 
 ## Purpose and completion boundary
@@ -379,10 +380,10 @@ features, balance-policy changes and automatic monitoring are outside scope.
 
 Update the existing release checklist, release evidence, `CHECKPOINT.md` and
 `plan.md` checkpoint with actual results; do not create another checkpoint file.
-Keep the current spec PR draft until the written spec and implementation plan have
-been reviewed. No provider actions or application implementation occurred while
-writing this specification. After written-spec review, create a task-by-task plan
-with exact files/commands, prerequisites, execution approvals and stop conditions.
+Keep the current spec PR draft until the implementation plan has been reviewed.
+No provider actions or application implementation occurred while writing this
+specification or plan. The linked plan supplies task-by-task files/commands,
+prerequisites, execution approvals and stop conditions; review it before execution.
 
 The existing release record's latest maintenance exit takes precedence over its
 historical unchecked items (for example pre-migration inventory). Reconcile those
