@@ -2,22 +2,29 @@
 
 ## Friends playtest readiness specification — 2026-10-18
 
-- New clean task branch `codex/friends-playtest-spec`, from fetched `origin/dev`
-  `fe654481`. Approved scope: preserve progression; two dedicated accounts;
-  real six-person phone/desktop session; attended interruptions; temporary
-  approved economy testing; user-coordinated friends; core-flow/safety blockers.
-  Production launch is excluded.
+- Rechecked the existing clean branch `codex/friends-playtest-spec` for draft
+  [PR #34](https://github.com/24-HUB/poker-game/pull/34), base `dev`; prior saved
+  commit `44d0b5fa`; this entry's commit saves the review. Fetched `origin/dev`
+  `fe654481` is included. Scope remains
+  preserved progression, two dedicated accounts, six real phone/desktop players,
+  attended interruptions and approved economy testing; production launch excluded.
 - Written spec: [friends playtest readiness](docs/superpowers/specs/2026-10-18-friends-playtest-readiness-design.md).
-  Conversational scope approved; written-spec review and implementation plan
-  pending. No application/provider/database changes or live email sends.
-- Passed: spec self-review, all 28 relative links and whitespace/full-diff checks.
-  Application tests were not run for documentation-only changes.
-- Retain completed maintenance evidence; recheck live state at execution.
-  Do not execute the earlier broader production-release plan under this scope.
-- Next: review written spec, then prepare the implementation plan on this branch
-  and draft PR. User merges manually. Resume with status, usage and fetch.
-- Usage observed 2026-10-18: five-hour 93%, weekly 99% remaining.
-  Resets: 2026-10-18 12:52:38 and 2026-10-25 07:52:38 Bangkok.
+  Revised against source and maintenance evidence: actual flag boundaries and
+  deployment interruption, account/reward/pull invariants, backup content/schema
+  sufficiency, five stage exit criteria and 11 evidence gates. Active-room lock
+  and six-human entry/exit are explicit. Written approval/plan remain pending.
+- Passed: source/runbook consistency review, all 36 relative links, matching
+  checkpoint entries, complete task diff review and working/task `git diff --check`.
+  Application tests were not rerun for these documentation-only changes.
+- This revision changes only the spec and these two existing checkpoint sections.
+  No application/provider/database changes, email sends or hosted gate passes.
+  Retain completed maintenance evidence and recheck live state at execution.
+- Next: written-spec review/approval, then prepare its implementation plan on the
+  same branch/draft PR. User merges manually. Resume with
+  `git status --short --branch`, usage, `git fetch origin --prune` and this entry.
+  `gh` is absent from PATH; existing Git credential helper + GitHub API works.
+- Usage observed 2026-10-18 10:58–10:59 Bangkok: five-hour 86%, weekly 98%
+  remaining. Resets: 2026-10-18 12:52:38 and 2026-10-25 07:52:38 Bangkok.
 
 
 ## Hosted release execution — 2026-10-17
