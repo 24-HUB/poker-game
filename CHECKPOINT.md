@@ -15,7 +15,8 @@
   entry; existing three rules untouched. IP expiry around 2026-10-19 02:31 Bangkok.
 - Operator created `poker_provisioner_20261018` privately. User row verifies SCRAM,
   exact custom role, one cluster (Cluster0 selected in setup), six-hour countdown.
-  No password/URI loaded by agent, no A/B accounts created or source helper run.
+  No password/URI loaded by agent. Operator attempt stopped at ArgumentList
+  before Node launched or a database write. No A/B creation confirmed.
 - Reviewed helper `scripts/operations/` uses masked PowerShell 7 prompts,
   stdin-only secrets, default dry run, exact apply phrase, pinned Atlas host
   `cluster0.lxb4kqs.mongodb.net` / database `poker_playtest`, pinned Better Auth
@@ -25,11 +26,15 @@
 - Checks previously passed: frozen install; `pnpm check` 533 tests, typechecks and
   configured builds; final `pnpm test:provision` 2/2 after reproduced RED validator
   fix; Node/PowerShell syntax. Independent review: no Critical, Important fixed.
-  Deferred minors: PowerShell 7 lacks #Requires; test path cannot handle spaces.
+  Remaining minor: helper test path cannot handle spaces. PowerShell version
+  guard corrected after the operator reported the 5.1 null ArgumentList error.
   Linux CI run 39098342866 on `32e12ad5` completed/success, verify steps passed.
-  No app suite rerun this documentation/operational continuation; diff check passed.
+  Follow-up verification completed 20:48 Bangkok: frozen install, typecheck,
+  full pnpm test (534 passed; provisioning 3/3), production builds, PowerShell 7
+  syntax and diff check passed. Disposable local MongoDB only; new-head CI pending.
 - Exact next step: operator in opened app terminal, from repo root, runs
   `pwsh -NoProfile -File .\scripts\operations\Provision-PlaytestAccounts.ps1`,
+  using PowerShell 7 (full installed executable path supplied if needed),
   supplies private URI/aliases/passwords only at prompts, checks `planned`, then
   repeats with `-Apply` and exact confirmation phrase. Input handoff pending.
   Report only `created` or sanitized error. On uncertain result inspect aliases
@@ -39,7 +44,7 @@
   outage/restore/friends gates remain pending or blocked. Execution record:
   `docs/releases/2026-10-18-friends-playtest.md`; helper instructions:
   `scripts/operations/README.md`. PR stays draft; user merges manually.
-- Usage observed 2026-10-18 about 20:36 Bangkok: five-hour 79%, weekly 84%
+- Usage observed 2026-10-18 about 20:44 Bangkok: five-hour 76%, weekly 83%
   remaining; resets 2026-10-19 01:25:56 and 2026-10-25 07:52:38 Bangkok.
   Resume with status/current branch, usage, fresh origin fetch and this entry.
 

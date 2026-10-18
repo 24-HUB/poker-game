@@ -22,6 +22,12 @@ From the repository root, run the read-only preflight:
 pwsh -NoProfile -File .\scripts\operations\Provision-PlaytestAccounts.ps1
 ```
 
+Run this with PowerShell 7 (`pwsh`), not Windows PowerShell 5.1 (`powershell`).
+The wrapper rejects older versions before asking for any private inputs. If
+`pwsh` is not on your terminal's PATH, invoke an installed PowerShell 7 executable
+by its full path with PowerShell's `&` call operator. The older shell lacks the
+`ProcessStartInfo.ArgumentList` API used to launch Node safely.
+
 Enter the connection URI and new A/B passwords only in the masked prompts; enter
 two distinct new aliases when asked. Nothing is written to credential files,
 command arguments or logs. Passwords must be 16–128 characters. Preserve them in
@@ -56,8 +62,8 @@ It verifies target/confirmation rejection, dry-run, exact pair creation, real
 app sign-in, zero-wallet initialization, duplicate refusal, rollback and intact
 unrelated progression. These tests also run under `pnpm check`.
 
-Known portability limits: the wrapper relies on PowerShell 7 and lacks a
-`#Requires` declaration; the test's CLI path conversion does not support checkout
+Known portability limit: the test's CLI path conversion does not support checkout
 paths containing percent-escaped characters/spaces. Use `pwsh` and the current
-space-free checkout. These review minors are deferred; no hosted prompt run has
-been performed yet.
+space-free checkout. This review minor is deferred. An operator attempt under
+Windows PowerShell 5.1 failed before Node started; source provisioning remains
+unconfirmed. Retry with PowerShell 7.

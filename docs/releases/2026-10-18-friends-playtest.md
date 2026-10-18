@@ -7,6 +7,28 @@ inputs and execution remain with the operator. No hosted A/B accounts
 created yet. New hosted acceptance gates have not passed. No application deployment,
 release-flag/economy change or deliberate gameplay interruption has been performed.
 
+## Wrapper compatibility correction — 20:44 Bangkok
+
+- Operator reported `ArgumentList.Add` failing on a null value after private
+  inputs. Reproduced the exact exception with a credential-free
+  `ProcessStartInfo` probe in Windows PowerShell 5.1.26100.9711; PowerShell 7.6.5
+  exposes the required API. The reported failure precedes `Process.Start`, so
+  that attempt launched no Node process and submitted no account transaction.
+- Added `#Requires -Version 7.0`, rejecting the unsupported host before private
+  prompts. Behavioral regression first failed because 5.1 reached Read-Host,
+  then passed with `ScriptRequiresUnmatchedPSVersion` and no prompt output.
+  The Windows regression skips on other operating systems. README clarifies
+  `pwsh` and full-path invocation when it is absent from the operator's PATH.
+- Provided the locally installed PowerShell 7 executable path for a fresh dry
+  run. Prior inputs were not saved; operator must re-enter them privately.
+  No hosted account success or new acceptance evidence is claimed.
+- Verification completed 20:48 Bangkok: frozen install, `pnpm typecheck`,
+  `pnpm test` (534 passed, including provisioning 3/3), `pnpm build`, PowerShell 7
+  syntax and whitespace checks passed. Docker was initially stopped; started
+  local Desktop and existing disposable MongoDB services, then `pnpm db:init`.
+  No hosted database used for tests. Prior helper CI remains historical;
+  new-head Linux CI is pending. Branch still includes current `origin/dev`.
+
 ## Access setup resumed — 20:26–20:36 Bangkok
 
 - User requested continuation immediately after the exact role/six-hour-user/IP

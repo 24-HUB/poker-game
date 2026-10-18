@@ -3,12 +3,21 @@ import { randomUUID, createHash } from 'node:crypto';
 import { createRequire } from 'node:module';
 import test from 'node:test';
 import { spawnSync } from 'node:child_process';
+import { fileURLToPath } from 'node:url';
 import { MongoClient } from 'mongodb';
 import { provisionPair } from './provision.mjs';
 
 const require = createRequire(import.meta.url);
 const { createPokerAuth } = require('../../apps/server/dist/modules/identity/auth.js');
 const { TicketsRepository } = require('../../apps/server/dist/modules/tickets/tickets.repository.js');
+
+test('rejects Windows PowerShell 5 before requesting any private provisioning inputs', { skip: process.platform !== 'win32' }, () => {
+  const result = spawnSync('powershell.exe', ['-NoProfile', '-NonInteractive', '-File', fileURLToPath(new URL('./Provision-PlaytestAccounts.ps1', import.meta.url))], { encoding: 'utf8', timeout: 10000 });
+  assert.ifError(result.error);
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /ScriptRequiresUnmatchedPSVersion/);
+  assert.doesNotMatch(result.stdout, /Approved target|Atlas URI|Playtest A/);
+});
 
 test('rejects unapproved source access and CLI target mismatches before writing or disclosing credentials', async () => {
   await assert.rejects(provisionPair({}, {databaseName:'poker_playtest'}, [], {}), /TARGET_REJECTED/);
