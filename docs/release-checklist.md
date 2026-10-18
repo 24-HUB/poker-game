@@ -9,10 +9,14 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 
 - Friends acceptance planning: [PR #34](https://github.com/24-HUB/poker-game/pull/34),
   [approved spec](superpowers/specs/2026-10-18-friends-playtest-readiness-design.md)
-  and [implementation plan for review](superpowers/plans/2026-10-18-friends-playtest-readiness.md).
-  Retain sequential inline execution; prepare the named live package after plan
-  review. All eleven new acceptance gates are not run. This planning update does
-  not replace the last observed candidate below or approve live actions.
+  and [approved implementation plan](superpowers/plans/2026-10-18-friends-playtest-readiness.md).
+  [Current friends execution record](releases/2026-10-18-friends-playtest.md):
+  preparation in progress, exact `fe654481` CI success and public smoke rechecked,
+  loopback collection 1/1 passed. Render is now on `fe654481`; Worker retains
+  `e4cfba62`/the compatible `0d4ae28a` binary. Worker builds are currently disabled,
+  unlike the historical exit below. Existing progression is preserved. No new
+  hosted acceptance gate passed; named Package A approval/private baseline remain
+  pending. The following maintenance observations retain their original date.
 - Current execution: [2026-10-17 private-release inventory](releases/2026-10-17-private-release.md),
   implementing the plan in [PR #32](https://github.com/24-HUB/poker-game/pull/32).
   Candidate `0d4ae28a9c404de8d7d9db089543a60e1fe18673` has successful

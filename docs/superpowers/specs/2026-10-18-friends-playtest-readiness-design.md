@@ -3,7 +3,7 @@
 Date: 2026-10-18 (Asia/Bangkok)
 Status: written specification approved by the user's 2026-10-18 request to
 implement PR #34; [implementation plan](../plans/2026-10-18-friends-playtest-readiness.md)
-prepared for review. Draft PR #34 targets `dev`; named live actions remain unapproved.
+approved for sequential inline execution. Draft PR #34 targets `dev`; named live actions remain unapproved.
 Branch: `codex/friends-playtest-spec`; baseline: fetched `origin/dev` `fe654481`.
 
 ## Purpose and completion boundary
@@ -380,10 +380,11 @@ features, balance-policy changes and automatic monitoring are outside scope.
 
 Update the existing release checklist, release evidence, `CHECKPOINT.md` and
 `plan.md` checkpoint with actual results; do not create another checkpoint file.
-Keep the current spec PR draft until the implementation plan has been reviewed.
-No provider actions or application implementation occurred while writing this
-specification or plan. The linked plan supplies task-by-task files/commands,
-prerequisites, execution approvals and stop conditions; review it before execution.
+The user has reviewed and approved the implementation plan. Keep the PR draft
+while acceptance is incomplete. No provider actions or application implementation
+occurred while writing this specification or plan. Follow the linked plan and
+[execution record](../../releases/2026-10-18-friends-playtest.md), retaining named
+live-action approvals and honest gate statuses.
 
 The existing release record's latest maintenance exit takes precedence over its
 historical unchecked items (for example pre-migration inventory). Reconcile those

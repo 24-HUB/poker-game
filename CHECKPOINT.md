@@ -2,26 +2,38 @@
 
 ## Friends playtest readiness specification — 2026-10-18
 
-- User requested implementation of PR #34 on 2026-10-18, approving the written
-  spec. Prepared `docs/superpowers/plans/2026-10-18-friends-playtest-readiness.md`:
-  sequential inline preparation, accounts, gameplay/progression, interruptions,
-  restored accounts and six-human acceptance, plus conditional blocker fixes.
-- Continuing the same clean task branch `codex/friends-playtest-spec`, draft
-  [PR #34](https://github.com/24-HUB/poker-game/pull/34), base `dev`; last saved
-  commit `392ab601`. Fresh `origin/dev` `fe654481` is included. This commit adds
-  the plan and updates spec/checklist/checkpoints only; no live actions or new
-  hosted gate passes. Plan review is the next required step, followed by Task 1's
-  exact resource/window/mail/drill package and its separate execution approval.
-- Verification: plan/spec/source/CI consistency and relative-link review;
-  working/staged/task whitespace and complete diff review before publication.
-  Application suites are unnecessary for this documentation-only change and
-  were not rerun. Preserve existing maintenance evidence; no repeat migrations.
-- Usage observed 2026-10-18 11:04:53 Bangkok: five-hour 80%, weekly 97%
-  remaining; resets 2026-10-18 12:52:38 and 2026-10-25 07:52:38 Bangkok.
-- Resume: `git status --short --branch`, usage, `git fetch origin --prune`, read
-  this entry and the plan. After plan review, prepare Task 1 inline; no email,
-  configuration deployment or disruption until its named package is approved.
-  User merges manually. `gh` is absent; Git credential helper + GitHub API works.
+- Written spec and inline implementation plan approved on 2026-10-18. Task 1 is
+  in progress on `codex/friends-playtest-spec`, draft PR #34 (base `dev`), prior
+  saved commit `5af38bf6`. Origin fetched; `origin/dev` `fe654481` is included.
+- Execution ledger/package: `docs/releases/2026-10-18-friends-playtest.md`.
+  Fresh exact-candidate CI passed all required steps. Render Live deployment
+  `dep-db9o2roae00c7391eh10` on `fe654481`; unchanged app inputs versus `0d4ae28a`
+  make the retained Worker binary compatible. Worker configuration `e4cfba62`
+  Ready/100%; encrypted proxy secret retained. Saved admission true/economy false.
+  Render updates After CI Checks Pass / Blueprint Yes; Worker Disable builds is
+  ON, unlike the historical maintenance exit. No provider settings changed.
+- Atlas operator sign-in resolved the blocked Google authentication handoff.
+  Collection metadata: migrations 1–7, 25 collections/47 indexes, zero active
+  participants/memberships; durable counts match historical observations. This
+  is not a snapshot economy audit. Brevo sender Verified, 300/300 sends remaining.
+  Existing encrypted archive matches its retained checksum; no new dump/decrypt.
+- Passed locally: pinned pnpm 10.33.0 frozen install, disposable MongoDB startup
+  and initialization, collection Chromium test 1/1 (56.7 s) including committed
+  response-loss recovery. One public smoke passed shell 200/readiness ready.
+  Restored the generated next-env.d.ts change; no app/source change retained.
+- Pending: named Package A approval, private A/B mapping/baseline and read-only
+  audit access. User selected existing A/B and attended window now; recheck the
+  window before live action. Password reset entry/submission belongs to operator.
+  Hosted response routing, scoped DB-outage/authority-overlap and isolated app
+  restore methods remain blocked; no new hosted acceptance gate has passed.
+- Next: approve Package A in the execution record (read-only baseline plus up to
+  six verification/recovery messages per A/B, twelve total), then identify A/B
+  privately and run Task 2 within those limits. No deployment/game/economy/new
+  network access is in that package. Later packages require concrete method review.
+- Usage observed 2026-10-18 11:22:22 Bangkok: five-hour 66%, weekly 95% remaining;
+  resets 2026-10-18 12:52:38 and 2026-10-25 07:52:38 Bangkok. Resume with status,
+  current branch, usage, fresh origin fetch and this save point. User merges
+  manually; `gh` absent, Git credential helper + GitHub API available.
 
 ## Hosted release execution — 2026-10-17
 

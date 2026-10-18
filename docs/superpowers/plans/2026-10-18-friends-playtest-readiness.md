@@ -10,7 +10,7 @@
 
 **Spec:** [Friends playtest readiness](../specs/2026-10-18-friends-playtest-readiness-design.md).
 
-Status: written spec approved by the user's 2026-10-18 request to implement PR #34. This plan awaits review; inline execution is retained from the spec. No new hosted gate has passed.
+Status: written spec and plan approved by the user's 2026-10-18 requests. Task 1 is in progress; see the [execution record](../../releases/2026-10-18-friends-playtest.md). Inline execution is retained. Named live actions await approval; no new hosted acceptance gate has passed.
 
 ## Global constraints
 
@@ -46,11 +46,11 @@ Each evidence row has `id`, `gate`, `candidate`, `environment`, Bangkok timestam
 **Consumes:** spec, [maintenance exit](../../releases/2026-10-17-private-release.md), [operations](../../operations.md), candidate Git/CI and read-only provider observations.
 **Produces:** named actions, prerequisites, restoration controls and approval record consumed by Tasks 2–5.
 
-- [ ] Check clean status/current task branch, usage, fresh origin fetch and the save point. Inspect candidate diff and CI inputs; record merged candidate SHA separately from this documentation PR head.
+- [x] Check clean status/current task branch, usage, fresh origin fetch and the save point. Inspect candidate diff and CI inputs; record merged candidate SHA separately from this documentation PR head.
 - [ ] Read provider dashboards without revealing secrets. Record backend SHA/deployment ID, Worker binary/configuration version, public origin, database/schema/catalogue version, current flags, automatic-update settings and compatible rollback artifacts. Resolve drift before proceeding; do not deploy merely to align documentation commits.
-- [ ] Inspect exact-candidate CI: frozen install, `pnpm check`, `pnpm test:backup`, Linux Worker build and full Chromium job. Reuse only with unchanged relevant inputs and an explicit compatibility comparison. A new application fix needs its own candidate evidence.
+- [x] Inspect exact-candidate CI: frozen install, `pnpm check`, `pnpm test:backup`, Linux Worker build and full Chromium job. Reuse only with unchanged relevant inputs and an explicit compatibility comparison. A new application fix needs its own candidate evidence.
 - [ ] Privately confirm operator, A/B inbox ownership, existing account/verification state, verified Brevo sender and current quota. Consult current official provider limits at execution. Do not send mail during inventory. Missing access/quota is a blocker, not authority to provision replacements.
-- [ ] Record proposed mail budget **at most six messages per account, twelve total**: up to two verification sends (prior-code invalidation/latest success) and four recovery sends (expiry, bounded resend, successful reset). Reused verified accounts omit verification only with matching evidence. If existing expiry/cooldown behavior cannot fit this budget, stop and revise the package before sending more. Record purposes, order, actual count and provider headroom; never raise the budget implicitly.
+- [x] Record proposed mail budget **at most six messages per account, twelve total**: up to two verification sends (prior-code invalidation/latest success) and four recovery sends (expiry, bounded resend, successful reset). Reused verified accounts omit verification only with matching evidence. If existing expiry/cooldown behavior cannot fit this budget, stop and revise the package before sending more. Record purposes, order, actual count and provider headroom; never raise the budget implicitly.
 - [ ] Privately baseline A/B balance, UTC allowance/date, items, equipment and receipt inventory using separately authorized read-only database access. Verify account mapping remains outside Git. Identify active test versus unrelated memberships before each deployment.
 - [ ] For every proposed action, fill exact resource/candidate IDs, operator/window, precondition, expected data effects, stop condition and restoration. Include each configuration deployment, mid-hand restart, post-settlement restart, database fault, authority overlap and isolated restore. An unavailable safe fault method marks that gate blocked; do not invent targets or run it.
 - [ ] Prepare response-loss method: only A/B's browser response is dropped after single-pull submission; retain the existing pending request ID and corroborate commit via account-owned receipt. Validate the method on loopback first. Browser request blocking before submission cannot establish a lost committed response.
@@ -129,4 +129,4 @@ Each evidence row has `id`, `gate`, `candidate`, `environment`, Bangkok timestam
 
 Self-review: all five spec stages and eleven gates have owning tasks; the five review-focus cases have explicit checks. Existing test paths and commands were inspected; local suites are regression references, not evidence of new passes. No speculative executable change is required before an observed defect.
 
-Next: operator reviews this written plan, then Task 1 prepares and reviews the concrete package. Exact live IDs, private inboxes, window and safe fault/restore methods are deliberately execution prerequisites; their absence blocks dependent actions rather than permitting guessed targets. Preserve sequential inline execution.
+Next: review Package A in the execution record and confirm its named read-only/account/mail actions; finish private A/B baseline/access before sending. Later disruption packages retain their unresolved method gates. Preserve sequential inline execution.
