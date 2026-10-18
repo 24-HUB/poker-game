@@ -10,7 +10,7 @@
 
 **Spec:** [Friends playtest readiness](../specs/2026-10-18-friends-playtest-readiness-design.md).
 
-Status: spec, plan, Package A and temporary-access continuation approved. User requested new alias-based A/B accounts created directly in the database without verification mail. Helper is locally verified with Linux CI success; scoped role and six-hour IP rule are applied, and the operator-created temporary database user has verified scope/expiry. Private helper inputs and account creation remain pending. This override does not pass mailbox-ownership acceptance. See the [execution record](../../releases/2026-10-18-friends-playtest.md); no new hosted acceptance gate has passed.
+Status: spec, plan, Package A and temporary-access continuation approved. User requested new alias-based A/B accounts created directly in the database without verification mail. Helper is locally verified; scoped role and six-hour IP rule are applied, and temporary database user scope/expiry verified. Operator reports account creation; ordinary sign-in/identity/zero-balance verification is pending, B in the in-app browser first, then A in Chrome. Latest helper-head Linux CI is in progress; earlier recorded helper CI passed. This override does not pass mailbox-ownership acceptance. See the [execution record](../../releases/2026-10-18-friends-playtest.md); no new hosted acceptance gate has passed.
 
 ## Global constraints
 
@@ -132,4 +132,4 @@ Each evidence row has `id`, `gate`, `candidate`, `environment`, Bangkok timestam
 
 Self-review: all five spec stages and eleven gates have owning tasks; the five review-focus cases have explicit checks. Existing test paths and commands were inspected; local suites are regression references, not evidence of new passes. No speculative executable change is required before an observed defect.
 
-Next: temporary role, six-hour current-IP rule and operator-created Cluster0-only user are verified. Operator runs the helper dry-run/apply using private prompts in the opened terminal. After confirmed creation, verify both real logins and zero balances, and leave mailbox verification pending. Recheck temporary access expiry on resume. Do not submit superseded browser registration forms. Later disruption packages retain unresolved method/approval gates.
+Next: operator reports A/B creation. Await private B sign-in in the in-app panel, inspect its identity/zero balance/collection, then verify A through the prepared Chrome form. Do not repeat source provisioning or reset/adopt accounts without inspecting any mismatch. Leave mailbox verification pending; recheck temporary access expiry on resume. Later disruption packages retain unresolved method/approval gates.

@@ -18,8 +18,10 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
   hosted acceptance gate passed. Package A is approved; the user requested new
   A/B accounts with inbox aliases, then requested direct database provisioning
   without verification mail. Scoped helper is locally verified; hosted A/B creation
-  is unconfirmed after an operator failure with unknown apply mode. Read-only
-  diagnostic handoff is pending. Temporary-access continuation is approved;
+  is reported by the operator after the diagnostic handoff; ordinary sign-in,
+  identity and zero-balance checks remain pending. B in-app sign-in is the current
+  private input handoff, followed by A in Chrome. Fresh public smoke passes shell
+  200/readiness ready. Temporary-access continuation is approved;
   scoped role and six-hour
   current-IP rule are applied. Operator created the six-hour Cluster0-only database
   user; exact custom role and expiry read back. Diagnostic result and account

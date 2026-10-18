@@ -6,7 +6,7 @@
   requested NEW A/B accounts using two + aliases, then direct database creation
   without verification email. Supersedes existing-account/registration handoffs.
 - Branch `codex/friends-playtest-spec`, draft PR #34 targeting `dev`; last completed
-  helper commit `c24127e3`. Fresh `origin/dev` `fe654481` included (0 behind).
+  helper commit `b5f4e87a`. Fresh `origin/dev` `fe654481` included (0 behind).
   Current follow-up adds safe wrapper diagnostics and single-Node resolution;
   no app deployment or agent source database operation.
 - Applied custom role `playtestAccountProvisioner20261018`: find+insert only on
@@ -18,7 +18,8 @@
   exact custom role, one cluster (Cluster0 selected in setup), six-hour countdown.
   No password/URI loaded by agent. Operator attempt stopped at ArgumentList
   before Node launched or a database write. A later generic helper failure has
-  unknown apply mode; hosted A/B creation is now uncertain, not confirmed absent.
+  unknown apply mode. Operator subsequently replied “already create”; record
+  reported creation, with normal sign-in/identity/balance still unverified.
 - Reviewed helper `scripts/operations/` uses masked PowerShell 7 prompts,
   stdin-only secrets, default dry run, exact apply phrase, pinned Atlas host
   `cluster0.lxb4kqs.mongodb.net` / database `poker_playtest`, pinned Better Auth
@@ -34,23 +35,22 @@
   Follow-up verification completed 20:48 Bangkok: frozen install, typecheck,
   full pnpm test (534 passed; provisioning 3/3), production builds, PowerShell 7
   syntax and diff check passed. Disposable local MongoDB only; new-head CI pending.
-- Exact next step: operator runs a read-only dry run using the installed PowerShell
-  7 executable: `pwsh -NoProfile -File .\scripts\operations\Provision-PlaytestAccounts.ps1`
-  (full executable/script paths provided to operator), with the same aliases and
-  no `-Apply`. Final wrapper error now includes only the allowlisted CLI label
-  and mode; unknown child errors become HELPER_PROCESS_FAILED. Await `planned`
-  or safe label. Never repeat an apply while prior outcome is unknown; inspect
-  ACCOUNT_EXISTS before any write. No source writes by the diagnostic dry run.
-  New fake-input regression observed both multiple-Node-path launch failure and
-  the missing final label before fixes; passes after fixes, no database connection.
-  Verification about 20:57 Bangkok: frozen install and pnpm check passed
-  (535 tests, provisioning 4/4, typechecks and builds); PowerShell 7 syntax and
-  diff check passed. New-head CI pending. Recheck temporary expiry on resume.
+- Latest local verification 20:57 Bangkok: frozen install and pnpm check passed
+  (535 tests, provisioning 4/4, typechecks/builds); PowerShell 7 syntax/diff passed.
+  New-head CI b5f4e87a run 39133807763 still in progress at 20:58:58 Bangkok.
+- Fresh public smoke: Worker shell HTTP 200/readiness ready. Chrome access recovery
+  resolved to Sign in after its Lobby was brought into view; no timed wake gate.
+- Exact next step: operator signs in as B in the in-app browser's prepared form
+  using private helper credentials; reply B signed in or sanitized visible error.
+  Inspect identity, zero-ticket balance and collection baseline, then repeat for A
+  in the prepared Chrome form. Both tabs marked for continuation. No credentials
+  entered/read by agent. Do not repeat provisioning, reset/adopt users or infer
+  mailbox acceptance from reported creation. Recheck temporary expiry on resume.
 - Task 1/source provisioning incomplete; mailbox verification and later gameplay,
   outage/restore/friends gates remain pending or blocked. Execution record:
   `docs/releases/2026-10-18-friends-playtest.md`; helper instructions:
   `scripts/operations/README.md`. PR stays draft; user merges manually.
-- Usage observed 2026-10-18 about 20:51 Bangkok: five-hour 70%, weekly 83%
+- Usage observed 2026-10-18 about 20:58 Bangkok: five-hour 66%, weekly 82%
   remaining; resets 2026-10-19 01:25:56 and 2026-10-25 07:52:38 Bangkok.
   Resume with status/current branch, usage, fresh origin fetch and this entry.
 

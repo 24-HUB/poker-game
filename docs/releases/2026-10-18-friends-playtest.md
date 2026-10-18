@@ -2,12 +2,32 @@
 
 Status: plan, Package A and the presented temporary-access package approved for
 continuation. Provisioning role and six-hour single-IP rule are applied; database
-user was created by the operator and its scope/expiry verified. Private helper
-inputs and execution remain with the operator. Hosted A/B creation is unconfirmed
-after an operator helper failure. New hosted acceptance gates have not passed. No application deployment,
+user was created by the operator and its scope/expiry verified. Operator now reports
+A/B creation; ordinary sign-in/identity/balance verification is pending. No helper
+success output or hosted sign-in has been independently observed. New hosted
+acceptance gates have not passed. No application deployment,
 release-flag/economy change or deliberate gameplay interruption has been performed.
 
-## Safe diagnostic handoff — 20:54 Bangkok
+## Operator-reported creation and sign-in handoff — 20:58–21:01 Bangkok
+
+- Operator replied “already create.” Record this as reported creation, not an
+  independently observed transaction or a reason to repeat provisioning. No new
+  source writes, account resets or alias adoption were performed by the agent.
+- Public `node scripts/smoke-deployment.mjs` with the Worker origin passed:
+  shell HTTP 200 and readiness ready. Chrome initially displayed access recovery;
+  bringing its Lobby into view produced normal Sign in. This is a fresh smoke
+  result, not a completed timed cold-start acceptance gate.
+- Prepared empty ordinary sign-in forms in separate contexts: Playtest A in
+  Chrome, Playtest B in the in-app browser. B is the first private input handoff;
+  await `B signed in` or sanitized visible error, then inspect name, zero-ticket
+  balance and collection baseline. Verify A next. Passwords/aliases remain with
+  operator; do not capture filled credential forms or request inputs in chat.
+- Helper revision `b5f4e87a` Linux CI run
+  [39133807763](https://github.com/24-HUB/poker-game/actions/runs/39133807763) was
+  still in progress at 20:58:58 Bangkok. No new-head pass claimed. No local app
+  suites repeated for this browser/documentation continuation.
+
+## Safe diagnostic handoff — historical 20:54 Bangkok
 
 - Operator next reported only the wrapper's generic nonzero-exit exception and
   could not identify whether `-Apply` was used. Treat source outcome as uncertain:
