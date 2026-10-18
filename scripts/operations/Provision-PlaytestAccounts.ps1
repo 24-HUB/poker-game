@@ -27,7 +27,7 @@ if($Apply) {
   if($confirmation -cne 'CREATE TWO PREVERIFIED PLAYTEST ACCOUNTS'){throw 'Not confirmed; nothing submitted.'}
 } else {Write-Host 'DRY RUN: validate target and absence of both emails; no records will be written.'}
 $startInfo=[Diagnostics.ProcessStartInfo]::new()
-$startInfo.FileName=(Get-Command node -CommandType Application).Source
+$startInfo.FileName=(Get-Command node -CommandType Application | Select-Object -First 1).Source
 $startInfo.ArgumentList.Add((Join-Path $PSScriptRoot 'run.mjs'))
 $startInfo.WorkingDirectory=$PSScriptRoot
 $startInfo.UseShellExecute=$false
@@ -43,7 +43,13 @@ try {
   $sourceUri=$null;$accountInputs=$null;$inputJson=$null
   $outputTask=$process.StandardOutput.ReadToEndAsync();$errorTask=$process.StandardError.ReadToEndAsync()
   $process.WaitForExit()
-  Write-Host $outputTask.GetAwaiter().GetResult()
-  $safeErrors=$errorTask.GetAwaiter().GetResult();if($safeErrors){Write-Host $safeErrors}
-  if($process.ExitCode -ne 0){throw 'Provisioning did not report success. Stop and inspect target/aliases; do not blindly retry or widen access.'}
+  $resultOutput=$outputTask.GetAwaiter().GetResult()
+  $errorOutput=$errorTask.GetAwaiter().GetResult()
+  if($process.ExitCode -ne 0){
+    $failureLabel='HELPER_PROCESS_FAILED'
+    if($errorOutput -cmatch '(?m)^(TARGET_REJECTED|CREDENTIAL_REQUIRED|INPUT_TOO_LARGE|PAIR_REQUIRED|INVALID_LOGIN|PASSWORD_LENGTH|DISTINCT_LOGINS_REQUIRED|CONFIRMATION_REQUIRED|ACCOUNT_EXISTS|FAILED_OR_UNCERTAIN)(?=[:\r\n]|$)'){$failureLabel=$Matches[1]}
+    $operationMode=if($Apply){'APPLY'}else{'DRY_RUN'}
+    throw "Provisioning stopped. ${operationMode}: $failureLabel. No success confirmed; inspect aliases before any apply retry. Raw child-process errors suppressed."
+  }
+  Write-Host $resultOutput
 } finally {$sourceUri=$null;$accountInputs=$null;$inputJson=$null;$process.Dispose()}

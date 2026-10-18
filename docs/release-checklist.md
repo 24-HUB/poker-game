@@ -17,11 +17,13 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
   unlike the historical exit below. Existing progression is preserved. No new
   hosted acceptance gate passed. Package A is approved; the user requested new
   A/B accounts with inbox aliases, then requested direct database provisioning
-  without verification mail. Scoped helper is locally verified; no hosted accounts
-  created yet. Temporary-access continuation is approved; scoped role and six-hour
+  without verification mail. Scoped helper is locally verified; hosted A/B creation
+  is unconfirmed after an operator failure with unknown apply mode. Read-only
+  diagnostic handoff is pending. Temporary-access continuation is approved;
+  scoped role and six-hour
   current-IP rule are applied. Operator created the six-hour Cluster0-only database
-  user; exact custom role and expiry read back. Private helper dry-run/apply inputs
-  and account creation are still pending;
+  user; exact custom role and expiry read back. Diagnostic result and account
+  identity/balance verification remain pending;
   mailbox verification acceptance remains blocked. The following
   maintenance observations retain their original date.
 - Current execution: [2026-10-17 private-release inventory](releases/2026-10-17-private-release.md),

@@ -526,8 +526,9 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
   requested NEW A/B accounts using two + aliases, then direct database creation
   without verification email. Supersedes existing-account/registration handoffs.
 - Branch `codex/friends-playtest-spec`, draft PR #34 targeting `dev`; last completed
-  helper commit `32e12ad5`. Fresh `origin/dev` `fe654481` included (0 behind).
-  This save point records operational evidence/checkpoint only; no app deployment.
+  helper commit `c24127e3`. Fresh `origin/dev` `fe654481` included (0 behind).
+  Current follow-up adds safe wrapper diagnostics and single-Node resolution;
+  no app deployment or agent source database operation.
 - Applied custom role `playtestAccountProvisioner20261018`: find+insert only on
   `poker_playtest.user` and `.account`; no wildcard/inherited roles. Applied one
   six-hour current-IP rule, comment `friends-playtest-provisioning-20261018`.
@@ -536,7 +537,8 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 - Operator created `poker_provisioner_20261018` privately. User row verifies SCRAM,
   exact custom role, one cluster (Cluster0 selected in setup), six-hour countdown.
   No password/URI loaded by agent. Operator attempt stopped at ArgumentList
-  before Node launched or a database write. No A/B creation confirmed.
+  before Node launched or a database write. A later generic helper failure has
+  unknown apply mode; hosted A/B creation is now uncertain, not confirmed absent.
 - Reviewed helper `scripts/operations/` uses masked PowerShell 7 prompts,
   stdin-only secrets, default dry run, exact apply phrase, pinned Atlas host
   `cluster0.lxb4kqs.mongodb.net` / database `poker_playtest`, pinned Better Auth
@@ -552,19 +554,23 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
   Follow-up verification completed 20:48 Bangkok: frozen install, typecheck,
   full pnpm test (534 passed; provisioning 3/3), production builds, PowerShell 7
   syntax and diff check passed. Disposable local MongoDB only; new-head CI pending.
-- Exact next step: operator in opened app terminal, from repo root, runs
-  `pwsh -NoProfile -File .\scripts\operations\Provision-PlaytestAccounts.ps1`,
-  using PowerShell 7 (full installed executable path supplied if needed),
-  supplies private URI/aliases/passwords only at prompts, checks `planned`, then
-  repeats with `-Apply` and exact confirmation phrase. Input handoff pending.
-  Report only `created` or sanitized error. On uncertain result inspect aliases
-  before retry. Agent then verifies both public-app sign-ins and zero balances.
-  Recheck temporary access expiry if resuming later; no broader privileges.
+- Exact next step: operator runs a read-only dry run using the installed PowerShell
+  7 executable: `pwsh -NoProfile -File .\scripts\operations\Provision-PlaytestAccounts.ps1`
+  (full executable/script paths provided to operator), with the same aliases and
+  no `-Apply`. Final wrapper error now includes only the allowlisted CLI label
+  and mode; unknown child errors become HELPER_PROCESS_FAILED. Await `planned`
+  or safe label. Never repeat an apply while prior outcome is unknown; inspect
+  ACCOUNT_EXISTS before any write. No source writes by the diagnostic dry run.
+  New fake-input regression observed both multiple-Node-path launch failure and
+  the missing final label before fixes; passes after fixes, no database connection.
+  Verification about 20:57 Bangkok: frozen install and pnpm check passed
+  (535 tests, provisioning 4/4, typechecks and builds); PowerShell 7 syntax and
+  diff check passed. New-head CI pending. Recheck temporary expiry on resume.
 - Task 1/source provisioning incomplete; mailbox verification and later gameplay,
   outage/restore/friends gates remain pending or blocked. Execution record:
   `docs/releases/2026-10-18-friends-playtest.md`; helper instructions:
   `scripts/operations/README.md`. PR stays draft; user merges manually.
-- Usage observed 2026-10-18 about 20:44 Bangkok: five-hour 76%, weekly 83%
+- Usage observed 2026-10-18 about 20:51 Bangkok: five-hour 70%, weekly 83%
   remaining; resets 2026-10-19 01:25:56 and 2026-10-25 07:52:38 Bangkok.
   Resume with status/current branch, usage, fresh origin fetch and this entry.
 

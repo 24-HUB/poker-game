@@ -3,9 +3,35 @@
 Status: plan, Package A and the presented temporary-access package approved for
 continuation. Provisioning role and six-hour single-IP rule are applied; database
 user was created by the operator and its scope/expiry verified. Private helper
-inputs and execution remain with the operator. No hosted A/B accounts
-created yet. New hosted acceptance gates have not passed. No application deployment,
+inputs and execution remain with the operator. Hosted A/B creation is unconfirmed
+after an operator helper failure. New hosted acceptance gates have not passed. No application deployment,
 release-flag/economy change or deliberate gameplay interruption has been performed.
+
+## Safe diagnostic handoff — 20:54 Bangkok
+
+- Operator next reported only the wrapper's generic nonzero-exit exception and
+  could not identify whether `-Apply` was used. Treat source outcome as uncertain:
+  do not repeat an apply, reset credentials or adopt existing aliases automatically.
+  No agent credential/source access has occurred.
+- Added a failing-first wrapper regression with fake private inputs and a target
+  rejected before any database connection. It exposed two locally installed Node
+  paths being joined into one invalid executable name. Resolve one executable
+  explicitly. This local defect is not asserted to explain the operator's failure.
+- After that correction the test reached the reported generic exception, still
+  failing the expected diagnostic. The wrapper now includes only an allowlisted
+  CLI label and `DRY_RUN`/`APPLY` in its final exception. Unknown child output is
+  suppressed as `HELPER_PROCESS_FAILED`; raw errors and private inputs are not
+  echoed. Regression passes and confirms fixture inputs remain absent from output.
+- Issued a read-only dry-run handoff using the installed PowerShell 7 executable,
+  same private aliases and no `-Apply`. Await only `planned` or the safe label.
+  An existing-alias result requires inspection before any further source write;
+  dry-run success confirms both aliases absent at that check, not a creation pass.
+  Underlying source failure remains unknown.
+- Verification completed about 20:57 Bangkok: frozen install and `pnpm check`
+  passed (535 tests, including provisioning 4/4; typechecks and configured
+  production builds). PowerShell 7 syntax and whitespace checks passed. Tests
+  used disposable loopback MongoDB; no new hosted acceptance claim. Fresh
+  origin fetch confirms current `origin/dev` remains included. New-head CI pending.
 
 ## Wrapper compatibility correction — 20:44 Bangkok
 

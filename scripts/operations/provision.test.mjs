@@ -19,6 +19,21 @@ test('rejects Windows PowerShell 5 before requesting any private provisioning in
   assert.doesNotMatch(result.stdout, /Approved target|Atlas URI|Playtest A/);
 });
 
+test('includes the safe CLI failure label and dry-run mode in the final wrapper error without disclosing inputs', { skip: process.platform !== 'win32' }, () => {
+  const wrapper = fileURLToPath(new URL('./Provision-PlaytestAccounts.ps1', import.meta.url)).replaceAll("'", "''");
+  const command = `& {
+    $answers=[Collections.Generic.Queue[string]]::new()
+    foreach($answer in @('mongodb+srv://fixture:private-wrapper-marker@wrong.example.invalid/','fixture-a@example.invalid','private-wrapper-password','private-wrapper-password','fixture-b@example.invalid','private-wrapper-password','private-wrapper-password')) {$answers.Enqueue($answer)}
+    function Read-Host {param([string]$Prompt,[switch]$AsSecureString); $answer=$answers.Dequeue(); if($AsSecureString){ConvertTo-SecureString $answer -AsPlainText -Force} else {$answer}}
+    try {& '${wrapper}'} catch {[Console]::Error.WriteLine($_.Exception.Message); exit 1}
+  }`;
+  const result = spawnSync('pwsh', ['-NoProfile', '-NonInteractive', '-Command', command], { encoding: 'utf8', timeout: 10000 });
+  assert.ifError(result.error);
+  assert.equal(result.status, 1);
+  assert.match(result.stderr, /DRY_RUN: TARGET_REJECTED/);
+  assert.doesNotMatch(result.stdout + result.stderr, /private-wrapper-marker|private-wrapper-password|fixture-[ab]@/);
+});
+
 test('rejects unapproved source access and CLI target mismatches before writing or disclosing credentials', async () => {
   await assert.rejects(provisionPair({}, {databaseName:'poker_playtest'}, [], {}), /TARGET_REJECTED/);
   const result=spawnSync(process.execPath,[new URL('./run.mjs',import.meta.url).pathname.replace(/^\/([A-Za-z]:)/,'$1')],{

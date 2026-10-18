@@ -50,6 +50,9 @@ On `FAILED_OR_UNCERTAIN`, inspect the two aliases using approved read access bef
 any retry; do not assume a timeout rolled back or automatically delete accounts.
 An `ACCOUNT_EXISTS` result also stops the operation. No success output includes
 email addresses, password hashes, session cookies, credentials or driver errors.
+The final PowerShell exception repeats only a safe CLI label and `DRY_RUN` or
+`APPLY`; unknown child errors become `HELPER_PROCESS_FAILED`. If the attempted mode
+is unknown, use a dry run only to check the same aliases before any further apply.
 
 Verify both through ordinary browser sign-in, then compare identity/balance and
 collection baselines. Keep addresses and private mappings outside Git. Do not
