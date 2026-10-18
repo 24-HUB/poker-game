@@ -2,13 +2,83 @@
 
 Status: plan, Package A and the presented temporary-access package approved for
 continuation. Provisioning role and six-hour single-IP rule are applied; database
-user was created by the operator and its scope/expiry verified. Operator now reports
-A/B creation; ordinary sign-in/identity/balance verification is pending. No helper
-success output or hosted sign-in has been independently observed. New hosted
-acceptance gates have not passed. No application deployment,
+user was created by the operator and its scope/expiry verified. Operator explicitly
+reports helper status `created` after the `-Apply` handoff. Agent independently
+verified Playtest A/B sign-in, session persistence across reload, zero tickets,
+free-only collections and a projected read-only source baseline. Full account/email and later hosted acceptance
+gates remain open. No application deployment,
 release-flag/economy change or deliberate gameplay interruption has been performed.
 
-## Operator-reported creation and sign-in handoff — 20:58–21:01 Bangkok
+## Source baseline via existing Atlas access — 21:17–21:18 Bangkok
+
+- Used the already signed-in Atlas project's Data Explorer, connected to existing
+  Cluster0 and ran a read-only aggregation from `bannerVersions`. Auto-preview
+  disabled before entry. Pipeline contains no write stage and projects only the
+  two exact display names, verification state, wallet values, counts and metadata.
+  Exactly one row per name matched the independently verified A/B browser names.
+  No extra credential/role/IP privilege or runtime URI was needed or revealed.
+- For **each** Playtest A/B: `emailVerified: true` (operator override), one wallet
+  with **balance 0 / revision 0**, UTC date **2026-10-18**, earned today **0**.
+  Owned cosmetics, persisted equipment, pull receipts, reward receipts, ticket
+  ledger, banner progress, active participant rows, active room membership rows
+  and non-left room memberships are all **0**. Free defaults are virtual/equipped
+  in the UI, explaining zero persisted equipment/ownership rows.
+- Metadata: catalogue `celestial-v1`, content hash
+  `caab399fb53144bc13691265fb3e5e2e9b2c9d7bb9e53525d521cb9314a63324`;
+  migration IDs **1–7**; global activeParticipants and activeRoomMemberships
+  counts **0**; authority **one row / one live lease / epoch 34**. This does not
+  re-certify validators/indexes, unrelated progression or a global economy audit.
+- Sanitized local files in the chat visualization directory:
+  `source-account-baseline.json`, `source-account-baseline.pipeline.json` and
+  `source-account-baseline.jpg`. No email addresses, account IDs, password hashes,
+  sessions, private cards or challenge fields are output or saved. Query was not
+  saved to the shared Atlas query library. Read-only source baseline prerequisite
+  is now satisfied for this observation; recheck active state before deployments.
+
+## Hosted A/B account setup verified — 21:08–21:10 Bangkok
+
+- After operator replied “already sign in,” ordinary Worker browser sessions
+  independently showed **Playtest A** in Chrome and **Playtest B** in the separate
+  in-app browser. Both had **0 tickets**, **20 can be earned today**. Agent did
+  not enter/read credentials or capture filled forms.
+- Inspected both Collection tabs: **Alice** avatar and **Club default** card back
+  are free/equipped. Each of the six nondefault avatars and six nondefault card
+  backs is **Not owned** for both accounts. No pulls, equips, grants or gameplay
+  were submitted. UI observations are not a database receipt/economy audit.
+- Full page reload on each collection retained its own display name, sign-out
+  control, zero-ticket balance, full daily allowance and default-only inventory.
+  Separate contexts stayed isolated. Sessions remain signed in for continuation.
+- Sanitized local visual evidence: `player-a-verified-baseline.jpg` and
+  `player-b-verified-baseline.jpg` in the current chat's visualization directory.
+  Screenshots contain display names/balances/default cosmetics, no email/password.
+- New-pair creation/sign-in/reload/UI-baseline subtask is verified. A1 remains
+  incomplete: preverified creation does not establish mailbox ownership, live
+  email expiry/resend/recovery/revocation, sign-out/re-login or A/B switch checks.
+  Source receipt/membership/authority baseline is now recorded above through
+  existing Atlas access; temporary provisioner scope stayed unchanged. Later Package B
+  gameplay/economy/provider changes and disruption methods remain unapproved.
+- No application source change or app suite rerun for this verification/evidence
+  continuation. Existing helper-head Linux CI success remains scoped to b5f4e87a.
+
+## Apply result clarified — historical 21:07–21:08 Bangkok
+
+- After B's first sign-in attempt reported an email/password mismatch, the
+  operator clarified that the earlier helper status was **planned**. That dry
+  run created no players. No password reset or auth code fix was warranted.
+- Provided the exact existing `-Apply` command and explained its typed phrase
+  `CREATE TWO PREVERIFIED PLAYTEST ACCOUNTS`. Operator now explicitly replies
+  “ok, status is created.” This is operator-reported successful pair creation;
+  no agent credential access, raw output capture or duplicate apply occurred.
+- Both login forms remain signed out. Reissued the private handoff: B in the
+  in-app panel, then A in Chrome, using the game aliases/passwords entered during
+  apply, not the Atlas login. Await `Both signed in` or sanitized visible error;
+  then inspect account names, zero tickets and collection baselines.
+- Helper revision `b5f4e87a` Linux CI
+  [39133807763](https://github.com/24-HUB/poker-game/actions/runs/39133807763)
+  rechecked at 21:07 Bangkok: completed/**success**. This confirms that revision,
+  not subsequent evidence-only heads. No application suite rerun this turn.
+
+## Earlier creation report and sign-in handoff — historical 20:58–21:01 Bangkok
 
 - Operator replied “already create.” Record this as reported creation, not an
   independently observed transaction or a reason to repeat provisioning. No new
@@ -378,10 +448,10 @@ finish Package A prerequisites and those method reviews first.
 
 | Gate | State | Current blocker / exact next action | Owner |
 | --- | --- | --- | --- |
-| P1 | blocked | Package A approved; finish private new-A/B mapping/baseline and retain downstream method blockers. Inventory above is partial evidence only. | User + agent |
-| A1 | blocked | User switched to direct preverified provisioning; source access pending. Mail ownership/verification cannot pass from this method; retain separate acceptance. | User + agent |
+| P1 | blocked | New A/B sign-in and read-only source baseline verified. Current sender/quota/provider prerequisites and downstream fault-method blockers remain. | User + agent |
+| A1 | blocked | Direct preverified pair, normal sign-ins, reload and source/UI baselines verified. Mail ownership/verification, recovery/revocation and sign-out/switch acceptance remain open. | User + agent |
 | G1 | not run | Complete A1 and approve Package B; two-human/privacy/transport observations pending. | User + agent |
-| G2 | not run | Legitimate reward/cap/practice play, allowance baseline and scoped receipt audit pending. | User + agent |
+| G2 | not run | Initial allowance/receipt baseline recorded. Legitimate reward/cap/practice play and post-reward receipt audit pending. | User + agent |
 | G3 | blocked | Hosted response-loss method, audit access and earned A/B pull/equip loops pending. Local 1/1 is supporting evidence only. | User + agent |
 | R1 | not run | Schedule unprobed idle observation and transient reconnect test. | User + agent |
 | R2 | blocked | Approve restarts and establish controlled hosted overlap/fencing method. | User + agent |

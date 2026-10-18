@@ -18,14 +18,18 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
   hosted acceptance gate passed. Package A is approved; the user requested new
   A/B accounts with inbox aliases, then requested direct database provisioning
   without verification mail. Scoped helper is locally verified; hosted A/B creation
-  is reported by the operator after the diagnostic handoff; ordinary sign-in,
-  identity and zero-balance checks remain pending. B in-app sign-in is the current
-  private input handoff, followed by A in Chrome. Fresh public smoke passes shell
+  is explicitly reported as helper status `created` after `-Apply`; the earlier
+  report was clarified as dry-run `planned`. Ordinary A/B sign-in and reload are
+  independently verified in separate contexts: Playtest A/B, 0 tickets, 20 daily
+  allowance, Alice/Club default equipped, all nondefault cosmetics Not owned.
+  Projected source baseline confirms zero A/B receipts/progression/memberships,
+  wallet revisions 0, migration IDs 1–7, catalogue celestial-v1, zero global active
+  memberships/participants and one live authority. Full email lifecycle remains pending.
+  Fresh public smoke passes shell
   200/readiness ready. Temporary-access continuation is approved;
   scoped role and six-hour
   current-IP rule are applied. Operator created the six-hour Cluster0-only database
-  user; exact custom role and expiry read back. Diagnostic result and account
-  identity/balance verification remain pending;
+  user; exact custom role and expiry read back. New-account setup is verified;
   mailbox verification acceptance remains blocked. The following
   maintenance observations retain their original date.
 - Current execution: [2026-10-17 private-release inventory](releases/2026-10-17-private-release.md),

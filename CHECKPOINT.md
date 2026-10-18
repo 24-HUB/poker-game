@@ -18,8 +18,11 @@
   exact custom role, one cluster (Cluster0 selected in setup), six-hour countdown.
   No password/URI loaded by agent. Operator attempt stopped at ArgumentList
   before Node launched or a database write. A later generic helper failure has
-  unknown apply mode. Operator subsequently replied “already create”; record
-  reported creation, with normal sign-in/identity/balance still unverified.
+  unknown apply mode. The initial “already create” report was then clarified
+  as dry-run planned after B login mismatch.
+  Following the explicit -Apply handoff, operator now confirms status created.
+  No auth reset/fix or duplicate apply. Agent independently verified normal
+  A/B login, reload persistence and UI baselines at 21:08–21:10 Bangkok.
 - Reviewed helper `scripts/operations/` uses masked PowerShell 7 prompts,
   stdin-only secrets, default dry run, exact apply phrase, pinned Atlas host
   `cluster0.lxb4kqs.mongodb.net` / database `poker_playtest`, pinned Better Auth
@@ -37,20 +40,36 @@
   syntax and diff check passed. Disposable local MongoDB only; new-head CI pending.
 - Latest local verification 20:57 Bangkok: frozen install and pnpm check passed
   (535 tests, provisioning 4/4, typechecks/builds); PowerShell 7 syntax/diff passed.
-  New-head CI b5f4e87a run 39133807763 still in progress at 20:58:58 Bangkok.
+  Helper-head CI b5f4e87a run 39133807763 rechecked 21:07 Bangkok: completed/
+  success. Subsequent documentation heads are not covered by that result.
 - Fresh public smoke: Worker shell HTTP 200/readiness ready. Chrome access recovery
   resolved to Sign in after its Lobby was brought into view; no timed wake gate.
-- Exact next step: operator signs in as B in the in-app browser's prepared form
-  using private helper credentials; reply B signed in or sanitized visible error.
-  Inspect identity, zero-ticket balance and collection baseline, then repeat for A
-  in the prepared Chrome form. Both tabs marked for continuation. No credentials
-  entered/read by agent. Do not repeat provisioning, reset/adopt users or infer
-  mailbox acceptance from reported creation. Recheck temporary expiry on resume.
-- Task 1/source provisioning incomplete; mailbox verification and later gameplay,
+- Hosted setup verified in separate Chrome A / in-app B contexts: Playtest A/B,
+  0 tickets, 20 daily allowance, Alice avatar / Club default card back equipped,
+  all six nondefault avatars and six card backs Not owned. Reload retained each
+  identity, balance and collection. No pulls, equips, game or economy action.
+  Local sanitized proofs: player-a-verified-baseline.jpg / player-b-verified-baseline.jpg.
+  Both sessions remain signed in and tabs preserved for continuation.
+- Read-only source baseline 21:17–21:18 Bangkok through existing Atlas Data Explorer
+  (no new access): exactly A/B, verified true by override, one zero/revision-0 wallet
+  each, earned 0 for UTC 2026-10-18; ownership/equipment/pull/reward/ledger/progress
+  and memberships all zero. Catalogue celestial-v1/hash recorded, migrations 1–7,
+  global active participants/memberships 0, one live authority lease/epoch 34.
+  No full economy or validator/index certification claim. Sanitized result/query/
+  screenshot source-account-baseline files retained outside Git; no IDs/emails/
+  credentials/private cards/session/challenge data. Audit tab preserved.
+- Exact next step: resume remaining P1/A1 prerequisites in the execution record:
+  current sender/quota and provider inventory evidence, then approved email
+  recovery/sign-out/switch/revocation checks with operator
+  password/code handoff. Preverified accounts do not pass mailbox verification.
+  Do not repeat provisioning/reset/adopt accounts. Do not start Package B until
+  exact methods/prerequisites and its separate live-action approval are resolved.
+  Temporary access must expire as configured; recheck expiry on later resumption.
+- New A/B setup and read-only baseline complete; P1/A1 mailbox and later gameplay,
   outage/restore/friends gates remain pending or blocked. Execution record:
   `docs/releases/2026-10-18-friends-playtest.md`; helper instructions:
   `scripts/operations/README.md`. PR stays draft; user merges manually.
-- Usage observed 2026-10-18 about 20:58 Bangkok: five-hour 66%, weekly 82%
+- Usage observed 2026-10-18 about 21:20 Bangkok: five-hour 41%, weekly 78%
   remaining; resets 2026-10-19 01:25:56 and 2026-10-25 07:52:38 Bangkok.
   Resume with status/current branch, usage, fresh origin fetch and this entry.
 
