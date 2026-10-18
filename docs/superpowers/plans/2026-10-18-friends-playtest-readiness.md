@@ -10,7 +10,7 @@
 
 **Spec:** [Friends playtest readiness](../specs/2026-10-18-friends-playtest-readiness-design.md).
 
-Status: spec, plan and Package A approved. User subsequently requested new alias-based A/B accounts created directly in the database without verification mail. The operator helper is locally verified; scoped source access is pending. This override does not pass mailbox-ownership acceptance. See the [execution record](../../releases/2026-10-18-friends-playtest.md); no new hosted acceptance gate has passed.
+Status: spec, plan, Package A and temporary-access continuation approved. User requested new alias-based A/B accounts created directly in the database without verification mail. Helper is locally verified with Linux CI success; scoped role and six-hour IP rule are applied, and the operator-created temporary database user has verified scope/expiry. Private helper inputs and account creation remain pending. This override does not pass mailbox-ownership acceptance. See the [execution record](../../releases/2026-10-18-friends-playtest.md); no new hosted acceptance gate has passed.
 
 ## Global constraints
 
@@ -132,4 +132,4 @@ Each evidence row has `id`, `gate`, `candidate`, `environment`, Bangkok timestam
 
 Self-review: all five spec stages and eleven gates have owning tasks; the five review-focus cases have explicit checks. Existing test paths and commands were inspected; local suites are regression references, not evidence of new passes. No speculative executable change is required before an observed defect.
 
-Next: obtain action-time approval for the exact temporary source-access package in the execution record; operator enters credentials privately. Run the helper dry-run/apply only within that scope, verify both real logins and zero balances, and leave mailbox verification pending. Do not submit the superseded registration forms. Later disruption packages retain unresolved method/approval gates.
+Next: temporary role, six-hour current-IP rule and operator-created Cluster0-only user are verified. Operator runs the helper dry-run/apply using private prompts in the opened terminal. After confirmed creation, verify both real logins and zero balances, and leave mailbox verification pending. Recheck temporary access expiry on resume. Do not submit superseded browser registration forms. Later disruption packages retain unresolved method/approval gates.

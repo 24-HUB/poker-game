@@ -2,43 +2,46 @@
 
 ## Friends playtest readiness specification — 2026-10-18
 
-- Spec/plan and Package A approved. User then requested NEW A/B accounts using
-  two + inbox aliases, followed by direct database creation without verification
-  email. Earlier existing-account and browser-registration handoffs are superseded.
-- Branch `codex/friends-playtest-spec`, draft PR #34 (base `dev`); prior saved
-  commit `7c512002`. Fresh `origin/dev` `fe654481` included. No hosted accounts,
-  provider settings, database permissions or network entries changed/created.
-- Existing personal sessions in Chrome/in-app browser were signed out via normal
-  UI; progression untouched. Prepared registration forms were not submitted by
-  agent; user switched method. Addresses/passwords/code remain privately entered.
-- Added reviewed one-time helper `scripts/operations/`: masked PowerShell 7
-  prompts, stdin-only secrets, default dry run, exact apply phrase, pinned Atlas
-  host `cluster0.lxb4kqs.mongodb.net` / database `poker_playtest`, pinned Better
-  Auth hashing, one transaction for two new preverified user/credential pairs.
+- Spec/plan, Package A and the exact temporary-access package approved. User
+  requested NEW A/B accounts using two + aliases, then direct database creation
+  without verification email. Supersedes existing-account/registration handoffs.
+- Branch `codex/friends-playtest-spec`, draft PR #34 targeting `dev`; last completed
+  helper commit `32e12ad5`. Fresh `origin/dev` `fe654481` included (0 behind).
+  This save point records operational evidence/checkpoint only; no app deployment.
+- Applied custom role `playtestAccountProvisioner20261018`: find+insert only on
+  `poker_playtest.user` and `.account`; no wildcard/inherited roles. Applied one
+  six-hour current-IP rule, comment `friends-playtest-provisioning-20261018`.
+  Corrected the shortcut's initial nonexpiring rule by replacing only that new
+  entry; existing three rules untouched. IP expiry around 2026-10-19 02:31 Bangkok.
+- Operator created `poker_provisioner_20261018` privately. User row verifies SCRAM,
+  exact custom role, one cluster (Cluster0 selected in setup), six-hour countdown.
+  No password/URI loaded by agent, no A/B accounts created or source helper run.
+- Reviewed helper `scripts/operations/` uses masked PowerShell 7 prompts,
+  stdin-only secrets, default dry run, exact apply phrase, pinned Atlas host
+  `cluster0.lxb4kqs.mongodb.net` / database `poker_playtest`, pinned Better Auth
+  hashing and one transaction for two new preverified user/credential pairs.
   Refuses existing aliases; no ticket/cosmetic/session grants or deployed auth
-  change. Normal login initializes zero wallets. A1 mailbox evidence stays pending.
-- Actual checks: frozen install; `pnpm check` passed 533 tests, typechecks and
-  configured production builds. Final `pnpm test:provision` passed 2/2 after
-  reviewer-found email-validator defect was reproduced RED and fixed with pinned
-  Zod. Node/PowerShell syntax passed; interactive source prompts not executed.
-  Independent review: no Critical; Important fixed. Deferred portability minors:
-  PowerShell 7 lacks #Requires; helper test path conversion cannot handle spaces.
-- Fresh Atlas driver template confirms helper target. Direct access is blocked:
-  current IP absent, no scoped write credential loaded. Prepared UNSUBMITTED
-  custom role `playtestAccountProvisioner20261018`: find+insert only on
-  `poker_playtest.user` and `.account`, no wildcard/inherited actions. No save.
-- Next: action-time approval for this role, a six-hour temporary
-  `poker_provisioner_20261018` restricted to Cluster0 with that role only, and a
-  six-hour single-current-IP access rule. Then operator enters/submits the new
-  DB credential privately, runs helper dry-run/apply with masked game passwords,
-  and agent verifies both real sign-ins/zero balances. No other access/deployment.
-- Execution record: `docs/releases/2026-10-18-friends-playtest.md`; helper usage:
-  `scripts/operations/README.md`. Task 1/source provisioning remains incomplete;
-  later gameplay/outage/restore/friends gates stay pending or blocked.
-- Usage observed 2026-10-18 about 11:47 Bangkok: five-hour 20%, weekly 88%
-  remaining; resets 2026-10-18 12:52:38 and 2026-10-25 07:52:38 Bangkok. Resume
-  with status/current branch, usage, fresh origin fetch and this entry. User
-  merges manually. No hosted creation or signup/recovery pass may be inferred.
+  change. Normal login initializes zero wallets. Personal progression preserved.
+- Checks previously passed: frozen install; `pnpm check` 533 tests, typechecks and
+  configured builds; final `pnpm test:provision` 2/2 after reproduced RED validator
+  fix; Node/PowerShell syntax. Independent review: no Critical, Important fixed.
+  Deferred minors: PowerShell 7 lacks #Requires; test path cannot handle spaces.
+  Linux CI run 39098342866 on `32e12ad5` completed/success, verify steps passed.
+  No app suite rerun this documentation/operational continuation; diff check passed.
+- Exact next step: operator in opened app terminal, from repo root, runs
+  `pwsh -NoProfile -File .\scripts\operations\Provision-PlaytestAccounts.ps1`,
+  supplies private URI/aliases/passwords only at prompts, checks `planned`, then
+  repeats with `-Apply` and exact confirmation phrase. Input handoff pending.
+  Report only `created` or sanitized error. On uncertain result inspect aliases
+  before retry. Agent then verifies both public-app sign-ins and zero balances.
+  Recheck temporary access expiry if resuming later; no broader privileges.
+- Task 1/source provisioning incomplete; mailbox verification and later gameplay,
+  outage/restore/friends gates remain pending or blocked. Execution record:
+  `docs/releases/2026-10-18-friends-playtest.md`; helper instructions:
+  `scripts/operations/README.md`. PR stays draft; user merges manually.
+- Usage observed 2026-10-18 about 20:36 Bangkok: five-hour 79%, weekly 84%
+  remaining; resets 2026-10-19 01:25:56 and 2026-10-25 07:52:38 Bangkok.
+  Resume with status/current branch, usage, fresh origin fetch and this entry.
 
 ## Hosted release execution — 2026-10-17
 

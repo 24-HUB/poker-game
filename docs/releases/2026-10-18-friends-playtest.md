@@ -1,11 +1,56 @@
 # Friends playtest execution — 2026-10-18
 
-Status: plan and Package A approved; user switched new A/B to direct database
-provisioning without verification mail. Scoped access/credential entry is pending;
-no hosted accounts created yet. New hosted acceptance gates have not passed. No provider
-configuration change, deployment or deliberate interruption has been performed.
+Status: plan, Package A and the presented temporary-access package approved for
+continuation. Provisioning role and six-hour single-IP rule are applied; database
+user was created by the operator and its scope/expiry verified. Private helper
+inputs and execution remain with the operator. No hosted A/B accounts
+created yet. New hosted acceptance gates have not passed. No application deployment,
+release-flag/economy change or deliberate gameplay interruption has been performed.
 
-## Direct provisioning request — after the registration handoff
+## Access setup resumed — 20:26–20:36 Bangkok
+
+- User requested continuation immediately after the exact role/six-hour-user/IP
+  package was presented. Resumed clean existing branch `codex/friends-playtest-spec`
+  at `32e12ad5`; origin fetch succeeded and current `origin/dev` `fe654481` remains
+  included. Existing source progression stays preserved.
+- [Helper-head Linux CI run 39098342866](https://github.com/24-HUB/poker-game/actions/runs/39098342866)
+  on `32e12ad5` is completed/success; required verify job and all its steps succeeded.
+  PR #34 remains open/draft, base `dev`, unmerged. No local application suite
+  repeated for this operational/documentation continuation.
+- Created `playtestAccountProvisioner20261018`. Read-back lists exactly `find`
+  and `insert`, each scoped to `poker_playtest.user` and `poker_playtest.account`.
+  No wildcard namespaces or inherited roles. It is assigned only to the new
+  temporary provisioner below. Atlas applied its normal auth
+  configuration update; no application deployment was requested.
+- The Atlas banner's Add Current IP shortcut created an immediate nonexpiring
+  entry rather than opening the temporary form. Removed **only that just-created
+  current-IP entry**, then used Add IP Address to create its proper replacement
+  with the temporary toggle on and duration six hours. Existing three rules were
+  untouched. This correction was disclosed during execution.
+- Fresh read-back: one entry with comment
+  `friends-playtest-provisioning-20261018`, includes the current IP only, **Active**,
+  initial countdown 06:00 and then 05:58. Public IP is retained only in the provider
+  and private browser state, not this record. It expires six hours after creation,
+  around 02:31 Bangkok on 2026-10-19; the countdown is authoritative.
+- Operator created database user `poker_provisioner_20261018` after the handoff:
+  zero built-in roles, one selected custom role above, restricted access enabled
+  with only Cluster0 listed, Temporary User on, six hours selected. Agent has
+  entered or read no password. After the operator replied “i already add,” the
+  resulting user row confirmed SCRAM, the exact custom role, one cluster and
+  six-hour countdown (06:00). No credential was requested in chat or Git.
+- Next: operator runs the reviewed helper's masked prompts for a dry run, then
+  `-Apply` with its exact confirmation phrase for the two-account transaction.
+  An app terminal was opened and private input handoff issued. Source account
+  creation remains unexecuted; do not infer success from Atlas user creation.
+  Verify both ordinary public-app sign-ins and zero balances after `created`.
+  Recheck the IP/user expiry if resuming after the six-hour window.
+- Usage rechecked about 20:36 Bangkok: five-hour 79%, weekly 84% remaining;
+  reset times unchanged below. No reset credit used.
+- Usage at resumption 20:25:57 Bangkok: five-hour 100%, weekly 87% remaining;
+  five-hour reset 2026-10-19 01:25:56 Bangkok, weekly reset
+  2026-10-25 07:52:38 Bangkok. No reset credit was used.
+
+## Direct provisioning preparation — historical 11:33–11:47 Bangkok
 
 - User asked “is it still use email ? could you create in database ?”. This
   supersedes the prepared browser-registration handoff: leave those forms
