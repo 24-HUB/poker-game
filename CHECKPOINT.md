@@ -1,5 +1,25 @@
 # Checkpoint — Remaining phases through production
 
+## Friends playtest readiness specification — 2026-10-18
+
+- New clean task branch `codex/friends-playtest-spec`, from fetched `origin/dev`
+  `fe654481`. Approved scope: preserve progression; two dedicated accounts;
+  real six-person phone/desktop session; attended interruptions; temporary
+  approved economy testing; user-coordinated friends; core-flow/safety blockers.
+  Production launch is excluded.
+- Written spec: [friends playtest readiness](docs/superpowers/specs/2026-10-18-friends-playtest-readiness-design.md).
+  Conversational scope approved; written-spec review and implementation plan
+  pending. No application/provider/database changes or live email sends.
+- Passed: spec self-review, all 28 relative links and whitespace/full-diff checks.
+  Application tests were not run for documentation-only changes.
+- Retain completed maintenance evidence; recheck live state at execution.
+  Do not execute the earlier broader production-release plan under this scope.
+- Next: review written spec, then prepare the implementation plan on this branch
+  and draft PR. User merges manually. Resume with status, usage and fetch.
+- Usage observed 2026-10-18: five-hour 93%, weekly 99% remaining.
+  Resets: 2026-10-18 12:52:38 and 2026-10-25 07:52:38 Bangkok.
+
+
 ## Hosted release execution — 2026-10-17
 
 - **20:25 Bangkok maintenance complete**, branch `codex/hosted-release-inventory`,
