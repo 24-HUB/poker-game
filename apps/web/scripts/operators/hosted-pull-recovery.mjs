@@ -1,5 +1,6 @@
 import { createInterface } from 'node:readline/promises';
 import { ARM_PHRASE, HOSTED_ORIGIN, runPullResponseLoss } from './pull-response-loss.mjs';
+import { finishRecoveryBrowser } from './recovery-browser.mjs';
 
 // No argument is accepted, including credentials, fixture targets or output paths.
 if (process.argv.length !== 2 || !process.stdin.isTTY) {
@@ -7,6 +8,9 @@ if (process.argv.length !== 2 || !process.stdin.isTTY) {
 } else {
   const terminal = createInterface({ input: process.stdin, output: process.stdout });
   let browser;
+  let resolved = false, closeApproved = false;
+  const interrupted = () => { terminal.close(); process.exitCode = 1; };
+  for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.on(signal, interrupted);
   try {
     process.stdout.write(`Approved operator window required. Target: ${HOSTED_ORIGIN}\n`);
     const alias = await terminal.question('Account alias (A or B): ');
@@ -22,11 +26,18 @@ if (process.argv.length !== 2 || !process.stdin.isTTY) {
     const armed = runPullResponseLoss(page, { origin: HOSTED_ORIGIN, mode: 'hosted', expectedDisplayName: `Playtest ${alias}`, confirmation,
       onArmed: () => process.stdout.write('Armed. Click the single Open button once; do not retry.\n') });
     const result = await armed;
+    resolved = result.result === 'pass';
     process.stdout.write(JSON.stringify(result) + '\n');
     process.exitCode = result.result === 'pass' ? 0 : 1;
     // Uncertain pending data remains in this browser until the operator has
     // inspected the original receipt; never silently close/replace the context.
     await terminal.question('Inspect the original pending receipt before any further purchase. Press Enter only when safe to close this browser. ');
+    closeApproved = true;
   } catch { process.stderr.write('TARGET_REJECTED\n'); process.exitCode = 1; }
-  finally { terminal.close(); await browser?.close(); }
+  finally {
+    terminal.close();
+    if (browser?.isConnected() && !resolved && !closeApproved) process.stderr.write('UNCONFIRMED_COMMIT: browser retained; inspect the original receipt, then close its window manually.\n');
+    await finishRecoveryBrowser(browser, { resolved, closeApproved });
+    for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) process.off(signal, interrupted);
+  }
 }

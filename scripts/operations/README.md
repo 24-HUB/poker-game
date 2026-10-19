@@ -15,6 +15,11 @@ holds its validated HTTP 201 receipt, reloads the same page, and compares normal
 GET recovery and one debit. It prints only fixed categories/booleans. On uncertainty,
 inspect the original pending receipt before any further purchase or closing the
 browser. No new request, credential file, trace, video or screenshot is created.
+Terminal EOF or a graceful interrupt retains an unresolved browser in memory;
+inspect/reconcile there and close its window manually. Do not force-kill the
+process or close that browser while the outcome is uncertain. If the OS/browser
+crashes, stop new purchases and use the approved source receipt audit to locate
+the one attempted purchase before any retry; never start a replacement request.
 `pnpm test:operator` checks guards and a real local rejected-response case;
 the disposable collection Chromium flow rehearses successful committed recovery.
 
@@ -72,6 +77,9 @@ accounts' backed-up purchase/ownership/equipment content, replays original recei
 and proves durable economy values unchanged. Local auth/lease/session writes are
 separate from the pre-app full-manifest comparison. Containers are removed on exit;
 the retained encrypted archive/manifest/key are never mounted into them.
+Chromium's online heuristic is explicitly set to available for namespace loopback;
+this changes no interface, default route, Docker setting or egress rule. Actual
+containment and failed external TCP access are checked again after the browser run.
 
 Only an `ok: true` result can support archive certification. Also record archive
 quiescence time, actual loss window, elapsed time to a local safe-reopen decision,

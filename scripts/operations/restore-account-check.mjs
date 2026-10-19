@@ -2,7 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import { createRequire } from 'node:module';
 import { isDeepStrictEqual } from 'node:util';
-import { MongoClient, BSON } from 'mongodb';
+import { BSON } from 'mongodb';
 import { pullReceiptSchema } from '../../packages/contracts/dist/index.js';
 import { verifyEconomy } from '../verify-economy.mjs';
 const require = createRequire(new URL('../../apps/web/package.json', import.meta.url));
@@ -53,6 +53,10 @@ export async function checkRestoredAccounts(input, db) {
       const row = { alias: account.alias, signedIn: false, receiptReplayUnchanged: false, progressionUnchanged: false };
       result.accounts.push(row);
       const context = await browser.newContext({ serviceWorkers: 'block', acceptDownloads: false });
+      // Loopback is reachable even though Chromium infers offline from the
+      // namespace's absent uplink. This changes only the UI availability hint;
+      // actual Docker/routes/TCP containment is checked before and after the run.
+      await context.addInitScript(() => Object.defineProperty(navigator, 'onLine', { get: () => true }));
       try {
         const user = await db.collection('user').findOne({ email: account.email.toLowerCase() });
         const id = user?._id.toString();
@@ -60,6 +64,7 @@ export async function checkRestoredAccounts(input, db) {
         const equipped = id && await db.collection('equipment').countDocuments({ accountId: id, itemId: { $ne: null } });
         if (!id || !owned || !equipped) { fail('CONTENT_MISSING'); continue; }
         const page = await context.newPage();
+        page.setDefaultTimeout(15000);
         // Use normal password sign-in UI; no fixture auth bypass on copied data.
         await page.goto(`${input.origin}/collection`);
         await page.locator('main').getByRole('button', { name: 'Sign in', exact: true }).click();

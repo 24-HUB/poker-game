@@ -1,6 +1,9 @@
 import assert from 'node:assert/strict';
 import { execFile } from 'node:child_process';
-import { randomUUID, randomBytes, createCipheriv, createDecipheriv } from 'node:crypto';
+import { randomUUID, createHash } from 'node:crypto';
+import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
+import { join, dirname, resolve } from 'node:path';
 import { promisify } from 'node:util';
 import test from 'node:test';
 
@@ -15,36 +18,57 @@ test('rejects non-loopback and non-restore database targets before opening a bro
     assert.ok(!JSON.stringify(report).includes('source.invalid'));
   }
 });
-test('restored real auth and receipt replay preserve progression with egress denied; missing purchases cannot pass', { timeout: 240000 }, async () => {
-  const { startIsolatedRunner, privateProcess } = await import('./restore-host.mjs');
+test('real age pipeline restores auth/replay with egress denied and rejects missing content, corruption and manifest mismatch', { timeout: 360000 }, async (t) => {
+  const { startIsolatedRunner, privateProcess, restoreArchive, RESTORE_PHRASE } = await import('./restore-host.mjs');
   const { inspectRestoreIsolation, verifyRestoreIsolation } = await import('./restore-isolation.mjs');
   const candidate = (await run('git', ['rev-parse', 'HEAD'])).stdout.trim();
   const isolated = await startIsolatedRunner(candidate);
+  const temporary = await mkdtemp(join(tmpdir(), 'poker-age-fixture-'));
   try {
     assert.equal(verifyRestoreIsolation(await inspectRestoreIsolation(isolated.mongo, isolated.runner)).ok, true);
     const generated = JSON.parse((await privateProcess('docker', ['exec', '-i', isolated.runner, 'node', 'scripts/operations/restore-fixture.mjs'],
       JSON.stringify({ uri: isolated.uri, database: isolated.database }))).toString());
+    t.diagnostic('GENERATED_FIXTURE_READY');
     const dump = await privateProcess('docker', ['exec', isolated.mongo, 'mongodump', '--config=/tmp/restore.yml', `--db=${isolated.database}`, '--archive', '--gzip', '--quiet']);
-    // Generated encryption material only; no environment/archive override exists.
-    const key = randomBytes(32), nonce = randomBytes(12), cipher = createCipheriv('aes-256-gcm', key, nonce);
-    const encrypted = Buffer.concat([cipher.update(dump), cipher.final()]);
-    const decrypt = createDecipheriv('aes-256-gcm', key, nonce); decrypt.setAuthTag(cipher.getAuthTag());
-    const plaintext = Buffer.concat([decrypt.update(encrypted), decrypt.final()]);
-    const target = `poker_test_restore_${randomUUID().replaceAll('-', '')}`;
+    // The name poker_playtest exists ONLY inside this generated network-none
+    // fixture, to exercise the production pipeline's exact namespace mapping.
     await privateProcess('docker', ['exec', '-i', isolated.mongo, 'mongorestore', '--config=/tmp/restore.yml', '--archive', '--gzip', '--quiet', '--stopOnError',
-      `--nsInclude=${isolated.database}.*`, `--nsFrom=${isolated.database}.*`, `--nsTo=${target}.*`], plaintext);
-    const input = { uri: isolated.uri, database: target, ...generated };
-    const result = JSON.parse((await privateProcess('docker', ['exec', '-i', isolated.runner, 'node', 'scripts/operations/run-restored-app.mjs'], JSON.stringify(input), 180000)).toString());
+      `--nsInclude=${isolated.database}.*`, `--nsFrom=${isolated.database}.*`, '--nsTo=poker_playtest.*'], dump);
+    const sourceDump = await privateProcess('docker', ['exec', isolated.mongo, 'mongodump', '--config=/tmp/restore.yml', '--db=poker_playtest', '--archive', '--gzip', '--quiet']);
+    const key = join(temporary, 'fixture.key');
+    await privateProcess('age-keygen', ['-o', key]);
+    const recipient = (await privateProcess('age-keygen', ['-y', key])).toString().trim();
+    const encrypt = (bytes) => privateProcess('age', ['-r', recipient], bytes);
+    const archive = join(temporary, 'fixture.archive.age'), manifestArchive = join(temporary, 'fixture.manifest.age');
+    const encrypted = await encrypt(sourceDump);
+    await writeFile(archive, encrypted); await writeFile(manifestArchive, await encrypt(JSON.stringify(generated.manifest)));
+    const input = { confirmation: RESTORE_PHRASE, candidate, archive, manifestArchive, key,
+      sha256: createHash('sha256').update(encrypted).digest('hex'), accounts: generated.accounts };
+    const result = await restoreArchive(input);
     assert.equal(result.ok, true, JSON.stringify(result)); assert.equal(result.accounts.length, 2);
     for (const row of result.accounts) assert.deepEqual(row, { alias: row.alias, signedIn: true, receiptReplayUnchanged: true, progressionUnchanged: true });
-    // The checker must refuse content predating B's purchase, without touching source.
-    const badInput = { ...input, accounts: generated.accounts.map((account) => ({ ...account, requestIds: [randomUUID()] })) };
-    // Re-running the app changes the local lease/session manifest, so obtain a fresh
-    // private pre-app manifest solely for this negative fixture check.
-    const source = `import {MongoClient} from 'mongodb';import {restoreManifest} from './scripts/operations/restore-account-check.mjs';let t='';for await(const c of process.stdin)t+=c;const i=JSON.parse(t);const c=await new MongoClient(i.uri).connect();process.stdout.write(JSON.stringify(await restoreManifest(c.db(i.database))));await c.close();`;
-    badInput.manifest = JSON.parse((await privateProcess('docker', ['exec', '-i', isolated.runner, 'node', '--input-type=module', '-e', source], JSON.stringify({ uri: isolated.uri, database: target }))).toString());
-    await assert.rejects(privateProcess('docker', ['exec', '-i', isolated.runner, 'node', 'scripts/operations/run-restored-app.mjs'], JSON.stringify(badInput), 180000), /ISOLATION_FAILED/);
-  } finally { await isolated.cleanup(); }
+    t.diagnostic('NORMAL_RESTORE_PASSED');
+    const missing = await restoreArchive({ ...input, accounts: generated.accounts.map((account) => ({ ...account, requestIds: [randomUUID()] })) });
+    assert.equal(missing.ok, false); assert.ok(missing.violations.includes('CONTENT_MISSING'));
+    await assert.rejects(restoreArchive({ ...input, confirmation: '' }), /ISOLATION_FAILED/);
+    await assert.rejects(restoreArchive({ ...input, sha256: '0'.repeat(64) }), /ISOLATION_FAILED/);
+    const corrupted = Buffer.from(encrypted); corrupted[corrupted.length - 1] ^= 1;
+    await writeFile(archive, corrupted);
+    await assert.rejects(restoreArchive({ ...input, sha256: createHash('sha256').update(corrupted).digest('hex') }), /ISOLATION_FAILED/);
+    await writeFile(archive, await encrypt(Buffer.from('not a mongodump archive')));
+    const invalid = await readFile(archive);
+    await assert.rejects(restoreArchive({ ...input, sha256: createHash('sha256').update(invalid).digest('hex') }), /ISOLATION_FAILED/);
+    await writeFile(archive, encrypted);
+    await writeFile(manifestArchive, await encrypt('{}'));
+    const mismatch = await restoreArchive(input);
+    assert.equal(mismatch.ok, false); assert.deepEqual(mismatch.accounts, []);
+    assert.deepEqual(mismatch.violations, ['PROGRESSION_MISMATCH']);
+  } finally {
+    await isolated.cleanup();
+    assert.equal(dirname(resolve(temporary)), resolve(tmpdir()));
+    assert.ok(temporary.startsWith(join(tmpdir(), 'poker-age-fixture-')));
+    await rm(temporary, { recursive: true, force: true });
+  }
 });
 test('actual network-none containment rejects host mounts, source secrets and default routes', { timeout: 60000 }, async () => {
   const { inspectRestoreIsolation, verifyRestoreIsolation } = await import('./restore-isolation.mjs');
@@ -66,4 +90,23 @@ test('actual network-none containment rejects host mounts, source secrets and de
       assert.ok(!JSON.stringify(result).includes('synthetic-secret'));
     }
   } finally { await run('docker', ['rm', '-f', name]).catch(() => {}); }
+});
+test('actual unsafe Docker configuration is rejected before any archive is read', { timeout: 60000 }, async () => {
+  const { inspectRestoreIsolation, verifyRestoreIsolation } = await import('./restore-isolation.mjs');
+  const name = `poker-unsafe-fixture-${randomUUID()}`;
+  const temporary = await mkdtemp(join(tmpdir(), 'poker-empty-mount-'));
+  try {
+    await run('docker', ['run', '--rm', '-d', '--name', name, '--network', 'bridge', '--publish', '127.0.0.1::27017',
+      '--mount', `type=bind,source=${temporary},destination=/source,readonly`, '--env', 'MONGODB_URI=synthetic-source-marker',
+      'mongo:8.0.17', 'sleep', '120']);
+    const result = verifyRestoreIsolation(await inspectRestoreIsolation(name));
+    assert.equal(result.ok, false);
+    for (const label of ['NETWORK_MODE', 'PUBLISHED_PORT', 'HOST_MOUNT', 'SOURCE_CONFIG', 'DEFAULT_ROUTE']) assert.ok(result.violations.includes(label));
+    assert.ok(!JSON.stringify(result).includes('synthetic-source-marker'));
+  } finally {
+    await run('docker', ['rm', '-f', name]).catch(() => {});
+    assert.equal(dirname(resolve(temporary)), resolve(tmpdir()));
+    assert.ok(temporary.startsWith(join(tmpdir(), 'poker-empty-mount-')));
+    await rm(temporary, { recursive: true, force: true });
+  }
 });

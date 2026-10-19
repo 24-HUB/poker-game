@@ -8,7 +8,7 @@ const run = promisify(execFile);
 export const RESTORE_PHRASE = 'RESTORE ARCHIVE INTO ISOLATED LOCAL RUNNER';
 
 // Child output is private in-memory data, never included in an exception/log.
-export async function privateProcess(command, args, input, timeout = 120000) {
+export async function privateProcess(command, args, input, timeout = 120000, allowFailure = false) {
   return new Promise((resolve, reject) => {
     const child = spawn(command, args, { stdio: ['pipe', 'pipe', 'pipe'], windowsHide: true });
     const chunks = []; let size = 0, failed = false;
@@ -16,7 +16,7 @@ export async function privateProcess(command, args, input, timeout = 120000) {
     child.stdout.on('data', (chunk) => { size += chunk.length; if (size > 32 * 1024 * 1024) { failed = true; child.kill(); } else chunks.push(chunk); });
     child.stderr.resume(); child.stdin.on('error', () => {});
     child.on('error', () => { clearTimeout(timer); reject(new Error('ISOLATION_FAILED')); });
-    child.on('close', (code) => { clearTimeout(timer); if (code || failed) reject(new Error('ISOLATION_FAILED')); else resolve(Buffer.concat(chunks)); });
+    child.on('close', (code) => { clearTimeout(timer); if (failed || code && !allowFailure) reject(new Error('ISOLATION_FAILED')); else resolve(Buffer.concat(chunks)); });
     child.stdin.end(input);
   });
 }
@@ -28,10 +28,13 @@ export async function startIsolatedRunner(candidate) {
   const suffix = randomUUID(), mongo = `poker-restore-db-${suffix}`, runner = `poker-restore-app-${suffix}`;
   const database = `poker_test_restore_${randomUUID().replaceAll('-', '')}`, password = randomBytes(32).toString('hex');
   const cleanup = async () => { for (const name of [runner, mongo]) await run('docker', ['rm', '-f', name], { timeout: 15000 }).catch(() => {}); };
+  let stage = 'DB_START';
   try {
     const id = (await run('docker', ['run', '--rm', '-d', '--name', mongo, '--network', 'none', '--tmpfs', '/data/db', '--tmpfs', '/data/configdb', '--tmpfs', '/tmp',
       'mongo:8.0.17', 'bash', '-c', 'head -c 756 /dev/urandom | base64 > /tmp/key; chmod 400 /tmp/key; chown mongodb /tmp/key /data/db; exec gosu mongodb mongod --replSet rs0 --keyFile /tmp/key --bind_ip 127.0.0.1 --setParameter ttlMonitorEnabled=false'], { timeout: 30000 })).stdout.trim();
-    await run('docker', ['run', '--rm', '-d', '--name', runner, '--network', `container:${id}`, '--tmpfs', '/tmp', image], { timeout: 30000 });
+    stage = 'APP_START';
+    await run('docker', ['run', '--rm', '-d', '--name', runner, '--network', `container:${id}`, '--tmpfs', '/tmp', image], { timeout: 120000 });
+    stage = 'CONTAINMENT';
     if (!verifyRestoreIsolation(await inspectRestoreIsolation(mongo, runner)).ok) throw new Error('ISOLATION_FAILED');
     const shell = (script) => privateProcess('docker', ['exec', '-i', mongo, 'mongosh', '--quiet'], script);
     const wait = async (script) => {
@@ -40,14 +43,18 @@ export async function startIsolatedRunner(candidate) {
       }
       throw new Error('ISOLATION_FAILED');
     };
+    stage = 'PING';
     await wait("if(!db.adminCommand('ping').ok)quit(1)");
+    stage = 'INIT';
     await shell("rs.initiate({_id:'rs0',members:[{_id:0,host:'127.0.0.1:27017'}]})");
+    stage = 'PRIMARY';
     await wait('if(!db.hello().isWritablePrimary)quit(1)');
+    stage = 'AUTH';
     await shell(`db.getSiblingDB('admin').createUser({user:'localRestore',pwd:'${password}',roles:['root']})`);
     const uri = `mongodb://localRestore:${password}@127.0.0.1:27017/?authSource=admin&replicaSet=rs0&directConnection=true`;
     await privateProcess('docker', ['exec', '-i', mongo, 'sh', '-c', 'umask 077; cat > /tmp/restore.yml'], JSON.stringify({ uri }));
     return { mongo, runner, database, uri, cleanup };
-  } catch { await cleanup(); throw new Error('ISOLATION_FAILED'); }
+  } catch { await cleanup(); throw new Error('ISOLATION_FAILED', { cause: stage }); }
 }
 
 export async function restoreArchive(input) {
@@ -74,9 +81,15 @@ export async function restoreArchive(input) {
       for (const child of [age, restore]) { child.on('error', () => { clearTimeout(timer); age.kill(); restore.kill(); reject(new Error('ISOLATION_FAILED')); }); child.on('close', done); }
     });
     const output = await privateProcess('docker', ['exec', '-i', isolated.runner, 'node', 'scripts/operations/run-restored-app.mjs'],
-      JSON.stringify({ ...isolated, cleanup: undefined, accounts: input.accounts, manifest }), 180000);
+      JSON.stringify({ ...isolated, cleanup: undefined, accounts: input.accounts, manifest }), 180000, true);
     const report = JSON.parse(output.toString('utf8'));
-    return { ...report, elapsedMs: Date.now() - started };
+    if (!verifyRestoreIsolation(await inspectRestoreIsolation(isolated.mongo, isolated.runner)).ok) throw new Error('ISOLATION_FAILED');
+    const labels = ['ISOLATION_FAILED', 'CONTENT_MISSING', 'AUTH_FAILED', 'RECEIPT_MISMATCH', 'PROGRESSION_MISMATCH', 'ECONOMY_MISMATCH'];
+    if (typeof report.ok !== 'boolean' || !Array.isArray(report.violations) || report.violations.some((label) => !labels.includes(label))
+      || !Array.isArray(report.accounts) || report.accounts.some((row) => !['A', 'B'].includes(row.alias)
+        || ['signedIn', 'receiptReplayUnchanged', 'progressionUnchanged'].some((key) => typeof row[key] !== 'boolean'))) throw new Error('ISOLATION_FAILED');
+    return { ok: report.ok, violations: report.violations,
+      accounts: report.accounts.map(({ alias, signedIn, receiptReplayUnchanged, progressionUnchanged }) => ({ alias, signedIn, receiptReplayUnchanged, progressionUnchanged })), elapsedMs: Date.now() - started };
   } finally { await isolated.cleanup(); }
 }
 

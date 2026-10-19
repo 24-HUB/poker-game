@@ -58,3 +58,39 @@ test('unestablished commit stops without an automatic second mutation and redact
     assert.ok(!JSON.stringify(report).includes('synthetic-secret'));
   } finally { await browser?.close(); server.closeAllConnections(); await new Promise((resolve) => server.close(resolve)); }
 });
+test('terminal-loss cleanup retains the original in-memory receipt through reload with one debit until human closure', { timeout: 30000 }, async () => {
+  const { chromium } = await import('@playwright/test');
+  const { finishRecoveryBrowser } = await import('./recovery-browser.mjs');
+  const { runPullResponseLoss, ARM_PHRASE } = await import(moduleUrl);
+  const requestId = '11111111-1111-4111-8111-111111111111';
+  const progress = { sinceSr: 1, sinceSsr: 1 };
+  const item = { id: 'fixture-avatar', name: 'Fixture', slot: 'avatar', rarity: 'R', assetUrl: '/art/cosmetics/fixture.svg' };
+  const receipt = { requestId, bannerVersion: 'test-v1', count: 1, cost: 5, results: [{ itemId: item.id, item, rarity: 'R', duplicate: false, progress }],
+    progress, committedAt: '2026-10-19T00:00:00.000Z', walletRevision: 1 };
+  let posts = 0;
+  const server = createServer((request, response) => {
+    response.setHeader('content-type', 'application/json');
+    const data = request.url === '/api/me' ? { accountId: 'fixture-account', displayName: 'Tester' }
+      : request.url === '/api/wallet' ? { balance: posts ? 0 : 5, revision: posts ? 1 : 0 } : receipt;
+    if (request.url === '/api/pulls') { posts++; response.writeHead(201); }
+    if (request.url?.startsWith('/api/')) return response.end(JSON.stringify({ data, error: null }));
+    response.setHeader('content-type', 'text/html');
+    response.end(`<script>const p=sessionStorage.getItem('pending');if(p)fetch('/api/pulls/'+p).then(r=>r.json()).then(r=>window.recovered=r.data.requestId)</script>
+      <button onclick='sessionStorage.setItem("pending","${requestId}");fetch("/api/pulls",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({requestId:"${requestId}",bannerVersion:"test-v1",count:1})})'>Open</button>`);
+  });
+  await new Promise((resolve, reject) => { server.once('error', reject); server.listen(3100, '127.0.0.1', resolve); });
+  let browser;
+  try {
+    browser = await chromium.launch({ headless: true }); const page = await browser.newPage();
+    await page.goto('http://127.0.0.1:3100');
+    const report = await runPullResponseLoss(page, { origin: 'http://127.0.0.1:3100', mode: 'fixture', expectedDisplayName: 'Tester',
+      confirmation: ARM_PHRASE, onArmed: () => page.getByRole('button', { name: 'Open' }).click() });
+    assert.equal(report.result, 'pass');
+    let finished = false;
+    const retained = finishRecoveryBrowser(browser, { resolved: false, closeApproved: false }).then(() => { finished = true; });
+    await page.reload(); await page.waitForFunction(() => window.recovered === sessionStorage.getItem('pending'));
+    assert.equal(finished, false); assert.equal(posts, 1);
+    assert.equal(await page.evaluate(() => sessionStorage.getItem('pending')), requestId);
+    await browser.close(); await retained; assert.equal(finished, true);
+  } finally { await browser?.close(); server.closeAllConnections(); await new Promise((resolve) => server.close(resolve)); }
+});

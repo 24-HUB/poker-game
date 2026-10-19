@@ -42,6 +42,10 @@ jobs:
           pnpm db:migrate
       - name: Install Chromium and system dependencies
         run: pnpm --filter @poker/web exec playwright install --with-deps chromium
+      - name: Install age for generated encrypted restore rehearsals
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y age
       - run: pnpm check
       - name: Rehearse encrypted backup and isolated authenticated restore
         timeout-minutes: 5
