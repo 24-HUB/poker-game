@@ -1,5 +1,59 @@
 # Checkpoint — Remaining phases through production
 
+## Remaining M5 local operator tooling — 2026-10-19
+
+- User requested implementation of PR #35. Branch `codex/m5-operator-tools`,
+  draft PR #36 targeting dev: https://github.com/24-HUB/poker-game/pull/36.
+  Verified tooling commit `9f224b6e`; clean/fresh task base `4f1e0e9b`.
+  Final fetch confirms origin/dev is still 4f1e0e9b and is contained (0 behind).
+  PR #35 is still open/unmerged; its approved reference spec/plan are included.
+- Task 2 local tooling complete: pinned human-run headed response-loss CLI,
+  identity/confirmation guards, one no-retry/no-redirect forward, validated 201,
+  same-page normal GET recovery and exact five-ticket debit. Route abort completes
+  before unroute. Terminal EOF/graceful interrupt retains unresolved browser state
+  until human closure; a forced OS/browser crash requires the approved source
+  receipt audit before another purchase. No credential/state recordings.
+- Task 7 local tooling complete: reviewed clean-source prebuilt image, authenticated
+  network-none tmpfs MongoDB/shared app/browser namespace, actual containment/TCP
+  probes before decryption and after browser execution, streamed age restore with
+  both exits checked, namespace mapping, full manifest comparison before app writes,
+  A/B normal UI login, committed receipt replay, unchanged durable economy/progression.
+  Restore-only navigator online hint enables loopback UI; physical egress stays denied.
+  Only generated fixtures were used; no retained real archive/source operation.
+- Verification on executable 9f224b6e: frozen install; pnpm check 544 tests,
+  all typechecks and configured production builds; operator 5/5 and restore 4/4
+  included. Backup rehearsal 1/1 and PowerShell/JavaScript syntax passed.
+  Full Chromium suite passed 35/35 (4.2 minutes); final operator identity/
+  confirmation/lifecycle guards passed 5/5. Linux tooling CI 39259100767 completed/success, including pnpm check,
+  backup, Worker bundle and full Chromium. Later evidence/test heads need their
+  own CI result; the final follow-up adds documentation and a guard assertion.
+- Independent review found two Important issues: both addressed with real age
+  pipeline coverage and retained unresolved browser lifecycle. The close-on-exit
+  regression was observed RED then GREEN. Separate one-forward race regression
+  also failed then passed. No Critical finding. Local Docker/operator trust remains
+  part of clean archive/candidate-label provenance; no cryptographic attestation.
+- Current packets and exact remaining gates: docs/releases/2026-10-19-m5-completion.md.
+  Tasks 3–6/8, real-archive Task 7 and current provider/account/mail preflight remain
+  pending named approvals, fresh evidence and human participation. R2 controlled
+  overlap/lost-ack and R3 runtime DB-failure methods remain blocked, without waiver.
+  No deployment, source restore, email, hosted poker/pull or billing action ran.
+- Automatic approval review rejected opening the signed-in Render dashboard,
+  treating private provider metadata inspection as outside implementation approval.
+  No alternate provider channel attempted. Explicit read-only approval is required
+  for named Render/Blueprint, Cloudflare Worker, Atlas project/cluster and Brevo
+  sender/quota preflight. No retained A/B/provider tabs in available inventory;
+  actual session/progression/access-expiry freshness remains unverified.
+- Known provisioning path-with-spaces minor: owner future Codex defect task;
+  reproduce in a disposable spaced checkout before a narrow separate-PR fix.
+- Exact next step: review PR36/final-head CI and obtain explicit read-only
+  Render/Cloudflare/Atlas/Brevo preflight approval. Resume with status/usage/fetch,
+  inspect the pinned inventory and prepare current named live-stage packets;
+  no expired window/credential is renewed. User merges manually.
+  Final evidence/test follow-up contains only task-owned files; 21 local links,
+  mirrored checkpoints and whitespace checks passed; no upstream integration.
+- Usage observed 2026-10-19 20:28 Bangkok: five-hour 57%, weekly 63% remaining;
+  resets 2026-10-20 00:49:36 and 2026-10-25 07:52:38 Bangkok.
+
 ## Friends playtest readiness specification — 2026-10-18
 
 - Spec/plan, Package A and the exact temporary-access package approved. User

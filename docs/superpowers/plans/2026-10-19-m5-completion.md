@@ -10,10 +10,10 @@
 
 **Spec:** [Remaining M5 completion](../specs/2026-10-19-m5-completion-design.md).
 
-Status: **Implementation in progress**, approved through the user request to implement PR #35. No live
-operation or proposed tool has been implemented by writing this plan. Preserve
-the established sequential inline execution method; review the documents before
-code work (approval received 2026-10-19). Live packets retain their separate approval requirements.
+Status: **Local tooling implemented**, approved through the user request to implement PR #35.
+Implementation/evidence is in [draft PR #36](https://github.com/24-HUB/poker-game/pull/36)
+and the [current execution record](../../releases/2026-10-19-m5-completion.md).
+Live packets retain their separate approval requirements; M5 is not complete.
 
 ## Global constraints
 
@@ -75,7 +75,7 @@ assumptions. Gate acceptance criteria are defined once in spec section 5.
 **Produces:** candidate/compatibility inventory, refreshed A/B baseline and five
 named stage packets; explicit method records for unresolved fault checks.
 
-- [ ] Inspect clean status/current branch, fetch, usage and current checkpoints.
+- [x] Inspect clean status/current branch, fetch, usage and current checkpoints.
   Record latest merged SHA and its complete CI result; the known `4f1e0e9b` CI
   success is historical if dev has advanced. Do not redeploy a documentation SHA.
 - [ ] Read backend/Worker artifact/configuration IDs, flags, triggers, rollback
@@ -120,28 +120,28 @@ Use `mismatches: string[]` limited to `TARGET_REJECTED`, `IDENTITY_MISMATCH`,
 `UNCONFIRMED_COMMIT`, `REJECTED_PURCHASE`, `RECEIPT_MISMATCH`, `UNEXPECTED_DEBIT`
 and `UNEXPECTED_POST`; never embed a driver/browser error in a category.
 
-- [ ] Write failing Node tests: `rejects unknown/credential-bearing targets and
+- [x] Write failing Node tests: `rejects unknown/credential-bearing targets and
   missing confirmation before browser launch`; `CLI rejects credential arguments`;
   `report redacts receipt, account and session identifiers`. Assert explicit
   rejection/no launch and absence of synthetic secret markers, not source text.
-- [ ] Run `pnpm --filter @poker/web exec node --test scripts/operators/pull-response-loss.test.mjs`;
+- [x] Run `pnpm --filter @poker/web exec node --test scripts/operators/pull-response-loss.test.mjs`;
   observe the intended failures before implementing guards/CLI.
-- [ ] Implement the two exports and headed CLI under the contract above. Disable
+- [x] Implement the two exports and headed CLI under the contract above. Disable
   recordings/state files; human login and pull click only. Arm one exact POST,
   forward once (`maxRedirects: 0`, `maxRetries: 0`), hold a validated committed 201,
   reload the same page, release/unroute and compare normal receipt recovery plus
   one five-ticket debit. Never clear an unresolved request or retry a new ID.
-- [ ] Refactor only the existing interrupted-pull portion of
+- [x] Refactor only the existing interrupted-pull portion of
   `collection.spec.ts` to call the shared protocol. Add named assertions for
   `commit then reload recovers same receipt with one debit` and
   `unestablished commit stops without an automatic second mutation`.
   Keep all fixture bootstrapping local; no fixture helper import in the hosted CLI.
-- [ ] Run the Node tests and
+- [x] Run the Node tests and
   `pnpm --filter @poker/web exec playwright test collection.spec.ts --project=chromium`.
   Observe green on disposable services; capture no credential snapshots.
-- [ ] Add web `test:operator` and root `test:operator`, and include the latter in
+- [x] Add web `test:operator` and root `test:operator`, and include the latter in
   root `test`. Run the common executable verification below and review the diff.
-- [ ] Commit/push the tested tool on its own task branch/PR. Keep live use blocked
+- [x] Commit/push the tested tool on its own task branch/PR. Keep live use blocked
   until manual merge, compatible candidate evidence, approved operator-owned
   execution method and the gameplay packet. This is not an agent API bypass.
 
@@ -275,17 +275,17 @@ Violations are fixed `ISOLATION_FAILED`, `CONTENT_MISSING`, `AUTH_FAILED`,
 `RECEIPT_MISMATCH`, `PROGRESSION_MISMATCH` or `ECONOMY_MISMATCH`. Raw identities,
 receipts, keys and passwords stay private.
 
-- [ ] Write failing disposable tests: `rejects host/default-route/source-secret
+- [x] Write failing disposable tests: `rejects host/default-route/source-secret
   mounts before restore`; `rejects non-loopback or non-restore DB targets`;
   `restored real auth/receipt replay preserves durable values with egress denied`;
   `missing A/B purchase content cannot pass R4`. Test actual Docker containment
   and replica-set/auth behavior, not only mocked inspection objects.
-- [ ] Run `node --test scripts/operations/restore-account-check.test.mjs` against
+- [x] Run `node --test scripts/operations/restore-account-check.test.mjs` against
   generated local data; observe the intended failures before implementing tools.
-- [ ] Implement the two exports, PowerShell 7 masked wrapper and prebuilt image
+- [x] Implement the two exports, PowerShell 7 masked wrapper and prebuilt image
   under spec section 6. Reuse `verifyEconomy(db)` and existing auth/receipt contracts;
   no fixture account helper, default source URI or new live email transport.
-- [ ] Rehearse image preparation, network-none Mongo/shared namespace runner,
+- [x] Rehearse image preparation, network-none Mongo/shared namespace runner,
   loopback app/browser, failed external access and all process exit checks with
   generated encrypted fixtures. Add root `test:restore-accounts` and include it in
   root `test`; run it, `pnpm test:backup` and common executable verification.

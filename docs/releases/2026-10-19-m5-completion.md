@@ -7,6 +7,8 @@ This approves preparation/local implementation; live packets below still need
 their named approval, current inventory and human inputs. No live operation ran.
 
 Branch: `codex/m5-operator-tools`, based on freshly fetched `origin/dev` `4f1e0e9b`.
+Implementation: draft [PR #36](https://github.com/24-HUB/poker-game/pull/36),
+executable commit `9f224b6e`. User merges manually.
 PR #35 remains open/unmerged. Its two approved reference documents are included
 on this branch so the implementation is reviewable directly against dev.
 Merged-base [CI 39135639483](https://github.com/24-HUB/poker-game/actions/runs/39135639483)
@@ -16,9 +18,9 @@ rechecked completed/success on October 19. This does not certify new executable 
 
 | id | gate | candidate | environment | Bangkok timestamp | alias/operator | precondition | action | expected/observed invariant | result | evidence reference | next action |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| PRE-01 | P1 | 4f1e0e9b | GitHub | 2026-10-19 19:57 | agent | current fetch | inspect merged CI | completed/success | pass | linked CI above | verify tool candidate separately |
-| TOOL-01 | G3 method | working branch | disposable local | 2026-10-19 19:51 | synthetic accounts | local replica set | collection Chromium rehearsal | one committed pull, same receipt, single debit, equip/next hand/re-login | pass | existing collection.spec.ts using shared protocol | rerun final code and full checks |
-| TOOL-02 | R4 method | working branch | Docker network none | 2026-10-19 19:53 | synthetic fixture | no source material | inspect namespace/mounts/routes/TCP | egress denied, unsafe configuration rejected | pass | restore-account-check.test.mjs containment case | run full encrypted two-account rehearsal |
+| PRE-01 | P1 | 4f1e0e9b | GitHub | 2026-10-19 20:32:07 | agent | current fetch | inspect merged CI | completed/success | pass | linked CI above | verify tool candidate separately |
+| TOOL-01 | G3 method | working branch before 9f224b6e | disposable local | 2026-10-19 19:52:45 | synthetic accounts | local replica set | collection Chromium rehearsal | one committed pull, same receipt, single debit, equip/next hand/re-login | pass | existing collection.spec.ts using shared protocol | final code/full Chromium passed; live G3 remains gated |
+| TOOL-02 | R4 method | 9f224b6e | Docker network none | 2026-10-19 20:23:18 | synthetic fixture | no source material | inspect namespace/mounts/routes/TCP | egress denied, unsafe configuration rejected | pass | restore-account-check.test.mjs containment case | real age two-account rehearsal passed in aggregate; real archive pending |
 
 Historical A/B creation and baseline remain in the
 [October 18 execution record](2026-10-18-friends-playtest.md). Their wallets,
@@ -55,3 +57,58 @@ M5 is not complete and friends readiness is not granted.
 Independent local tooling proceeds while these live prerequisites remain open.
 One task PR owns this implementation; user merges manually. A real-archive run,
 provider deployment or gameplay is not authorized by that PR's creation or merge.
+
+## Local implementation verification
+
+- Frozen install passed with Node 22.16.0 and pnpm 10.33.0.
+- `pnpm check` passed on `9f224b6e`: 544 tests, all typechecks and configured
+  contracts/engine/Nest/Next production builds. Includes operator 5/5 and restore
+  4/4. No lint script exists.
+- `pnpm test:backup` passed 1/1 using generated encrypted data and disposable
+  authenticated MongoDB. PowerShell 7 parser and JavaScript syntax checks passed.
+- Shared real collection Chromium rehearsal passed before the aggregate run;
+  final full Chromium suite passed 35/35 in 4.2 minutes. The strengthened wrong-identity
+  guard was separately rerun with the operator tests: 5/5 passed.
+- [Executable-candidate CI 39259100767](https://github.com/24-HUB/poker-game/actions/runs/39259100767)
+  completed/success, including aggregate checks, backup, Linux Worker bundle
+  and the full Chromium suite. Later test/evidence heads are not covered by that
+  run and need their own result.
+- The real age pipeline uses generated account data, identity material and an
+  encrypted archive/manifest. It passes normal auth/receipt replay/economy and
+  rejects absent purchase content, checksum mismatch, ciphertext corruption,
+  invalid dump, pre-app manifest mismatch and actual unsafe Docker configuration.
+  Windows used the existing operator-managed age 1.3.2 executable on a task-local
+  PATH; CI installs age for disposable rehearsals. No operator archive was read.
+- A network-none namespace makes Chromium infer offline despite working loopback.
+  The restore-only context supplies an online UI hint; actual Docker settings,
+  routes and failed external TCP access are verified before and after execution.
+  This is local R4 method evidence, not hosted network-recovery acceptance.
+
+Independent read-only review found two Important issues, both addressed:
+the rehearsal now calls the production age streaming/checksum/namespace pipeline,
+and unresolved terminal-loss cleanup retains the original browser in memory.
+The unconditional-close regression was observed red, then green; it reloads the
+same receipt with one debit until human closure. A separate regression caught
+and fixed removal of a still-executing route, which could forward twice.
+Real-browser guards and the full Mongo-backed collection flow cover that fix.
+Image provenance uses a clean allowlisted Git archive and matching candidate
+label; local Docker/operator trust is required, not a cryptographic attestation.
+
+Automatic approval review **rejected** opening the signed-in Render service
+dashboard: private provider/account metadata inspection was considered outside
+this implementation approval. No alternate provider-access channel was attempted.
+Read-only P1 access to the named Render/Blueprint, Cloudflare Worker, Atlas
+project/cluster and Brevo sender/quota must be explicitly approved before that
+inspection resumes. Available browser inventory had no retained A/B/provider tabs;
+session/account freshness and actual temporary-access expiry remain unverified.
+
+Known provisioning-test path-with-spaces portability minor remains owned by a
+future Codex defect task: reproduce in a disposable spaced checkout, then fix
+only that regression through its own PR. It does not block use of the currently
+verified space-free checkout. No hosted product defect was reproduced here.
+
+Final origin fetch confirms dev remains `4f1e0e9b`, contained by this task branch
+(0 behind). Complete task diff and whitespace reviewed; 21 local links and the
+checkpoint mirror pass. Generated Next dev declarations were restored to the
+previously tested production references. User merges manually; PR remains draft
+for the later evidence/test head CI result and the explicitly open M5 work.

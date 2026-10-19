@@ -15,7 +15,7 @@ test('rejects unknown and credential-bearing targets', async () => {
   assert.throws(() => validateTarget('http://127.0.0.1:3100', 'hosted'), /TARGET_REJECTED/);
   assert.throws(() => validateTarget('https://poker-game.nearyou1474.workers.dev', 'unknown'), /TARGET_REJECTED/);
 });
-test('missing confirmation and mismatched identity cannot arm or launch a request', async () => {
+test('missing confirmation never touches the browser or exposes its error', async () => {
   const { runPullResponseLoss } = await import(moduleUrl);
   const untouched = new Proxy({}, { get() { throw new Error('synthetic-private-secret'); } });
   const report = await runPullResponseLoss(untouched, { origin: 'http://127.0.0.1:3100', mode: 'fixture', expectedDisplayName: 'Tester' });
@@ -48,6 +48,11 @@ test('unestablished commit stops without an automatic second mutation and redact
     browser = await chromium.launch({ headless: true });
     const page = await browser.newPage();
     await page.goto('http://127.0.0.1:3100');
+    let armed = false;
+    const denied = await runPullResponseLoss(page, { origin: 'http://127.0.0.1:3100', mode: 'fixture', expectedDisplayName: 'Different account',
+      confirmation: ARM_PHRASE, onArmed: () => { armed = true; } });
+    assert.deepEqual(denied.mismatches, ['IDENTITY_MISMATCH']);
+    assert.equal(armed, false); assert.equal(posts, 0);
     const before = navigations;
     const report = await runPullResponseLoss(page, { origin: 'http://127.0.0.1:3100', mode: 'fixture', expectedDisplayName: 'Tester',
       confirmation: ARM_PHRASE, onArmed: () => page.getByRole('button', { name: 'Open' }).click() });

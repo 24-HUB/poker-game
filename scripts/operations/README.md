@@ -156,6 +156,7 @@ unrelated progression. These tests also run under `pnpm check`.
 
 Known portability limit: the test's CLI path conversion does not support checkout
 paths containing percent-escaped characters/spaces. Use `pwsh` and the current
-space-free checkout. This review minor is deferred. An operator attempt under
-Windows PowerShell 5.1 failed before Node started; source provisioning remains
-unconfirmed. Retry with PowerShell 7.
+space-free checkout. This review minor is deferred. The earlier Windows PowerShell
+5.1 attempt failed before Node started. Subsequent October 18 operator apply and
+independent normal A/B sign-in/source-baseline evidence are recorded in
+`docs/releases/2026-10-18-friends-playtest.md`; do not repeat provisioning on resume.

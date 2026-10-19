@@ -7,6 +7,16 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 
 ## Candidate record
 
+- Remaining M5 implementation: draft [PR #36](https://github.com/24-HUB/poker-game/pull/36),
+  `codex/m5-operator-tools`, executable `9f224b6e`. The user approved the written
+  design in PR #35 for implementation. Local response-loss and isolated restored-account
+  tooling now exists; current [execution packets/evidence](releases/2026-10-19-m5-completion.md)
+  keep all unobserved hosted gates open. `pnpm check` passes 544 tests/typechecks/builds,
+  including operator 5/5 and restore 4/4; backup rehearsal 1/1 passes. Full Chromium passes 35/35. Linux tooling CI 39259100767
+  completed/success, including Worker and full Chromium; later-head CI is pending. Provider preflight was blocked by automatic
+  approval review and needs explicit read-only access approval. No deployment,
+  source restore, email send, hosted game or cosmetic pull ran. User merges manually.
+
 - Friends acceptance planning: [PR #34](https://github.com/24-HUB/poker-game/pull/34),
   [approved spec](superpowers/specs/2026-10-18-friends-playtest-readiness-design.md)
   and [approved implementation plan](superpowers/plans/2026-10-18-friends-playtest-readiness.md).
