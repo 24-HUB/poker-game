@@ -63,9 +63,10 @@ test('unestablished commit stops without an automatic second mutation and redact
     assert.ok(!JSON.stringify(report).includes('synthetic-secret'));
   } finally { await browser?.close(); server.closeAllConnections(); await new Promise((resolve) => server.close(resolve)); }
 });
-test('terminal-loss cleanup retains the original in-memory receipt through reload with one debit until human closure', { timeout: 30000 }, async () => {
+for (const signal of ['SIGINT', 'SIGTERM', 'SIGHUP']) {
+test(`${signal} keeps the original context and one-debit receipt available until human closure`, { timeout: 30000 }, async () => {
   const { chromium } = await import('@playwright/test');
-  const { finishRecoveryBrowser } = await import('./recovery-browser.mjs');
+  const { finishRecoveryBrowser, launchRecoveryBrowser } = await import('./recovery-browser.mjs');
   const { runPullResponseLoss, ARM_PHRASE } = await import(moduleUrl);
   const requestId = '11111111-1111-4111-8111-111111111111';
   const progress = { sinceSr: 1, sinceSsr: 1 };
@@ -85,17 +86,23 @@ test('terminal-loss cleanup retains the original in-memory receipt through reloa
   });
   await new Promise((resolve, reject) => { server.once('error', reject); server.listen(3100, '127.0.0.1', resolve); });
   let browser;
+  let interrupted = false;
+  const onInterrupt = () => { interrupted = true; };
+  process.on(signal, onInterrupt);
   try {
-    browser = await chromium.launch({ headless: true }); const page = await browser.newPage();
+    browser = await launchRecoveryBrowser(chromium, { headless: true }); const page = await browser.newPage();
     await page.goto('http://127.0.0.1:3100');
     const report = await runPullResponseLoss(page, { origin: 'http://127.0.0.1:3100', mode: 'fixture', expectedDisplayName: 'Tester',
       confirmation: ARM_PHRASE, onArmed: () => page.getByRole('button', { name: 'Open' }).click() });
     assert.equal(report.result, 'pass');
     let finished = false;
     const retained = finishRecoveryBrowser(browser, { resolved: false, closeApproved: false }).then(() => { finished = true; });
+    process.emit(signal);
+    assert.equal(interrupted, true);
     await page.reload(); await page.waitForFunction(() => window.recovered === sessionStorage.getItem('pending'));
     assert.equal(finished, false); assert.equal(posts, 1);
     assert.equal(await page.evaluate(() => sessionStorage.getItem('pending')), requestId);
     await browser.close(); await retained; assert.equal(finished, true);
-  } finally { await browser?.close(); server.closeAllConnections(); await new Promise((resolve) => server.close(resolve)); }
+  } finally { process.off(signal, onInterrupt); await browser?.close(); server.closeAllConnections(); await new Promise((resolve) => server.close(resolve)); }
 });
+}

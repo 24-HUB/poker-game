@@ -35,7 +35,15 @@ try {
   $accounts=$null;$json=$null;$email=$null;$password=$null;$requestId=$null
   $output=$process.StandardOutput.ReadToEndAsync();$errors=$process.StandardError.ReadToEndAsync()
   $process.WaitForExit()
-  $safeOutput=$output.GetAwaiter().GetResult();$null=$errors.GetAwaiter().GetResult()
-  if($process.ExitCode -ne 0){throw 'ISOLATION_FAILED: restore not certified; retain last known-good backup.'}
+  $safeOutput=$output.GetAwaiter().GetResult();$errorOutput=$errors.GetAwaiter().GetResult()
+  if($process.ExitCode -ne 0){
+    if($errorOutput -cmatch '(?m)^CLEANUP_INCOMPLETE:'){
+      $pattern='(?<![\w.-])poker-restore-(?:app|db)-[a-f0-9]{8}-(?:[a-f0-9]{4}-){3}[a-f0-9]{12}(?![\w.-])'
+      $retainedNames=@([regex]::Matches($errorOutput,$pattern)|ForEach-Object {$_.Value}|Select-Object -Unique)
+      $recovery=if($retainedNames.Count){'run: docker rm -f '+($retainedNames -join ' ')}else{'inspect the task-created restore containers'}
+      throw "CLEANUP_INCOMPLETE: restore not certified. When Docker is available, $recovery. Verify absence before certifying or reopening; retain encrypted backups."
+    }
+    throw 'ISOLATION_FAILED: restore not certified; retain last known-good backup.'
+  }
   Write-Host $safeOutput
 } finally {$accounts=$null;$json=$null;$email=$null;$password=$null;$requestId=$null;$process.Dispose()}

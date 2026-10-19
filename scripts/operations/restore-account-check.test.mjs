@@ -24,6 +24,7 @@ test('real age pipeline restores auth/replay with egress denied and rejects miss
   const candidate = (await run('git', ['rev-parse', 'HEAD'])).stdout.trim();
   const isolated = await startIsolatedRunner(candidate);
   const temporary = await mkdtemp(join(tmpdir(), 'poker-age-fixture-'));
+  let retained = [];
   try {
     assert.equal(verifyRestoreIsolation(await inspectRestoreIsolation(isolated.mongo, isolated.runner)).ok, true);
     const generated = JSON.parse((await privateProcess('docker', ['exec', '-i', isolated.runner, 'node', 'scripts/operations/restore-fixture.mjs'],
@@ -48,6 +49,21 @@ test('real age pipeline restores auth/replay with egress denied and rejects miss
     assert.equal(result.ok, true, JSON.stringify(result)); assert.equal(result.accounts.length, 2);
     for (const row of result.accounts) assert.deepEqual(row, { alias: row.alias, signedIn: true, receiptReplayUnchanged: true, progressionUnchanged: true });
     t.diagnostic('NORMAL_RESTORE_PASSED');
+    // A successful account check must still reject when detached workloads
+    // cannot be removed. Fault only removal; use actual Docker inspection.
+    const { cleanupRestoreContainers } = await import('./restore-cleanup.mjs');
+    await assert.rejects(restoreArchive(input, { cleanupCommand: async (command, args, options) => {
+      if (args[0] === 'rm') throw new Error('private-driver-marker');
+      return run(command, args, options);
+    } }), (error) => {
+      assert.equal(error.code, 'CLEANUP_INCOMPLETE');
+      retained = error.containers;
+      assert.equal(retained.length, 2);
+      assert.ok(!JSON.stringify(error).includes('private-driver-marker'));
+      return true;
+    });
+    for (const name of retained) assert.equal(JSON.parse((await run('docker', ['inspect', name])).stdout)[0].State.Running, true);
+    await cleanupRestoreContainers(retained); retained = [];
     const missing = await restoreArchive({ ...input, accounts: generated.accounts.map((account) => ({ ...account, requestIds: [randomUUID()] })) });
     assert.equal(missing.ok, false); assert.ok(missing.violations.includes('CONTENT_MISSING'));
     await assert.rejects(restoreArchive({ ...input, confirmation: '' }), /ISOLATION_FAILED/);
@@ -64,6 +80,7 @@ test('real age pipeline restores auth/replay with egress denied and rejects miss
     assert.equal(mismatch.ok, false); assert.deepEqual(mismatch.accounts, []);
     assert.deepEqual(mismatch.violations, ['PROGRESSION_MISMATCH']);
   } finally {
+    if (retained.length) await (await import('./restore-cleanup.mjs')).cleanupRestoreContainers(retained);
     await isolated.cleanup();
     assert.equal(dirname(resolve(temporary)), resolve(tmpdir()));
     assert.ok(temporary.startsWith(join(tmpdir(), 'poker-age-fixture-')));

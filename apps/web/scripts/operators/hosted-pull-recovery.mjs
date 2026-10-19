@@ -1,6 +1,6 @@
 import { createInterface } from 'node:readline/promises';
 import { ARM_PHRASE, HOSTED_ORIGIN, runPullResponseLoss } from './pull-response-loss.mjs';
-import { finishRecoveryBrowser } from './recovery-browser.mjs';
+import { finishRecoveryBrowser, launchRecoveryBrowser } from './recovery-browser.mjs';
 
 // No argument is accepted, including credentials, fixture targets or output paths.
 if (process.argv.length !== 2 || !process.stdin.isTTY) {
@@ -18,7 +18,7 @@ if (process.argv.length !== 2 || !process.stdin.isTTY) {
     const confirmation = await terminal.question(`Type ${ARM_PHRASE}: `);
     if (confirmation !== ARM_PHRASE) throw new Error();
     const { chromium } = await import('@playwright/test');
-    browser = await chromium.launch({ headless: false });
+    browser = await launchRecoveryBrowser(chromium);
     const context = await browser.newContext({ serviceWorkers: 'block', acceptDownloads: false });
     const page = await context.newPage();
     await page.goto(`${HOSTED_ORIGIN}/pulls`);

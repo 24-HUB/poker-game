@@ -4,6 +4,7 @@ import { createReadStream } from 'node:fs';
 import { promisify } from 'node:util';
 import { pathToFileURL } from 'node:url';
 import { inspectRestoreIsolation, verifyRestoreIsolation } from './restore-isolation.mjs';
+import { cleanupRestoreContainers, CleanupIncompleteError, formatCleanupFailure } from './restore-cleanup.mjs';
 const run = promisify(execFile);
 export const RESTORE_PHRASE = 'RESTORE ARCHIVE INTO ISOLATED LOCAL RUNNER';
 
@@ -20,14 +21,14 @@ export async function privateProcess(command, args, input, timeout = 120000, all
     child.stdin.end(input);
   });
 }
-export async function startIsolatedRunner(candidate) {
+export async function startIsolatedRunner(candidate, { cleanupCommand = run } = {}) {
   if (!/^[a-f0-9]{40}$/.test(candidate)) throw new Error('ISOLATION_FAILED');
   const image = `poker-restore:${candidate}`;
   const imageInfo = JSON.parse((await run('docker', ['image', 'inspect', image])).stdout)[0];
   if (imageInfo.Config?.Labels?.['poker.restore.candidate'] !== candidate) throw new Error('ISOLATION_FAILED');
   const suffix = randomUUID(), mongo = `poker-restore-db-${suffix}`, runner = `poker-restore-app-${suffix}`;
   const database = `poker_test_restore_${randomUUID().replaceAll('-', '')}`, password = randomBytes(32).toString('hex');
-  const cleanup = async () => { for (const name of [runner, mongo]) await run('docker', ['rm', '-f', name], { timeout: 15000 }).catch(() => {}); };
+  const cleanup = () => cleanupRestoreContainers([runner, mongo], cleanupCommand);
   let stage = 'DB_START';
   try {
     const id = (await run('docker', ['run', '--rm', '-d', '--name', mongo, '--network', 'none', '--tmpfs', '/data/db', '--tmpfs', '/data/configdb', '--tmpfs', '/tmp',
@@ -57,12 +58,12 @@ export async function startIsolatedRunner(candidate) {
   } catch { await cleanup(); throw new Error('ISOLATION_FAILED', { cause: stage }); }
 }
 
-export async function restoreArchive(input) {
+export async function restoreArchive(input, options) {
   if (input?.confirmation !== RESTORE_PHRASE || !/^[a-f0-9]{40}$/.test(input.candidate ?? '')
     || !/^[a-f0-9]{64}$/.test(input.sha256 ?? '') || typeof input.archive !== 'string' || typeof input.key !== 'string'
     || typeof input.manifestArchive !== 'string') throw new Error('ISOLATION_FAILED');
   const started = Date.now();
-  const isolated = await startIsolatedRunner(input.candidate);
+  const isolated = await startIsolatedRunner(input.candidate, options);
   try {
     const sha = createHash('sha256');
     for await (const chunk of createReadStream(input.archive)) sha.update(chunk);
@@ -100,5 +101,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     for await (const chunk of process.stdin) { bytes += chunk.length; if (bytes > 1024 * 1024) throw new Error(); input += chunk; }
     const report = await restoreArchive(JSON.parse(input));
     process.stdout.write(JSON.stringify(report) + '\n'); process.exitCode = report.ok ? 0 : 1;
-  } catch { process.stderr.write('ISOLATION_FAILED\n'); process.exitCode = 1; }
+  } catch (error) {
+    process.stderr.write((error instanceof CleanupIncompleteError ? formatCleanupFailure(error) : 'ISOLATION_FAILED') + '\n');
+    process.exitCode = 1;
+  }
 }

@@ -20,7 +20,7 @@
     "test:provision": "pnpm build:server && node --test scripts/operations/provision.test.mjs",
     "typecheck": "pnpm --filter @poker/contracts --filter @poker/poker-engine build && pnpm -r --if-present typecheck",
     "test:operator": "pnpm --filter @poker/web test:operator",
-    "test:restore-accounts": "node scripts/operations/build-restore-runner.mjs && node --test scripts/operations/restore-account-check.test.mjs"
+    "test:restore-accounts": "node scripts/operations/build-restore-runner.mjs && node --test scripts/operations/restore-account-check.test.mjs scripts/operations/restore-cleanup.test.mjs"
   },
   "devDependencies": {
     "mongodb": "7.6.0",
