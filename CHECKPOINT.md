@@ -1,5 +1,43 @@
 # Checkpoint — Remaining phases through production
 
+## Remaining M5 specification and implementation plan — 2026-10-19
+
+- User requested specifications and an implementation plan for all remaining M5
+  work. Planning only: both artifacts are draft for review; no new live action,
+  account, operator tool, dependency or product behavior was implemented.
+- Branch `codex/remaining-m5-plan`, from clean/fresh `origin/dev` `4f1e0e9b`.
+  PR to dev pending creation; last completed base commit `4f1e0e9b`. PR #34 is
+  merged, and merged-candidate CI run 39135639483 was rechecked completed/success.
+- New spec: `docs/superpowers/specs/2026-10-19-m5-completion-design.md`.
+  New plan: `docs/superpowers/plans/2026-10-19-m5-completion.md`.
+  Nine tasks cover current preflight, response-loss tooling, accounts/mail,
+  gameplay/rewards, collection, interruption/faults, isolated restore tooling,
+  six-person acceptance/safe exit and conditional reproduced-defect fixes.
+- Preserved October 18 A/B setup/source-baseline evidence with its date; do not
+  recreate/reset accounts or treat old balances, sessions, quota or access as fresh.
+  Temporary source provisioning access has exceeded its scheduled six-hour life;
+  recheck actual expiry without automatically renewing it or deleting game users.
+- Explicit proposals for review: dedicated unverified C for normal verification;
+  revised 12-send distribution (3 planned + 1 delivery reserve each A/B/C);
+  operator-owned hosted response-loss runner; isolated network-none restored-app
+  runner; stage-specific packets. None grants execution permission. Unsupported
+  DB-fault/controlled-overlap methods stay blocked; no implicit waiver/paid upgrade.
+- Primary documentation checked: Render free/deploy constraints, Playwright route
+  delivery behavior and Atlas optional billed Free backup subscription. Corrected
+  current operations wording while retaining the selected $0 encrypted manual
+  procedure and dated maintenance history. Updated checklist/older plan pointers.
+- Task-owned changes: planning/reference/checkpoint documents only. Validation
+  passed: 68 local links, all 11 gates/9 tasks, placeholder/fence/whitespace scan,
+  mirrored checkpoint comparison and source/reference/full-diff review.
+  No app tests run or required for these documentation-only changes.
+- Exact next step: commit/push this branch and create its PR to dev.
+  User reviews the written spec/plan before code execution;
+  retain sequential inline execution. After approval start plan Task 1 with fresh
+  status/usage/fetch and a current execution packet; no live window is renewed.
+- Usage observed 2026-10-19 about 19:41 Bangkok: five-hour 60%, weekly 70%
+  remaining; resets 2026-10-19 19:49:17 and 2026-10-25 07:52:38 Bangkok.
+  User merges manually.
+
 ## Friends playtest readiness specification — 2026-10-18
 
 - Spec/plan, Package A and the exact temporary-access package approved. User

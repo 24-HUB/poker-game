@@ -1,5 +1,11 @@
 # Private release checklist
 
+The proposed forward sequence after merged PR #34 is the
+[remaining M5 specification](superpowers/specs/2026-10-19-m5-completion-design.md)
+and [implementation plan](superpowers/plans/2026-10-19-m5-completion.md).
+These drafts preserve completed evidence and identify the approvals/methods still
+needed; writing them supplies no new hosted pass or live-action authorization.
+
 Use this checklist for a specific candidate revision. Record actual evidence beside
 each gate; unchecked items block release. M0-M4 are merged locally, but the full M5
 friends release is not verified. Deployment and live database actions require the
