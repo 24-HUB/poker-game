@@ -526,8 +526,9 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
   work. Planning only: both artifacts are draft for review; no new live action,
   account, operator tool, dependency or product behavior was implemented.
 - Branch `codex/remaining-m5-plan`, from clean/fresh `origin/dev` `4f1e0e9b`.
-  PR to dev pending creation; last completed base commit `4f1e0e9b`. PR #34 is
-  merged, and merged-candidate CI run 39135639483 was rechecked completed/success.
+  PR #35 targets dev: https://github.com/24-HUB/poker-game/pull/35. Last completed
+  planning commit `74aa6257`; base `4f1e0e9b`. PR #34 is merged, and its
+  merged-candidate CI run 39135639483 was rechecked completed/success.
 - New spec: `docs/superpowers/specs/2026-10-19-m5-completion-design.md`.
   New plan: `docs/superpowers/plans/2026-10-19-m5-completion.md`.
   Nine tasks cover current preflight, response-loss tooling, accounts/mail,
@@ -550,8 +551,8 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
   passed: 68 local links, all 11 gates/9 tasks, placeholder/fence/whitespace scan,
   mirrored checkpoint comparison and source/reference/full-diff review.
   No app tests run or required for these documentation-only changes.
-- Exact next step: commit/push this branch and create its PR to dev.
-  User reviews the written spec/plan before code execution;
+- Exact next step: user reviews the written spec and plan in PR #35, including
+  the explicit proposed additions, before code execution;
   retain sequential inline execution. After approval start plan Task 1 with fresh
   status/usage/fetch and a current execution packet; no live window is renewed.
 - Usage observed 2026-10-19 about 19:41 Bangkok: five-hour 60%, weekly 70%
