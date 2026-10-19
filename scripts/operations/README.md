@@ -15,6 +15,7 @@ holds its validated HTTP 201 receipt, reloads the same page, and compares normal
 GET recovery and one debit. It prints only fixed categories/booleans. On uncertainty,
 inspect the original pending receipt before any further purchase or closing the
 browser. No new request, credential file, trace, video or screenshot is created.
+Playwright automatic SIGINT/SIGTERM/SIGHUP closure is disabled.
 Terminal EOF or a graceful interrupt retains an unresolved browser in memory;
 inspect/reconcile there and close its window manually. Do not force-kill the
 process or close that browser while the outcome is uncertain. If the OS/browser
@@ -75,8 +76,13 @@ auth/proxy secrets, memory email, closed admission/economy and no automatic jobs
 Chromium inside the same namespace signs in through the normal UI, checks both
 accounts' backed-up purchase/ownership/equipment content, replays original receipts
 and proves durable economy values unchanged. Local auth/lease/session writes are
-separate from the pre-app full-manifest comparison. Containers are removed on exit;
-the retained encrypted archive/manifest/key are never mounted into them.
+separate from the pre-app full-manifest comparison. Both container removals are
+attempted on exit and their absence is verified before success is returned.
+A retained container or failed verification produces `CLEANUP_INCOMPLETE` and a
+nonzero exit, with sanitized recovery instructions containing only task-container
+names. When Docker is available, run the reported `docker rm -f` command and
+verify those names are absent before certification or reopening. The retained
+encrypted archive/manifest/key are never mounted into them.
 Chromium's online heuristic is explicitly set to available for namespace loopback;
 this changes no interface, default route, Docker setting or egress rule. Actual
 containment and failed external TCP access are checked again after the browser run.

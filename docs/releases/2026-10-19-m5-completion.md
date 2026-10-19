@@ -112,3 +112,23 @@ Final origin fetch confirms dev remains `4f1e0e9b`, contained by this task branc
 checkpoint mirror pass. Generated Next dev declarations were restored to the
 previously tested production references. User merges manually; PR remains draft
 for the later evidence/test head CI result and the explicitly open M5 work.
+
+## PR #36 comment follow-up
+
+Comment 6268654341 is addressed in `89976560`: Playwright automatic signal
+closure is disabled for SIGINT/SIGTERM/SIGHUP, and restore success now requires
+verified absence of both task containers. Removal attempts continue after an
+individual failure; incomplete or unverifiable teardown produces sanitized
+`CLEANUP_INCOMPLETE` recovery instructions through the CLI and PowerShell wrapper.
+Both reported failures were reproduced before fixing them. Real browser signal
+regressions pass 7/7; real age restore plus cleanup regressions pass 9/9,
+including a successful account check whose deliberately failed teardown rejects.
+The retained generated-data workloads were removed by the recovery helper.
+
+At this executable commit, frozen install and `pnpm check` pass 551 tests,
+all typechecks and configured production builds. Backup rehearsal passes 1/1.
+Affected collection Chromium passed 1/1 (52.8 seconds). Review-fix CI
+[39263455539](https://github.com/24-HUB/poker-game/actions/runs/39263455539)
+is running; prior b7249420 CI completed successfully. The user has marked PR36
+ready for review; the earlier draft description above is historical. Hosted M5
+acceptance remains open. User merges manually.

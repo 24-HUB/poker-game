@@ -1,5 +1,35 @@
 # Checkpoint — Remaining phases through production
 
+## PR #36 review follow-up — 2026-10-19
+
+- User requested fixes for comment 6268654341 on the existing PR #36 targeting
+  `dev`: https://github.com/24-HUB/poker-game/pull/36#issuecomment-6268654341.
+  Continue branch `codex/m5-operator-tools`; executable fix commit `89976560`.
+- P1: shared launcher disables Playwright automatic SIGINT/SIGTERM/SIGHUP closure.
+  Real Chromium regressions emit each signal, reload the same pending receipt,
+  assert one forwarded purchase/debit and retain the context until human closure.
+  The default-handler regression failed before the fix, then passed.
+- P2: attempt both restore-container removals, verify exact names absent and fail
+  closed on retained workloads or unavailable verification. Sanitized
+  `CLEANUP_INCOMPLETE` recovery instructions propagate through the PowerShell
+  wrapper; successful account verification cannot certify failed teardown.
+  Real age restore fault injection confirmed both containers remained, the call
+  rejected and recovery cleanup removed them. Failure regressions ran red/green.
+- Verification at 89976560: pinned frozen install and `pnpm check` passed all
+  551 tests, typechecks and configured production builds; includes operator 7/7
+  and restore/cleanup 9/9. Generated encrypted backup rehearsal passed 1/1.
+  PowerShell parser and whitespace checks passed. Affected collection Chromium
+  flow passed 1/1 (52.8 seconds).
+- Fresh origin fetch confirms `origin/dev` 4f1e0e9b is contained (0 behind).
+  Code is pushed to PR36; this evidence follow-up contains only task-owned docs.
+  CI 39263455539 is running; prior b7249420 CI completed successfully.
+- Remaining hosted M5 gates and provider-access blockers below are unchanged.
+  No provider/source operation ran for this review. PR is open, user-marked ready;
+  user merges manually. Next: inspect final-head CI; the review fixes and evidence
+  are saved on this branch. Resume with status/usage/fetch before further work.
+- Usage observed 2026-10-19 20:54 Bangkok: five-hour 32%, weekly 59% remaining;
+  resets 2026-10-20 00:49:36 and 2026-10-25 07:52:38 Bangkok.
+
 ## Remaining M5 local operator tooling — 2026-10-19
 
 - User requested implementation of PR #35. Branch `codex/m5-operator-tools`,
