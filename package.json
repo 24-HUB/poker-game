@@ -12,13 +12,15 @@
     "db:init": "node scripts/init-replica-set.mjs",
     "db:migrate": "pnpm --filter @poker/server db:migrate",
     "smoke:deployment": "node scripts/smoke-deployment.mjs",
-    "test": "pnpm test:db:init && pnpm test:deployment && pnpm test:economy && pnpm test:provision && pnpm -r --if-present test",
+    "test": "pnpm test:db:init && pnpm test:deployment && pnpm test:economy && pnpm test:provision && pnpm test:operator && pnpm test:restore-accounts && pnpm -r --if-present test",
     "test:db:init": "node --test scripts/init-replica-set.test.mjs",
     "test:deployment": "node --test scripts/smoke-deployment.test.mjs",
     "test:economy": "pnpm build:server && node --test scripts/verify-economy.test.mjs",
     "test:backup": "pnpm build:server && node --test scripts/rehearse-backup.test.mjs",
     "test:provision": "pnpm build:server && node --test scripts/operations/provision.test.mjs",
-    "typecheck": "pnpm --filter @poker/contracts --filter @poker/poker-engine build && pnpm -r --if-present typecheck"
+    "typecheck": "pnpm --filter @poker/contracts --filter @poker/poker-engine build && pnpm -r --if-present typecheck",
+    "test:operator": "pnpm --filter @poker/web test:operator",
+    "test:restore-accounts": "node scripts/operations/build-restore-runner.mjs && node --test scripts/operations/restore-account-check.test.mjs"
   },
   "devDependencies": {
     "mongodb": "7.6.0",

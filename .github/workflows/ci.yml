@@ -40,14 +40,14 @@ jobs:
         run: |
           pnpm db:migrate
           pnpm db:migrate
+      - name: Install Chromium and system dependencies
+        run: pnpm --filter @poker/web exec playwright install --with-deps chromium
       - run: pnpm check
       - name: Rehearse encrypted backup and isolated authenticated restore
         timeout-minutes: 5
         run: pnpm test:backup
       - name: Build Cloudflare Worker
         run: pnpm --filter @poker/web build:worker
-      - name: Install Chromium and system dependencies
-        run: pnpm --filter @poker/web exec playwright install --with-deps chromium
       - name: Run full Chromium acceptance against disposable services
         timeout-minutes: 15
         run: pnpm --filter @poker/web exec playwright test --project=chromium

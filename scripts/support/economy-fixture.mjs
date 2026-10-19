@@ -17,7 +17,7 @@ export async function seedDefaultEquipmentFixture(db, client) {
 }
 
 // Synthetic completed hands, real reward/pull/equipment repositories. Never live data.
-export async function seedEconomyFixture(db, client, accountId = 'isolated-account') {
+export async function seedEconomyFixture(db, client, accountId = 'isolated-account', prefix = 'fixture') {
   await applyMigrations(db);
   await publishCatalogue(db, CELESTIAL_BANNER);
   const runner = new TransactionRunner(client);
@@ -28,19 +28,19 @@ export async function seedEconomyFixture(db, client, accountId = 'isolated-accou
   const completedAt = new Date('2026-10-07T08:00:00.000Z');
   const participants = [{ accountId, displayName: 'Fixture player', seat: 0, kind: 'human' },
     { accountId: opponent, displayName: 'Fixture opponent', seat: 1, kind: 'human' }];
-  await db.collection('gameSessions').insertOne({ _id: 'fixture-session', roomId: 'fixture-room', status: 'COMPLETED', mode: 'standard',
+  await db.collection('gameSessions').insertOne({ _id: `${prefix}-session`, roomId: `${prefix}-room`, status: 'COMPLETED', mode: 'standard',
     startedByAccountId: accountId, startCommandId: 'fixture-start', startPayloadHash: 'a'.repeat(64), authorityBootId: 'fixture-boot', authorityEpoch: 1,
-    participants, stacks: [1100, 900], firstHandId: 'fixture-hand-1', handNumber: 5, buttonSeat: 0, startedAt: completedAt, endingRequested: false });
+    participants, stacks: [1100, 900], firstHandId: `${prefix}-hand-1`, handNumber: 5, buttonSeat: 0, startedAt: completedAt, endingRequested: false });
   for (let handNumber = 1; handNumber <= 5; handNumber++) {
-    const handId = `fixture-hand-${handNumber}`;
+    const handId = `${prefix}-hand-${handNumber}`;
     await runner.run(async (session) => {
       const receipts = await tickets.awardHand({
-        handId, roomId: 'fixture-room', sessionId: 'fixture-session', mode: 'standard', completedAt, completedDateUtc: '2026-10-07', rewardPolicyVersion: 1,
+        handId, roomId: `${prefix}-room`, sessionId: `${prefix}-session`, mode: 'standard', completedAt, completedDateUtc: '2026-10-07', rewardPolicyVersion: 1,
         participants, dealtInAccountIds: [accountId, opponent],
         engine: { manualActionAccountIds: [accountId], payouts: { [accountId]: 40 }, contributions: { [accountId]: 20 } },
       }, session);
       await db.collection('hands').insertOne({
-        _id: handId, roomId: 'fixture-room', sessionId: 'fixture-session', handNumber,
+        _id: handId, roomId: `${prefix}-room`, sessionId: `${prefix}-session`, handNumber,
         status: 'COMPLETED', revision: 1, createdAt: completedAt, completedAt,
         result: { handId, rewardReceipts: receipts },
       }, { session });
