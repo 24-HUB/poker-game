@@ -10,7 +10,11 @@
 
 **Spec:** [Remaining M5 completion](../specs/2026-10-19-m5-completion-design.md).
 
-Status: **Local tooling implemented**, approved through the user request to implement PR #35.
+Status: **Local tooling implemented and PR #35 merged on 2026-10-21** as `a76e51da`.
+The [post-merge forward plan](2026-10-21-post-merge-release.md) records successful
+final-head/merged-dev CI and sequences the still-open work without repeating completed tools.
+The detailed action contracts and historical checkboxes below retain their original scope.
+Local implementation was approved through the user request to implement PR #35.
 Implementation/evidence is in [PR #35](https://github.com/24-HUB/poker-game/pull/35)
 and the [current execution record](../../releases/2026-10-19-m5-completion.md).
 Live packets retain their separate approval requirements; M5 is not complete.
