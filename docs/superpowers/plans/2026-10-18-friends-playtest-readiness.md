@@ -1,5 +1,10 @@
 # Friends Playtest Readiness Implementation Plan
 
+PR #34 is merged. The [October 19 remaining-work plan](2026-10-19-m5-completion.md)
+and its [specification](../specs/2026-10-19-m5-completion-design.md) are the proposed
+next sequence for review. This file retains its approved historical task/evidence
+scope; neither a new draft nor an old checked box authorizes a new live window.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:executing-plans to implement this plan task-by-task, sequentially inline. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Prove the existing public game supports the approved friends playtest while preserving all hosted progression, fixing observed blockers through reviewed PRs.

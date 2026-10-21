@@ -4,9 +4,14 @@ Date: 2026-10-18 (Asia/Bangkok)
 Status: written specification approved by the user's 2026-10-18 request to
 implement PR #34; [implementation plan](../plans/2026-10-18-friends-playtest-readiness.md)
 approved for sequential inline execution. Package A account/read/mail actions approved;
-new alias-account direct database provisioning requested by the user. Draft PR #34 targets `dev`;
+new alias-account direct database provisioning requested by the user. PR #34 merged into `dev` as `4f1e0e9b`;
 later deployment/disruption packages remain unapproved.
 Branch: `codex/friends-playtest-spec`; baseline: fetched `origin/dev` `fe654481`.
+
+For the proposed forward sequence after verified A/B setup, review the
+[October 19 remaining-work specification](2026-10-19-m5-completion-design.md)
+and [plan](../plans/2026-10-19-m5-completion.md). They are drafts; this approved
+document and the dated execution record remain the authority for prior evidence.
 
 ## Purpose and completion boundary
 

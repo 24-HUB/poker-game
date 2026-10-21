@@ -1,5 +1,151 @@
 # Checkpoint — Remaining phases through production
 
+## Consolidated onto PR #35 — 2026-10-21
+
+- User requested one PR and approved moving the implementation/review fixes from
+  PR #36 onto the existing PR #35, then closing #36 as superseded. Neither PR
+  is merged. Continue on `codex/remaining-m5-plan`, targeting `dev`:
+  https://github.com/24-HUB/poker-game/pull/35.
+- Combined the original planning history at `19f1bfd5` with all implementation
+  and review-fix commits through `8d0fd7b6` using a history-preserving branch
+  merge. Documentation conflicts preserve both dated handoffs and updated plans;
+  executable files are unchanged from the verified implementation branch.
+- Rechecked final implementation CI 39264756336 and fix CI 39263455539: both
+  completed/success. Prior local evidence: 551 tests, typechecks/builds, backup
+  1/1, operator 7/7, restore/cleanup 9/9 and affected Chromium 1/1. No code was
+  changed or tests rerun during this PR consolidation; new-head CI is pending.
+- Consolidation checks: executable-tree identity, documentation links, mirrored
+  checkpoints, conflict-marker scan and whitespace. Latest fetched `origin/dev`
+  remains `4f1e0e9b` and is contained. Hosted M5 gates remain open; no provider,
+  source-data, deployment or billing action ran.
+- Next: inspect PR #35 final-head CI, review the combined diff and merge manually
+  when satisfied. PR #36 is superseded; preserve its branch and review history.
+- Usage observed at session start 2026-10-21 Bangkok: five-hour 94%, weekly 89%
+  remaining. Reset times: 2026-10-22 00:26:22 and 2026-10-27 15:04:19 Bangkok.
+
+## PR #36 review follow-up — 2026-10-19
+
+- User requested fixes for comment 6268654341 on the existing PR #36 targeting
+  `dev`: https://github.com/24-HUB/poker-game/pull/36#issuecomment-6268654341.
+  Continue branch `codex/m5-operator-tools`; executable fix commit `89976560`.
+- P1: shared launcher disables Playwright automatic SIGINT/SIGTERM/SIGHUP closure.
+  Real Chromium regressions emit each signal, reload the same pending receipt,
+  assert one forwarded purchase/debit and retain the context until human closure.
+  The default-handler regression failed before the fix, then passed.
+- P2: attempt both restore-container removals, verify exact names absent and fail
+  closed on retained workloads or unavailable verification. Sanitized
+  `CLEANUP_INCOMPLETE` recovery instructions propagate through the PowerShell
+  wrapper; successful account verification cannot certify failed teardown.
+  Real age restore fault injection confirmed both containers remained, the call
+  rejected and recovery cleanup removed them. Failure regressions ran red/green.
+- Verification at 89976560: pinned frozen install and `pnpm check` passed all
+  551 tests, typechecks and configured production builds; includes operator 7/7
+  and restore/cleanup 9/9. Generated encrypted backup rehearsal passed 1/1.
+  PowerShell parser and whitespace checks passed. Affected collection Chromium
+  flow passed 1/1 (52.8 seconds).
+- Fresh origin fetch confirms `origin/dev` 4f1e0e9b is contained (0 behind).
+  Code is pushed to PR36; this evidence follow-up contains only task-owned docs.
+  CI 39263455539 is running; prior b7249420 CI completed successfully.
+- Remaining hosted M5 gates and provider-access blockers below are unchanged.
+  No provider/source operation ran for this review. PR is open, user-marked ready;
+  user merges manually. Next: inspect final-head CI; the review fixes and evidence
+  are saved on this branch. Resume with status/usage/fetch before further work.
+- Usage observed 2026-10-19 20:54 Bangkok: five-hour 32%, weekly 59% remaining;
+  resets 2026-10-20 00:49:36 and 2026-10-25 07:52:38 Bangkok.
+
+## Remaining M5 local operator tooling — 2026-10-19
+
+- User requested implementation of PR #35. Branch `codex/m5-operator-tools`,
+  draft PR #36 targeting dev: https://github.com/24-HUB/poker-game/pull/36.
+  Verified tooling commit `9f224b6e`; clean/fresh task base `4f1e0e9b`.
+  Final fetch confirms origin/dev is still 4f1e0e9b and is contained (0 behind).
+  PR #35 is still open/unmerged; its approved reference spec/plan are included.
+- Task 2 local tooling complete: pinned human-run headed response-loss CLI,
+  identity/confirmation guards, one no-retry/no-redirect forward, validated 201,
+  same-page normal GET recovery and exact five-ticket debit. Route abort completes
+  before unroute. Terminal EOF/graceful interrupt retains unresolved browser state
+  until human closure; a forced OS/browser crash requires the approved source
+  receipt audit before another purchase. No credential/state recordings.
+- Task 7 local tooling complete: reviewed clean-source prebuilt image, authenticated
+  network-none tmpfs MongoDB/shared app/browser namespace, actual containment/TCP
+  probes before decryption and after browser execution, streamed age restore with
+  both exits checked, namespace mapping, full manifest comparison before app writes,
+  A/B normal UI login, committed receipt replay, unchanged durable economy/progression.
+  Restore-only navigator online hint enables loopback UI; physical egress stays denied.
+  Only generated fixtures were used; no retained real archive/source operation.
+- Verification on executable 9f224b6e: frozen install; pnpm check 544 tests,
+  all typechecks and configured production builds; operator 5/5 and restore 4/4
+  included. Backup rehearsal 1/1 and PowerShell/JavaScript syntax passed.
+  Full Chromium suite passed 35/35 (4.2 minutes); final operator identity/
+  confirmation/lifecycle guards passed 5/5. Linux tooling CI 39259100767 completed/success, including pnpm check,
+  backup, Worker bundle and full Chromium. Later evidence/test heads need their
+  own CI result; the final follow-up adds documentation and a guard assertion.
+- Independent review found two Important issues: both addressed with real age
+  pipeline coverage and retained unresolved browser lifecycle. The close-on-exit
+  regression was observed RED then GREEN. Separate one-forward race regression
+  also failed then passed. No Critical finding. Local Docker/operator trust remains
+  part of clean archive/candidate-label provenance; no cryptographic attestation.
+- Current packets and exact remaining gates: docs/releases/2026-10-19-m5-completion.md.
+  Tasks 3–6/8, real-archive Task 7 and current provider/account/mail preflight remain
+  pending named approvals, fresh evidence and human participation. R2 controlled
+  overlap/lost-ack and R3 runtime DB-failure methods remain blocked, without waiver.
+  No deployment, source restore, email, hosted poker/pull or billing action ran.
+- Automatic approval review rejected opening the signed-in Render dashboard,
+  treating private provider metadata inspection as outside implementation approval.
+  No alternate provider channel attempted. Explicit read-only approval is required
+  for named Render/Blueprint, Cloudflare Worker, Atlas project/cluster and Brevo
+  sender/quota preflight. No retained A/B/provider tabs in available inventory;
+  actual session/progression/access-expiry freshness remains unverified.
+- Known provisioning path-with-spaces minor: owner future Codex defect task;
+  reproduce in a disposable spaced checkout before a narrow separate-PR fix.
+- Exact next step: review PR36/final-head CI and obtain explicit read-only
+  Render/Cloudflare/Atlas/Brevo preflight approval. Resume with status/usage/fetch,
+  inspect the pinned inventory and prepare current named live-stage packets;
+  no expired window/credential is renewed. User merges manually.
+  Final evidence/test follow-up contains only task-owned files; 21 local links,
+  mirrored checkpoints and whitespace checks passed; no upstream integration.
+- Usage observed 2026-10-19 20:28 Bangkok: five-hour 57%, weekly 63% remaining;
+  resets 2026-10-20 00:49:36 and 2026-10-25 07:52:38 Bangkok.
+
+## Remaining M5 specification and implementation plan — 2026-10-19
+
+- User requested specifications and an implementation plan for all remaining M5
+  work. Planning only: both artifacts are draft for review; no new live action,
+  account, operator tool, dependency or product behavior was implemented.
+- Branch `codex/remaining-m5-plan`, from clean/fresh `origin/dev` `4f1e0e9b`.
+  PR #35 targets dev: https://github.com/24-HUB/poker-game/pull/35. Last completed
+  planning commit `74aa6257`; base `4f1e0e9b`. PR #34 is merged, and its
+  merged-candidate CI run 39135639483 was rechecked completed/success.
+- New spec: `docs/superpowers/specs/2026-10-19-m5-completion-design.md`.
+  New plan: `docs/superpowers/plans/2026-10-19-m5-completion.md`.
+  Nine tasks cover current preflight, response-loss tooling, accounts/mail,
+  gameplay/rewards, collection, interruption/faults, isolated restore tooling,
+  six-person acceptance/safe exit and conditional reproduced-defect fixes.
+- Preserved October 18 A/B setup/source-baseline evidence with its date; do not
+  recreate/reset accounts or treat old balances, sessions, quota or access as fresh.
+  Temporary source provisioning access has exceeded its scheduled six-hour life;
+  recheck actual expiry without automatically renewing it or deleting game users.
+- Explicit proposals for review: dedicated unverified C for normal verification;
+  revised 12-send distribution (3 planned + 1 delivery reserve each A/B/C);
+  operator-owned hosted response-loss runner; isolated network-none restored-app
+  runner; stage-specific packets. None grants execution permission. Unsupported
+  DB-fault/controlled-overlap methods stay blocked; no implicit waiver/paid upgrade.
+- Primary documentation checked: Render free/deploy constraints, Playwright route
+  delivery behavior and Atlas optional billed Free backup subscription. Corrected
+  current operations wording while retaining the selected $0 encrypted manual
+  procedure and dated maintenance history. Updated checklist/older plan pointers.
+- Task-owned changes: planning/reference/checkpoint documents only. Validation
+  passed: 68 local links, all 11 gates/9 tasks, placeholder/fence/whitespace scan,
+  mirrored checkpoint comparison and source/reference/full-diff review.
+  No app tests run or required for these documentation-only changes.
+- Exact next step: user reviews the written spec and plan in PR #35, including
+  the explicit proposed additions, before code execution;
+  retain sequential inline execution. After approval start plan Task 1 with fresh
+  status/usage/fetch and a current execution packet; no live window is renewed.
+- Usage observed 2026-10-19 about 19:41 Bangkok: five-hour 60%, weekly 70%
+  remaining; resets 2026-10-19 19:49:17 and 2026-10-25 07:52:38 Bangkok.
+  User merges manually.
+
 ## Friends playtest readiness specification — 2026-10-18
 
 - Spec/plan, Package A and the exact temporary-access package approved. User

@@ -1,5 +1,12 @@
 # Backup, restore and incident operations
 
+Current evidence: the [October 17 maintenance record](releases/2026-10-17-private-release.md)
+contains the executed hosted backup/shutdown/restore observations; the
+[October 18 account record](releases/2026-10-18-friends-playtest.md) contains the
+later A/B baseline. Earlier dated preparation notes below retain their historical
+scope. The proposed remaining application-level restore work is specified in the
+[M5 completion design](superpowers/specs/2026-10-19-m5-completion-design.md).
+
 This runbook prepares the private release. Live backups, restores, provisioning,
 secret changes and deployments still require authorization for the exact environment
 and action. M5.1 admission/maintenance controls are locally implemented; M5.3 hosted
@@ -144,9 +151,14 @@ necessary but insufficient for release.
 
 ## Consistent backup procedure
 
-Atlas Free has no managed backups. MongoDB supports Database Tools dumps/restores
-for Free clusters; Free does not provide the oplog privileges needed for this
-strategy. Use a **quiescent database dump**, without `--oplog` or `--oplogReplay`.
+Under the selected $0 setup, no managed backup subscription is selected. As
+checked on 2026-10-19, Atlas now documents an
+[optional billed backup subscription for Free clusters](https://www.mongodb.com/docs/atlas/backup/cloud-backup/free-cluster-backup/).
+Do not enable it or add a payment method without separate user authorization.
+The manual encrypted procedure below remains the selected approach.
+MongoDB supports Database Tools dumps/restores
+for Free clusters; the current Free tool restrictions exclude `--oplog` and
+`--oplogReplay`. Use a **quiescent database dump** without either option.
 See [Atlas backup limitations](https://www.mongodb.com/docs/atlas/backup-restore-cluster/)
 and [Atlas Free tool restrictions](https://www.mongodb.com/docs/atlas/reference/free-shared-limitations/).
 
@@ -175,8 +187,11 @@ and [Atlas Free tool restrictions](https://www.mongodb.com/docs/atlas/reference/
    shutdown must pause both and prevent traffic-driven wake. The Free service's
    paid Maintenance Mode is unavailable; do not substitute it for writer shutdown
    or upgrade automatically. Service suspension is exposed in its dashboard, but
-   its full quiescence/wake-prevention procedure remains unverified. Cancel a hosted
-   dump until the approved method demonstrably stops every writer. Record the
+   its quiescence/wake-prevention sequence was observed during the
+   [October 17 maintenance](releases/2026-10-17-private-release.md). Recheck that
+   sequence and actual writer shutdown in the new authorized window; historical
+   evidence alone cannot authorize or certify a fresh dump. Cancel a hosted dump
+   until the approved method demonstrably stops every writer. Record the
    original controls and restore them only at the approved reopening point.
 4. Verify economy with the reader and record collection counts plus collection
    options/validators/indexes separately in the private backup manifest. Capture
@@ -325,3 +340,20 @@ progression checks passed again; cleanup removed only its generated container an
 temporary directory. A fresh read-only review found a valid default-equipment case
 without a wallet; a real-repository regression reproduced it before the audit was
 corrected. SSR eligible-pool auditing was deferred as a nonblocking extension.
+
+### M5 operator interruption and restore teardown
+
+The headed pull-recovery launcher disables Playwright's automatic SIGINT,
+SIGTERM and SIGHUP browser closure. The CLI handles these signals and retains an
+unresolved browser context until the human closes it, preserving the pending
+receipt through reload. A forced process/browser crash still requires the
+approved source receipt audit before another purchase.
+
+The isolated restore attempts removal of both task-created containers and then
+verifies their exact names are absent. A remaining container or unavailable
+verification produces `CLEANUP_INCOMPLETE`, a nonzero exit and no successful
+restore report. The PowerShell wrapper displays only fixed recovery instructions
+and validated task-container names. When Docker is available, run the reported
+`docker rm -f` command and verify those names are absent before certification or
+reopening. Retain encrypted backups; never treat a successful account check as
+proof that teardown completed.
