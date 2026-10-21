@@ -1,5 +1,6 @@
 import { expect, test } from '@playwright/test';
 import { pullReceiptSchema, type PullReceipt } from '@poker/contracts';
+import { runPullResponseLoss, ARM_PHRASE } from '../../scripts/operators/pull-response-loss.mjs';
 import { createAccountThroughNativeApi } from './support/accounts';
 
 test('earn → interrupted pull → recover → equip → next hand → sign in again', async ({ browser }) => {
@@ -72,65 +73,23 @@ test('earn → interrupted pull → recover → equip → next hand → sign in 
     expect(await host.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);
     await host.setViewportSize({ width: 1280, height: 850 });
 
-    let captured: PullReceipt | null = null;
-    let purchaseStatus = 0;
-    let purchasePayload: unknown;
-    let markCommitted!: () => void;
-    let releaseResponse!: () => void;
-    const committed = new Promise<void>((resolve) => { markCommitted = resolve; });
-    const release = new Promise<void>((resolve) => { releaseResponse = resolve; });
-    await host.route('**/api/pulls', async (route) => {
-      const response = await route.fetch();
-      purchaseStatus = response.status();
-      purchasePayload = (await response.json()).data;
-      markCommitted();
-      await release;
-      await route.fulfill({ response }).catch(() => undefined);
+    let receipt: PullReceipt | undefined;
+    host.on('response', async (response) => {
+      if (new URL(response.url()).pathname.startsWith('/api/pulls/') && response.status() === 200) {
+        receipt = pullReceiptSchema.parse((await response.json()).data);
+      }
     });
-    if (process.env.M4_CAPTURE === '1') { await host.clock.install(); await host.clock.pauseAt(new Date()); }
-    await host.getByRole('button', { name: 'Open 1 — 5 tickets' }).click();
-    await committed;
-    expect(purchaseStatus, 'The interrupted purchase must commit before reload').toBe(201);
-    captured = pullReceiptSchema.parse(purchasePayload);
-    const recoveryStatuses: number[] = [];
-    host.on('response', (response) => {
-      if (new URL(response.url()).pathname.startsWith('/api/pulls/')) recoveryStatuses.push(response.status());
+    const loss = await runPullResponseLoss(host, {
+      origin: 'http://127.0.0.1:3100', mode: 'fixture', expectedDisplayName: 'Celestial Host',
+      confirmation: ARM_PHRASE,
+      onArmed: async () => { await host.getByRole('button', { name: 'Open 1 — 5 tickets' }).click(); },
     });
-    await host.reload();
-    releaseResponse();
-    await host.unroute('**/api/pulls');
-    if (process.env.M4_CAPTURE === '1') {
-      // Let hydration and query notifications run while keeping the 900 ms reveal frozen for captures.
-      await expect.poll(async () => {
-        await host.clock.runFor(50);
-        return host.getByRole('heading', { name: 'Your invitations are ready', exact: true }).count();
-      }, { timeout: 10_000 }).toBe(1);
-      await host.screenshot({ path: 'test-results/m4-reveal-desktop.png', fullPage: true });
-      await host.setViewportSize({ width: 360, height: 800 });
-      await host.screenshot({ path: 'test-results/m4-reveal-mobile.png', fullPage: true });
-      await host.setViewportSize({ width: 1280, height: 850 });
-      await host.clock.resume();
-    }
-    try {
-      await expect(host.getByRole('heading', { name: 'Your invitations', exact: true })).toBeVisible();
-    } catch (cause) {
-      // Report only flow states/status codes; never dump cookies, request IDs or cosmetic payloads.
-      const states = {
-        recoveryStatuses,
-        pending: await host.getByRole('button', { name: 'Recover existing invitation' }).count(),
-        reveal: await host.getByRole('region', { name: 'Committed invitation results' }).count(),
-        accessCheck: await host.getByText('Checking private access…', { exact: true }).count(),
-        roomCheck: await host.getByText('Recovering your current room…', { exact: true }).count(),
-        roomUnavailable: await host.getByText('Your current room could not be checked. Reconnect to continue.', { exact: true }).count(),
-        storageUnavailable: await host.getByRole('alert').filter({ hasText: 'cannot safely save' }).count(),
-      };
-      throw new Error(`Committed pull recovery states: ${JSON.stringify(states)}`, { cause });
-    }
-    expect(captured).not.toBeNull();
-    const receipt = captured! as PullReceipt;
-    const recovered = await (await hostContext.request.get(`/api/pulls/${receipt.requestId}`)).json();
-    expect(recovered.data).toEqual(receipt);
-    expect((await (await hostContext.request.get('/api/wallet')).json()).data.balance).toBe(0);
+    expect(loss, 'commit then reload recovers same receipt with one debit').toEqual({
+      result: 'pass', committed: true, sameReceipt: true, singleDebit: true, mismatches: [],
+    });
+    await expect(host.getByRole('heading', { name: 'Your invitations', exact: true })).toBeVisible();
+    expect(receipt).toBeDefined();
+    if (!receipt) throw new Error('Expected committed recovery receipt');
     const item = receipt.results[0]!.item;
     await expect(host.getByRole('heading', { name: item.name, exact: true }).first()).toBeVisible();
     await host.getByRole('button', { name: 'Continue', exact: true }).click();

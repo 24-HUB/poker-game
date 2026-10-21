@@ -340,3 +340,20 @@ progression checks passed again; cleanup removed only its generated container an
 temporary directory. A fresh read-only review found a valid default-equipment case
 without a wallet; a real-repository regression reproduced it before the audit was
 corrected. SSR eligible-pool auditing was deferred as a nonblocking extension.
+
+### M5 operator interruption and restore teardown
+
+The headed pull-recovery launcher disables Playwright's automatic SIGINT,
+SIGTERM and SIGHUP browser closure. The CLI handles these signals and retains an
+unresolved browser context until the human closes it, preserving the pending
+receipt through reload. A forced process/browser crash still requires the
+approved source receipt audit before another purchase.
+
+The isolated restore attempts removal of both task-created containers and then
+verifies their exact names are absent. A remaining container or unavailable
+verification produces `CLEANUP_INCOMPLETE`, a nonzero exit and no successful
+restore report. The PowerShell wrapper displays only fixed recovery instructions
+and validated task-container names. When Docker is available, run the reported
+`docker rm -f` command and verify those names are absent before certification or
+reopening. Retain encrypted backups; never treat a successful account check as
+proof that teardown completed.

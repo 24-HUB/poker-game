@@ -1,7 +1,7 @@
 # Remaining M5 Completion Specification
 
 Date: 2026-10-19 (Asia/Bangkok)
-Status: **Draft for review.** The user requested this specification and its
+Status: **Implementation approved by the user on 2026-10-19 through PR #35.** The user requested this specification and its
 [implementation plan](../plans/2026-10-19-m5-completion.md) together. Neither
 document authorizes new live operations. Existing, unrevoked authorizations retain
 their original scope; an expired maintenance window or credential is not renewed.

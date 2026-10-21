@@ -3,7 +3,7 @@
 The proposed forward sequence after merged PR #34 is the
 [remaining M5 specification](superpowers/specs/2026-10-19-m5-completion-design.md)
 and [implementation plan](superpowers/plans/2026-10-19-m5-completion.md).
-These drafts preserve completed evidence and identify the approvals/methods still
+These documents preserve completed evidence and identify the approvals/methods still
 needed; writing them supplies no new hosted pass or live-action authorization.
 
 Use this checklist for a specific candidate revision. Record actual evidence beside
@@ -12,6 +12,16 @@ friends release is not verified. Deployment and live database actions require th
 operator's explicit authorization as described in [deployment.md](deployment.md).
 
 ## Candidate record
+
+- Remaining M5 planning and implementation: [PR #35](https://github.com/24-HUB/poker-game/pull/35),
+  `codex/remaining-m5-plan`. PR #36 is superseded; its implementation and both
+  review fixes are preserved here. Verified executable `89976560`; implementation
+  head `8d0fd7b6` CI 39264756336 completed/success, including full Chromium and
+  Worker packaging. Local `pnpm check` passed 551 tests/types/builds, operator
+  7/7, restore/cleanup 9/9 and backup 1/1; affected Chromium passed 1/1.
+  Consolidated-head CI is pending. Current [execution packets/evidence](releases/2026-10-19-m5-completion.md)
+  keep unobserved hosted gates open. Provider preflight still requires explicit
+  read-only approval. User reviews and merges manually.
 
 - Friends acceptance planning: [PR #34](https://github.com/24-HUB/poker-game/pull/34),
   [approved spec](superpowers/specs/2026-10-18-friends-playtest-readiness-design.md)
