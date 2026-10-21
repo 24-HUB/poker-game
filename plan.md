@@ -528,8 +528,8 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
   the final PR verify job includes aggregate checks, backup, Worker and Chromium.
   No formal #35 reviews displayed; prior #36 fixes remain in merged history.
 - Planning branch `codex/post-merge-release-plan`, from clean freshly fetched
-  `origin/dev` `a76e51da`; last completed source commit is that merge. Task PR
-  will be created from the documentation commit; user merges manually.
+  `origin/dev` `a76e51da`; plan commit `2253030c` is saved/pushed. Draft PR #37
+  targets `dev`: https://github.com/24-HUB/poker-game/pull/37. User merges manually.
 - New plan: `docs/superpowers/plans/2026-10-21-post-merge-release.md`.
   Nine tasks cover fresh preflight/method feasibility, accounts, poker/rewards,
   collection, faults, real restore, six humans, conditional fixes and later M6/M7.
@@ -538,8 +538,11 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 - Hosted gates remain open. R2 controlled overlap/lost-ack and R3 runtime DB loss
   need a safe approved method. Provider/account/mail read-only preflight still needs
   its missing named approval; no provider/source/mail/game/deployment/backup ran.
-- Verification scope: documentation accuracy/full-diff/link/checkpoint/whitespace
-  review. No local application suite rerun; CI observations above are remote results.
+- Verification passed: full documentation diff, 57 local links, checkpoint mirror,
+  nine tasks/eleven gates, marker scan and whitespace. No local application suite
+  rerun; CI observations above are remote results. PR #37 CI is pending; recheck
+  its final head after this evidence-only follow-up. Final fetch contains latest
+  `origin/dev` `a76e51da` (0 behind).
 - Exact next step: review the new plan, then Task 1's named read-only
   Render/Cloudflare/Atlas/Brevo preflight approval and current inventory.
   Resume with status/current branch, usage, fresh fetch and this save point;
