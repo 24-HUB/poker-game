@@ -1,5 +1,32 @@
 # Checkpoint — Remaining phases through production
 
+## PR #35 merged; remaining-work forward plan — 2026-10-21
+
+- User requested checking PR #35 first, then creating the remaining implementation
+  plan. Fresh Git and GitHub show #35 merged as `a76e51da` at 20:50 Bangkok.
+  Final PR CI 39611351308 and merged-dev CI 39611611127 completed/success;
+  the final PR verify job includes aggregate checks, backup, Worker and Chromium.
+  No formal #35 reviews displayed; prior #36 fixes remain in merged history.
+- Planning branch `codex/post-merge-release-plan`, from clean freshly fetched
+  `origin/dev` `a76e51da`; last completed source commit is that merge. Task PR
+  will be created from the documentation commit; user merges manually.
+- New plan: `docs/superpowers/plans/2026-10-21-post-merge-release.md`.
+  Nine tasks cover fresh preflight/method feasibility, accounts, poker/rewards,
+  collection, faults, real restore, six humans, conditional fixes and later M6/M7.
+  Existing response-loss/restore tools stay completed. Updated current pointers
+  and execution record; historical entries below retain their original dates.
+- Hosted gates remain open. R2 controlled overlap/lost-ack and R3 runtime DB loss
+  need a safe approved method. Provider/account/mail read-only preflight still needs
+  its missing named approval; no provider/source/mail/game/deployment/backup ran.
+- Verification scope: documentation accuracy/full-diff/link/checkpoint/whitespace
+  review. No local application suite rerun; CI observations above are remote results.
+- Exact next step: review the new plan, then Task 1's named read-only
+  Render/Cloudflare/Atlas/Brevo preflight approval and current inventory.
+  Resume with status/current branch, usage, fresh fetch and this save point;
+  do not repeat A/B provisioning or silently renew an expired live window.
+- Usage observed 2026-10-21 21:10 Bangkok: five-hour 83%, weekly 87% remaining;
+  reset times 2026-10-22 00:26:22 and 2026-10-27 15:04:19 Bangkok.
+
 ## Consolidated onto PR #35 — 2026-10-21
 
 - User requested one PR and approved moving the implementation/review fixes from

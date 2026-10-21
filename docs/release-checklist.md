@@ -1,6 +1,8 @@
 # Private release checklist
 
-The proposed forward sequence after merged PR #34 is the
+The current forward sequence after merged PR #35 is the
+[post-merge M5/private-release plan](superpowers/plans/2026-10-21-post-merge-release.md).
+It retains the approved contracts in the
 [remaining M5 specification](superpowers/specs/2026-10-19-m5-completion-design.md)
 and [implementation plan](superpowers/plans/2026-10-19-m5-completion.md).
 These documents preserve completed evidence and identify the approvals/methods still
@@ -12,6 +14,15 @@ friends release is not verified. Deployment and live database actions require th
 operator's explicit authorization as described in [deployment.md](deployment.md).
 
 ## Candidate record
+
+- October 21 post-merge check: PR #35 is merged into `dev` as `a76e51da`.
+  [Final PR CI 39611351308](https://github.com/24-HUB/poker-game/actions/runs/39611351308)
+  and [merged-dev CI 39611611127](https://github.com/24-HUB/poker-game/actions/runs/39611611127)
+  completed/success, independently observed in GitHub. The final PR job includes
+  aggregate checks, backup rehearsal, Worker packaging and full Chromium acceptance.
+  Historical pending/unmerged statements below describe earlier handoffs.
+  Hosted artifacts/provider/account/mail inventory remain unverified this session;
+  M5 gates remain open. The new plan is preparation only; user merges task PRs manually.
 
 - Remaining M5 planning and implementation: [PR #35](https://github.com/24-HUB/poker-game/pull/35),
   `codex/remaining-m5-plan`. PR #36 is superseded; its implementation and both

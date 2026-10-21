@@ -1,5 +1,24 @@
 # Remaining M5 execution — 2026-10-19
 
+## Post-merge check and forward plan — 2026-10-21
+
+PR #35 is merged as `a76e51da7a48daadb46b24d76697a88da0187475` on `dev`,
+confirmed by a fresh origin fetch and GitHub's merged event. Its final head
+`7fa334d4` has successful [CI 39611351308](https://github.com/24-HUB/poker-game/actions/runs/39611351308),
+including the verify job's aggregate checks, backup, Worker packaging and full
+Chromium suite. [Merged-dev CI 39611611127](https://github.com/24-HUB/poker-game/actions/runs/39611611127)
+also completed successfully. No formal PR #35 reviews were displayed; earlier
+PR #36 fix evidence is retained below. No local app tests were rerun for this check.
+
+The [post-merge plan](../superpowers/plans/2026-10-21-post-merge-release.md) is now
+the forward sequence. Existing detailed sequences/tooling remain authoritative;
+the merge-first prerequisite is satisfied. Provider/config/account/mail freshness
+and live gates are unchanged and open. No private provider/source action,
+mail, gameplay, deployment or backup ran. Dated unmerged/pending statements below
+are historical. Current planning branch: `codex/post-merge-release-plan`.
+
+## Historical implementation handoff
+
 Implementation requested for [PR #35](https://github.com/24-HUB/poker-game/pull/35).
 The [specification](../superpowers/specs/2026-10-19-m5-completion-design.md) and
 [plan](../superpowers/plans/2026-10-19-m5-completion.md) govern execution.
