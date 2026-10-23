@@ -29,9 +29,11 @@
   packet are in `docs/releases/2026-10-19-m5-completion.md`. Read-only inspection
   is authorized; mail/account/provider mutation windows remain unapproved.
   No mail, signup/reset, gameplay/pull, deliberate restart, backup or deployment ran.
-- Save point: last completed repository commit is base `a181a076`; task-owned
-  evidence/checkpoint docs are pending commit/PR. All 56 local file links, mirrored
-  checkpoints, conflict scan and whitespace passed; user merges manually.
+- Save point: evidence committed/pushed as `04379405`; draft PR #38 targets dev:
+  https://github.com/24-HUB/poker-game/pull/38. Current changes only add this
+  handoff. All 56 local file links, mirrored checkpoints, conflict scan and
+  whitespace passed; fresh review found no Important/Critical issue. PR38 CI is
+  pending; inspect its final head separately. User merges manually.
 - Exact next step: confirm A/B inbox ownership, C disposition/owned alias entered
   privately and approve the concrete account/mail packet (12 sends maximum,
   4 each A/B/C, human passwords/codes). Recheck candidate/flags/quota/baseline at
