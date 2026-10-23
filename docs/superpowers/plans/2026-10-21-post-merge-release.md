@@ -12,6 +12,12 @@
 
 Status: **Planning only, 2026-10-21 Bangkok.** This is the forward sequence after PR #35, replacing its obsolete merge-first prerequisite. Completed tooling tasks stay completed. No hosted gate, live approval or production readiness is created by this document.
 
+Execution update **2026-10-23 Bangkok**: Task 1 started after user authorization.
+The [current evidence/first proposed live packet](../../releases/2026-10-19-m5-completion.md#task-1-preflight-started--2026-10-23-bangkok)
+records observed provider inventory, projected A/B baseline and successful warm
+smoke, while keeping cold-wake timing and R2/R3 methods open. The dated planning
+status above describes this plan's creation; it does not supersede that evidence.
+
 ## Verified starting point
 
 - [PR #35](https://github.com/24-HUB/poker-game/pull/35) is merged into `dev` as `a76e51da7a48daadb46b24d76697a88da0187475`, observed in Git and GitHub on October 21. Its final head is `7fa334d46be2a3193748b77933fc1f823d66851a`.
@@ -65,9 +71,9 @@ Each live packet must name exact resource/artifact/configuration IDs, operator/w
 
 **Files:** Evidence/checkpoint files above. **Consumes:** verified merged candidate, spec sections 2/7/8, [October 19 Task 1](2026-10-19-m5-completion.md#task-1-refresh-candidate-and-prepare-executable-packets-p1). **Produces:** current inventory, five executable packets and a separate method decision for each R2/R3 variant.
 
-- [ ] Recheck clean status/current branch, account usage, origin fetch and exact candidate CI; record upstream drift without integrating it. Do not redeploy a documentation-only SHA just to make IDs match.
-- [ ] Obtain missing read-only approval for the named Render service/Blueprint, Worker, Atlas project/cluster and Brevo sender/quota. Inspect current IDs, flags, deploy triggers, rollback compatibility, free-tier headroom and actual temporary-access expiry; do not renew access.
-- [ ] Read fresh A/B identity/progression, UTC allowance, membership, schema/catalogue and authority baseline through authorized scope; preserve October 18 results as dated history.
+- [x] Recheck clean status/current branch, account usage, origin fetch and exact candidate CI; record upstream drift without integrating it. Do not redeploy a documentation-only SHA just to make IDs match.
+- [x] Obtain missing read-only approval for the named Render service/Blueprint, Worker, Atlas project/cluster and Brevo sender/quota. Inspect current IDs, flags, deploy triggers, rollback compatibility, free-tier headroom and actual temporary-access expiry; do not renew access.
+- [x] Read fresh A/B identity/progression, UTC allowance, membership, schema/catalogue and authority baseline through authorized scope; preserve October 18 results as dated history.
 - [ ] Prepare account/mail, gameplay/economy, restart/fault, backup/restore and friends/exit packets using the existing record. Inspect current sender/owned inboxes before requesting mail execution approval.
 - [ ] For controlled stale authority/lost acknowledgement and runtime DB loss, write the affected process/request, trigger, containment, independent commit proof, abort and restoration method. If unavailable on the selected free service, record the missing capability and **blocked**; do not invent a hosted pass or fault switch.
 - [ ] Save observed evidence through a PR. Independently approved earlier stages may proceed, but blocked R2/R3 prevent Task 7 and M5 closure.

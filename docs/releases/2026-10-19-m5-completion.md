@@ -1,5 +1,136 @@
 # Remaining M5 execution — 2026-10-19
 
+## Task 1 preflight started — 2026-10-23 Bangkok
+
+User requested execution after the named read-only Render/Cloudflare/Atlas/Brevo
+preflight was explained. This authorizes current provider inspection, not mail,
+account changes, deployment, gameplay, backup or fault execution. Work starts on
+`codex/m5-hosted-preflight` from clean, freshly fetched `origin/dev` `a181a076`.
+PR #37 is merged; its earlier draft/pending statements below are historical.
+
+Current repository candidate: `a181a07658e55462d22ebbd29009436ff94e73af`.
+[Merged-dev CI 39615760009](https://github.com/24-HUB/poker-game/actions/runs/39615760009)
+and its [verify job](https://github.com/24-HUB/poker-game/actions/runs/39615760009/job/119276224168)
+were inspected in GitHub and show success. The job includes frozen install,
+uncached backend build, disposable migrations, aggregate checks, backup/restore
+rehearsal, Worker build and full Chromium acceptance. PR #37 final run
+[39615094415](https://github.com/24-HUB/poker-game/actions/runs/39615094415)
+is also listed successful. No CI rerun or local application suite ran here.
+The changes from `a76e51da` to this candidate are documentation only; this does
+not establish the live provider binary or authorize a documentation-only deploy.
+
+### Fresh observations and remaining entry conditions
+
+| Surface | Observation | Remaining requirement |
+| --- | --- | --- |
+| GitHub | Merged candidate CI successful; authenticated browser available. Connector requests connection. | Preserve browser evidence; do not rerun CI merely for preflight. |
+| Brevo | 300/300 daily emails left; one verified sender. Private comparison confirms configured backend sender matches. Sender name `pkgacha.support`; freemail/DKIM/DMARC compliance warning remains. | Delivery is unproven; preserve the warning and stop on delivery failure. No sender address is retained in Git. |
+| Render | Human signed in. Free Singapore service, live deploy `dep-dbccv50473hc73ab35og`, commit `a181a076`. Auto-deploy After CI Checks Pass; Blueprint Auto Sync Yes on `dev`/`render.yaml`. | Keep these controls unchanged for read-only preparation; drain/restore only in a separately approved disruptive window. |
+| Cloudflare | Human signed in. Active Worker `e4cfba62` at 100%, based on `0d4ae28a`; builds disabled, production branch `dev`, no cron/queue triggers or deploy hooks. Public/backend origins match the named pair; proxy secret remains encrypted. | Recheck before each window. No runtime source changes in web/server/contracts between the observed revisions; this source comparison supports compatibility, not a claim of artifact identity. |
+| Atlas | Human signed in. Named FREE Cluster0 active, MongoDB 8.0.34; 143.78/512 MB (28%), backups/autoscaling off. `poker_playtest` has 25 collections/47 indexes. Temporary provisioning user and its dated temporary IP rule absent; current IP not allowlisted. | Existing Data Explorer supports projected reads. Do not renew direct access. Retained custom-role definition not re-inspected; user/rule absence does not claim deletion of that definition. |
+
+The human completed the three provider sign-ins after the initial login blockers.
+No credential, role, allowlist, expiry, configuration or game account was changed
+by the agent. Render/Atlas plugins were discovered but are not connected; the
+existing browser is the read-only path. Render usage: 18.7/750 instance hours,
+39 MB/5 GB bandwidth and 12/500 pipeline minutes used. Cloudflare: 27/3,000 build
+minutes this month and 4.36k requests October 1–23; these are observed dashboard
+windows, not a daily request-quota certification.
+
+### Projected account baseline and public smoke
+
+At **21:39:47 Bangkok**, a read-only Data Explorer aggregation returned exactly
+Playtest A and B, both verified. Each has one wallet, balance **0**, revision **0**;
+no daily-earnings row for UTC 2026-10-23 (earned **0**, allowance **20** under v1).
+For each, ownership, equipment, pull/reward receipts, ledger, banner progress,
+active participants, active membership and non-left memberships are empty.
+Global active participants/memberships are empty. Schema IDs **1–7**, catalogue
+`celestial-v1`, hash `caab399fb53144bc13691265fb3e5e2e9b2c9d7bb9e53525d521cb9314a63324`.
+One authority row is live at epoch **38**. No exact-name `Verification Probe C`
+exists; other unverified accounts were not classified for reuse. The pipeline
+excludes private identifiers, addresses, passwords, sessions and cards; it was
+not saved to the shared query library. This is a projected baseline, not a
+global transactional economy audit or fresh authenticated A/B browser session.
+
+The first two bounded `node scripts/smoke-deployment.mjs` attempts returned shell
+200 but failed because readiness was not JSON. Render logs then showed a cold
+startup running pinned pnpm and `node dist/main.js`. Subsequent sanitized reads
+returned direct `/health/deploy` 200 JSON `ok` and Worker `/api/health/ready` 200
+JSON `ready`. The final normal smoke passed **shell 200 / readiness ready**.
+The earlier expired epoch-37 lease became live epoch 38 after wake. This evidence
+is consistent with cold startup; no application defect is established and no fix
+was applied. Natural idle timing and the 90-second R1 bound were not certified.
+Rollback deploy `dep-dbcccc3m8hqs73bnr2l0` (`a76e51da`) is listed successful;
+its runtime source matches this candidate, but no rollback was executed.
+
+### Proposed first executable packet: account/mail only
+
+Targets: the named public Worker at `e4cfba62` and Render live deploy above,
+Atlas `poker_g/Cluster0/poker_playtest`, and the privately matched verified Brevo
+sender. Recheck artifact/flags, sender/quota, source baseline and no unrelated
+participants at entry. Operator: the user; proposed window: **90 attended minutes
+starting only after explicit approval and all private inputs are ready**. Record
+actual start/end and approvals before execution; expiry ends the window.
+
+Preserve A/B. Proposed C disposition: create one dedicated `Verification Probe C`
+through normal signup with an operator-owned new alias, after confirming no
+suitable unverified account should be reused. The human supplies inbox aliases,
+passwords, registration code and email codes directly in the private forms.
+Maximum **12 sends total / 4 each A/B/C**: nine planned (C verification three,
+A reset three, B reset three), one explained delivery retry per alias. Follow
+spec section 5's actual ten-minute expiry, at-least-60-second resend, supersession,
+reuse rejection, post-verification password sign-in, old HTTP/socket revocation
+and account-switch isolation sequences. Retain old contexts until revocation is
+observed. Never start poker sessions, play hands, pull, equip, change providers or seed
+progression as part of this packet.
+
+Expected persistent effects: at most one new C account and its normal auth/wallet
+initialization, bounded challenges/rate records/email, A/B password/session changes
+performed by the human; A/B economy/progression stays unchanged. Stop on sender,
+recipient, quota, artifact, delivery, revocation or progression mismatch, or any
+unexpected participant/write. Do not compensate by recreating A/B or altering DB
+records. Preserve diagnostics and uncertainty; sign out probes only after their
+required revocation checks, recheck unchanged provider controls and record X1.
+
+**Pending before this packet can run:** operator confirmation of A/B inbox
+ownership, C reuse/new-account choice and owned alias entered privately, mail
+distribution/window approval, human readiness and fresh entry checks. It is a
+concrete proposed scope, not an active authorization. The other four packets
+below retain these current resource/baseline pointers but still lack their own
+required approvals/windows, legitimate purchase baseline or human participants.
+
+### Dated evidence rows
+
+| id | gate | candidate | environment | Bangkok timestamp | alias/operator | precondition | action | expected/observed invariant | result | evidence reference | next action |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| PRE-23-CI | P1 candidate | a181a076 | GitHub | 2026-10-23 21:24 | agent | clean fetched branch | read merged CI/job | success; no rerun | pass | CI/job linked above | preserve candidate binding |
+| PRE-23-PROVIDERS | P1 inventory | a181a076 / e4cfba62 | named providers | 2026-10-23 21:30–21:41 | agent / human sign-in | read-only authorization | inspect artifacts, controls, quotas, access | inventory recorded; temporary direct access absent; no settings changed | pass | provider table above | recheck at window entry |
+| PRE-23-BASE | P1 source baseline | a181a076 / e4cfba62 | Atlas Data Explorer | 2026-10-23 21:39:47 | A/B / agent | existing dashboard access | projected read-only aggregation | wallets 0/revision 0; no progression/membership; live epoch 38 | pass | projected baseline above | private inbox/C inputs; no global audit claim |
+| PRE-23-COLD | P1 smoke attempts | a181a076 / e4cfba62 | public Worker | 2026-10-23 21:37–21:38 | agent | bounded GET smoke | first two readiness requests | shell 200; readiness not JSON | fail | smoke results/startup logs above | diagnose startup; keep R1 timing open |
+| PRE-23-WARM | P1 smoke | a181a076 / e4cfba62 | public Worker / Render | 2026-10-23 21:39 | agent | startup observed | direct health then normal smoke | JSON health ok/readiness ready; normal shell 200/readiness ready | pass | sanitized diagnostic/normal smoke above | does not certify natural idle/R1 |
+| PRE-23-METHOD | R2/R3 feasibility | a181a076 | Render Free | 2026-10-23 21:42 | agent | current tier/docs | evaluate distinct methods | no approved process-specific trigger/restoration | blocked | method matrix below | operator method/scope decision before F1 |
+
+### Fault-method feasibility decision
+
+[Render Free documentation](https://render.com/docs/free) was rechecked October 23:
+Free excludes shell access and scaling beyond one instance. Its
+[deployment documentation](https://render.com/docs/deploys) distinguishes restart
+of the same commit/environment from a configuration deploy. These capabilities
+do not supply a controlled process-specific fault method or current account state.
+
+| Required variant | Missing method/evidence | Decision and exact next action |
+| --- | --- | --- |
+| R2 controlled stale-authority overlap | Named old/new processes, a controllable trigger that leaves the old process attempting a fenced write, independent commit proof, and bounded abort/restoration. Ordinary rolling deployment is insufficient. | **Blocked**. After service inspection, the operator must approve a feasible process-specific method or decide an explicit scope change; no drill is authorized by this record. |
+| R2 settlement commit with lost acknowledgement | Named settlement request/process, selective acknowledgement suppression after independently observed commit, same-command recovery and restoration. The merged cosmetic-pull response runner proves a different G3 case. | **Blocked** pending that distinct method and window; do not count a lost pull response or ordinary restart as settlement evidence. |
+| R3 runtime database loss | A process-local way to interrupt and restore DB access while the backend remains running, with no shared Atlas disruption; independent ledger/receipt audit and abort conditions. Startup DB failure is insufficient. | **Blocked** pending a safe method. Do not revoke shared credentials, alter shared Atlas networking, or add a public fault endpoint. |
+
+P1 remains **in progress** until the relevant executable packet fields are
+resolved; provider inventory and the A/B baseline are now observed. A1–X1 remain
+open. No mail, password reset, signup, gameplay, purchase, deliberate restart,
+backup or deployment ran. Next: obtain the first packet's missing human inputs
+and named approval; recheck freshness before A1. R2/R3 stay blocked and prevent F1
+and M5 closure, while independently approved earlier stages may proceed.
+
 ## Post-merge check and forward plan — 2026-10-21
 
 PR #35 is merged as `a76e51da7a48daadb46b24d76697a88da0187475` on `dev`,
