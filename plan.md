@@ -520,6 +520,45 @@ Section 19 supplies the detailed M0/M1 implementation plan. Review it before exe
 
 ## 18. Checkpoint and resumption notes
 
+### Hosted M5 preflight in progress — 2026-10-23
+
+- User requested executing the post-merge release plan. Task 1 read-only preflight
+  is in progress on `codex/m5-hosted-preflight`, from clean/fresh `origin/dev`
+  `a181a076`. PR #37 is merged; older draft/pending entries are historical.
+- Merged-dev CI 39615760009/job/119276224168 was inspected successful, including
+  aggregate checks, backup/restore, Worker and Chromium. PR37 final CI 39615094415
+  is listed successful. No local application suite or CI rerun.
+- After human provider sign-ins, observed Render live `a181a076`, deploy
+  `dep-dbccv50473hc73ab35og`; sessions true/economy false, auto-deploy after CI,
+  Blueprint Auto Sync Yes. Worker `e4cfba62` at 100% retains `0d4ae28a`, builds
+  disabled. Runtime sources match across these revisions; no deployment needed
+  merely for documentation. Provider usage is within observed included amounts.
+- Brevo 300/300 daily emails remain; configured sender matches the verified
+  sender privately. Freemail/DKIM/DMARC warning remains; delivery is unproven.
+  Atlas FREE active, 143.78/512 MB; temporary provisioning user/rule absent,
+  current IP not allowlisted. No access renewed or provider controls changed.
+- Projected source baseline at 21:39:47 Bangkok: A/B verified, wallets 0/revision 0,
+  no current-day earnings (20 allowance each), no receipts/ownership/progression
+  or active/non-left memberships. Schema 1–7, expected celestial-v1/hash; one live
+  authority epoch 38. No exact-name Verification Probe C exists. No raw private
+  identity/session/card data retained. No global economy audit claimed.
+- First two smoke attempts failed: shell 200, readiness not JSON during cold
+  startup. Subsequent direct health/readiness JSON checks and final normal smoke
+  passed. R1 idle interval/90-second recovery was not certified; no code fix made.
+- Current evidence, R2/R3 blocked method decisions and proposed 90-minute A1
+  packet are in `docs/releases/2026-10-19-m5-completion.md`. Read-only inspection
+  is authorized; mail/account/provider mutation windows remain unapproved.
+  No mail, signup/reset, gameplay/pull, deliberate restart, backup or deployment ran.
+- Save point: last completed repository commit is base `a181a076`; task-owned
+  evidence/checkpoint docs are pending commit/PR. All 56 local file links, mirrored
+  checkpoints, conflict scan and whitespace passed; user merges manually.
+- Exact next step: confirm A/B inbox ownership, C disposition/owned alias entered
+  privately and approve the concrete account/mail packet (12 sends maximum,
+  4 each A/B/C, human passwords/codes). Recheck candidate/flags/quota/baseline at
+  entry, record actual operator/window, then begin A1. R2/R3 prevent M5 closure.
+- Usage observed 2026-10-23 21:42:38 Bangkok: five-hour 56%, weekly 93% remaining;
+  resets 2026-10-24 00:15:04 and 2026-10-30 19:15:04 Bangkok.
+
 ### PR #35 merged; remaining-work forward plan — 2026-10-21
 
 - User requested checking PR #35 first, then creating the remaining implementation

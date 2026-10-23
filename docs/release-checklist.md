@@ -15,6 +15,19 @@ operator's explicit authorization as described in [deployment.md](deployment.md)
 
 ## Candidate record
 
+- October 23 Task 1: PR #37 is merged as `a181a076`; its
+  [merged-dev CI](https://github.com/24-HUB/poker-game/actions/runs/39615760009/job/119276224168)
+  is successful, including aggregate checks, backup/restore, Worker and Chromium.
+  Current [preflight evidence and fault-method blockers](releases/2026-10-19-m5-completion.md#task-1-preflight-started--2026-10-23-bangkok)
+  identify Render deploy `dep-dbccv50473hc73ab35og` at `a181a076`, Worker
+  `e4cfba62` at 100% (builds disabled), matched verified sender and observed quota,
+  and projected A/B source baseline (0 tickets, full allowance, no progression).
+  Final public smoke passes after two non-JSON readiness failures during startup.
+  P1 remains in progress pending executable window/input fields; R2/R3 methods
+  remain blocked. No provider changes, mail, gameplay, direct source writes or
+  backup ran. Historical candidate and approval statements below retain their
+  original scope and dates.
+
 - October 21 post-merge check: PR #35 is merged into `dev` as `a76e51da`.
   [Final PR CI 39611351308](https://github.com/24-HUB/poker-game/actions/runs/39611351308)
   and [merged-dev CI 39611611127](https://github.com/24-HUB/poker-game/actions/runs/39611611127)
